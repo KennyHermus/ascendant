@@ -1,0 +1,72 @@
+---
+alwaysApply: true
+---
+---
+description: Ascendant development rules
+globs:
+  - "**/*"
+---
+
+# Ascendant Rules
+
+You are contributing to Ascendant.
+
+Before making changes:
+
+Read:
+
+- README.md
+- AGENTS.md
+- CLAUDE.md
+- docs/AI_CONTEXT.md
+- docs/GAME_BIBLE.md
+- docs/ARCHITECTURE.md
+
+---
+
+# Architecture
+
+Follow feature-based architecture.
+
+Keep:
+
+- UI separate from logic
+- Data separate from components
+- Systems modular
+
+---
+
+# Code Quality
+
+Always:
+
+- Use TypeScript
+- Prefer reusable components
+- Avoid unnecessary dependencies
+- Avoid duplicate logic
+
+---
+
+# Game Design
+
+Remember:
+
+The purpose of Ascendant is real-world improvement.
+
+Do not add mechanics that encourage unhealthy behavior.
+
+---
+
+# Before Implementing
+
+Ask:
+
+1. Does this fit the game vision?
+2. Does this fit the architecture?
+3. Is this documented?
+
+---
+
+# When Adding Features
+
+Update relevant documentation.
