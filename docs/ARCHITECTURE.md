@@ -69,6 +69,18 @@ Cloud database synchronization
 
 ---
 
+## v0.0.1 Implementation Notes
+
+Stats use a `StatState` wrapper (`{ value: number }`) per attribute so future per-stat XP fields can be added without restructuring `HeroStats`.
+
+Quest completion is one-way: rewards apply once and quests stay completed until daily or weekly reset.
+
+Streak tracking requires all daily core quests (`dailyCore` category) to be completed. Daily bonus quests are tracked separately and do not affect streak.
+
+Category completion bonuses are defined in `src/data/completionRewards.ts` and granted once per period via `completionRewardClaims` in persisted state.
+
+---
+
 
 
 # Folder Structure

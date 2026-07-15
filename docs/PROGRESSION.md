@@ -160,7 +160,16 @@ Special Technique: 1
 
 Consistency provides bonuses.
 
-Current formula:
+## v0.0.1 Behavior
+
+The streak increases only when **all daily core quests** are completed for the day.
+
+- Daily core quests use the `daily` category.
+- Daily bonus quests are tracked separately and do not affect streak.
+- Weekly and special quests do not affect streak.
+- Streak display is informational in v0.0.1; reward multipliers are not yet applied.
+
+## Future Formula
 
 Multiplier =  
 1 + (Streak Length × 0.01)
@@ -172,6 +181,25 @@ Example:
 30 day streak:
 
 1.30x reward multiplier
+
+---
+
+# Category Completion Rewards (v0.0.1)
+
+Bonuses granted once when all quests in a category are completed for the period.
+
+Defined in `src/data/completionRewards.ts`:
+
+| Category | XP | Gold |
+|----------|-----|------|
+| Daily Core | +3 | +1 |
+| Weekly | +3 | +1 |
+| Weekly Bonus | +5 | +2 |
+| Special | +7 | +3 |
+
+Daily Bonus completion reward is TBD and not yet implemented.
+
+Claims reset daily (daily core) or weekly (weekly, weekly bonus). Special claims persist until reset progress.
 
 ---
 

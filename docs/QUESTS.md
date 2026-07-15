@@ -262,3 +262,13 @@ Environment
 Relationships
 
 Skills
+
+---
+
+# v0.0.1 Streak Qualification
+
+In v0.0.1, the streak increases only when **all daily core quests** (`daily` category) are completed for the day.
+
+- Daily bonus quests are tracked separately and do not affect streak.
+- Weekly and special quests do not affect streak.
+- Completing individual core quests before the full set is done does not advance the streak.

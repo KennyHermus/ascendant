@@ -263,7 +263,9 @@ Quest Cards
 Progress Summary
 
 Currency  
-Streak  
+Streak (increases only when all daily core quests are complete)  
+Daily Core completion (e.g. 4 / 6)  
+Daily Bonus completion (tracked separately; does not affect streak)  
 ---  
   
 # Technical Requirements  
