@@ -24,6 +24,13 @@ export function UnlockCard({ status }: UnlockCardProps) {
         >
           {definition.name}
         </h3>
+        <span
+          className={`ml-auto text-xs font-semibold uppercase tracking-wide ${
+            unlocked ? 'text-emerald-400/80' : 'text-stone-500'
+          }`}
+        >
+          {unlocked ? 'Unlocked' : 'Locked'}
+        </span>
       </div>
       <p className="mt-1 text-sm text-stone-400">{definition.description}</p>
 
@@ -39,6 +46,12 @@ export function UnlockCard({ status }: UnlockCardProps) {
               className={requirement.met ? 'text-emerald-400/80' : undefined}
             >
               {requirement.label}
+              {requirement.progress && (
+                <span className="text-stone-500">
+                  {' '}
+                  ({requirement.progress.completed} / {requirement.progress.total})
+                </span>
+              )}
             </li>
           ))}
         </ul>

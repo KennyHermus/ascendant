@@ -32,3 +32,17 @@ export function getYesterdayDateString(): string {
   d.setDate(d.getDate() - 1)
   return formatDateKey(d)
 }
+
+/**
+ * Inverse of `formatDateKey` — reconstructs a `Date` *within* the given
+ * calendar day (noon local time, to stay clear of any DST boundary) rather
+ * than the current moment. Needed wherever code must evaluate
+ * weekday/weekend-aware logic (`isQuestActiveOn`, `getEffectiveCategory`)
+ * for a day that has already ended — e.g. finalizing the Daily Summary at
+ * the reset boundary, where the *real* current time may already be past
+ * midnight into the next day.
+ */
+export function parseDateKey(dateKey: string): Date {
+  const [year, month, day] = dateKey.split('-').map(Number)
+  return new Date(year, month - 1, day, 12, 0, 0)
+}

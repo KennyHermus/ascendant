@@ -1,14 +1,21 @@
-import { useSyncExternalStore } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
+import { UNLOCK_DEFINITIONS } from '@/data/unlocks'
+import { QUEST_DEFINITIONS } from '@/data/quests'
+import { AchievementTestingTools } from '@/dev/AchievementTestingTools'
 import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
 import { QuestTestingTools } from '@/dev/QuestTestingTools'
+import { generateDailySummary } from '@/features/summary/dailySummaryLogic'
+import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
 import { getXpProgress } from '@/features/progression/progressionLogic'
 import {
   getGameTimeSnapshot,
   isGameTimeSimulated,
   subscribeToGameTimeChanges,
 } from '@/lib/gameTime'
+import { getTodayDateString } from '@/lib/storage'
 import { useGameStore } from '@/store/gameStore'
+import type { SummarySnapshot } from '@/types/summary'
 
 const QUICK_ADVANCE_OPTIONS = [
   { label: '+15m', ms: 15 * 60 * 1000 },
@@ -115,7 +122,7 @@ function TimeSimulationTools() {
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <input
           type="datetime-local"
-          defaultValue={toDatetimeLocalValue(now)}
+          value={toDatetimeLocalValue(now)}
           onChange={(e) => handleSetCustomTime(e.target.value)}
           className="rounded-md border border-stone-700/50 bg-stone-900/60 px-2 py-1 text-sm text-stone-200"
         />
@@ -150,10 +157,36 @@ function TimeSimulationTools() {
  */
 export function DevTools() {
   const hero = useGameStore((s) => s.hero)
+  const quests = useGameStore((s) => s.quests)
+  const events = useGameStore((s) => s.events)
+  const currentStreak = useGameStore((s) => s.currentStreak)
+  const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const grantXp = useGameStore((s) => s.grantXp)
   const resetProgress = useGameStore((s) => s.resetProgress)
 
+  const [previewSummary, setPreviewSummary] = useState<SummarySnapshot | null>(null)
+
   const xp = getXpProgress(hero)
+
+  // A pure, on-demand preview — deliberately bypasses `isDailySummaryAvailable`
+  // and never touches the store's persisted `dailySummary`/`dailySummaryViewed`,
+  // so testing this can't corrupt (or prematurely "view") the real pending
+  // summary the player would otherwise see.
+  function handlePreviewDailySummary() {
+    setPreviewSummary(
+      generateDailySummary({
+        hero,
+        quests,
+        questDefinitions: QUEST_DEFINITIONS,
+        unlockDefinitions: UNLOCK_DEFINITIONS,
+        events,
+        streak: currentStreak,
+        dayStartSnapshot: dayStartHeroSnapshot,
+        periodKey: getTodayDateString(),
+        now: getGameTimeSnapshot(),
+      }),
+    )
+  }
 
   return (
     <div className="rounded-lg border border-dashed border-red-800/40 bg-red-950/20 p-4">
@@ -187,6 +220,13 @@ export function DevTools() {
         </button>
         <button
           type="button"
+          onClick={handlePreviewDailySummary}
+          className="rounded-md border border-sky-700/50 bg-sky-900/30 px-3 py-1.5 text-sm text-sky-100 transition hover:bg-sky-900/50"
+        >
+          Open Today's Summary
+        </button>
+        <button
+          type="button"
           onClick={resetProgress}
           className="rounded-md border border-red-700/50 bg-red-900/30 px-3 py-1.5 text-sm text-red-200 transition hover:bg-red-900/50"
         >
@@ -196,6 +236,11 @@ export function DevTools() {
 
       <TimeSimulationTools />
       <QuestTestingTools />
+      <AchievementTestingTools />
+
+      {previewSummary && (
+        <DailySummaryModal summary={previewSummary} onClose={() => setPreviewSummary(null)} />
+      )}
     </div>
   )
 }

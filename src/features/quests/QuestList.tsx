@@ -1,12 +1,15 @@
 import { Accordion } from '@/components/Accordion'
+import { Panel } from '@/components/Panel'
 import { QUEST_CATEGORY_LABELS, SUBCATEGORY_LABELS } from '@/data/questLabels'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import {
   getEffectiveCategory,
   isQuestActiveOn,
 } from '@/features/quests/questSchedule'
+import { getActiveQuestDayKey } from '@/features/quests/questDay'
 import { QuestCard } from '@/features/quests/QuestCard'
-import { getCurrentGameTime } from '@/lib/gameTime'
+import { parseDateKey } from '@/lib/storage'
+import { useGameTime } from '@/lib/useGameTime'
 import { NON_NEGOTIABLE_SUBCATEGORIES } from '@/types/quest'
 import type {
   NonNegotiableSubcategory,
@@ -54,17 +57,18 @@ function QuestCardGroup({
 }
 
 export function QuestList({ quests, onComplete }: QuestListProps) {
-  const now = getCurrentGameTime()
+  const now = useGameTime()
+  const questDay = parseDateKey(getActiveQuestDayKey(QUEST_DEFINITIONS, now))
   const questStateMap = new Map(quests.map((q) => [q.id, q.status]))
   const activeDefinitions = QUEST_DEFINITIONS.filter((d) =>
-    isQuestActiveOn(d, now),
+    isQuestActiveOn(d, questDay),
   )
 
   const nonNegotiables = activeDefinitions.filter(
     (d) => d.category === 'nonNegotiable',
   )
   const dailyBonus = activeDefinitions.filter(
-    (d) => getEffectiveCategory(d, now) === 'dailyBonus',
+    (d) => getEffectiveCategory(d, questDay) === 'dailyBonus',
   )
   const weekly = activeDefinitions.filter((d) => d.category === 'weekly')
   const weeklyBonus = activeDefinitions.filter(
@@ -80,11 +84,7 @@ export function QuestList({ quests, onComplete }: QuestListProps) {
   ]
 
   return (
-    <section>
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-amber-400/90">
-        Quests
-      </h2>
-
+    <Panel title="Quests">
       <div className="space-y-4">
         <Accordion
           title={QUEST_CATEGORY_LABELS.nonNegotiable}
@@ -139,6 +139,6 @@ export function QuestList({ quests, onComplete }: QuestListProps) {
             ),
         )}
       </div>
-    </section>
+    </Panel>
   )
 }

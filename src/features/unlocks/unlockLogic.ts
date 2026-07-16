@@ -17,6 +17,8 @@ export interface UnlockRequirementStatus {
   requirement: UnlockRequirement
   met: boolean
   label: string
+  /** Numeric progress, only present for `groupCompletion` requirements. */
+  progress?: { completed: number; total: number }
 }
 
 export interface UnlockStatus {
@@ -25,43 +27,40 @@ export interface UnlockStatus {
   requirements: UnlockRequirementStatus[]
 }
 
-function checkRequirement(
+function evaluateRequirement(
   requirement: UnlockRequirement,
   quests: QuestState[],
   questDefinitions: QuestDefinition[],
   now: Date,
-): boolean {
+): UnlockRequirementStatus {
   switch (requirement.type) {
-    case 'questCompletion':
-      return (
+    case 'questCompletion': {
+      const met =
         quests.find((q) => q.id === requirement.questId)?.status ===
         'completed'
-      )
-    case 'groupCompletion':
-      return getGroupCompletionStatus(
+      const name =
+        questDefinitions.find((d) => d.id === requirement.questId)?.name ??
+        requirement.questId
+      return {
+        requirement,
+        met,
+        label: met ? `${name} complete` : `${name} incomplete`,
+      }
+    }
+    case 'groupCompletion': {
+      const status = getGroupCompletionStatus(
         quests,
         questDefinitions,
         requirement.group,
         now,
-      ).allComplete
-  }
-}
-
-function describeRequirement(
-  requirement: UnlockRequirement,
-  questDefinitions: QuestDefinition[],
-  met: boolean,
-): string {
-  switch (requirement.type) {
-    case 'questCompletion': {
-      const name =
-        questDefinitions.find((d) => d.id === requirement.questId)?.name ??
-        requirement.questId
-      return met ? `${name} complete` : `${name} incomplete`
-    }
-    case 'groupCompletion': {
+      )
       const label = GROUP_LABELS[requirement.group]
-      return met ? `${label} complete` : `${label} incomplete`
+      return {
+        requirement,
+        met: status.allComplete,
+        label: status.allComplete ? `${label} complete` : `${label} incomplete`,
+        progress: { completed: status.completed, total: status.total },
+      }
     }
   }
 }
@@ -73,26 +72,22 @@ export function checkUnlockRequirements(
   questDefinitions: QuestDefinition[],
   now: Date = getCurrentGameTime(),
 ): boolean {
-  return definition.requirements.every((requirement) =>
-    checkRequirement(requirement, quests, questDefinitions, now),
+  return definition.requirements.every(
+    (requirement) =>
+      evaluateRequirement(requirement, quests, questDefinitions, now).met,
   )
 }
 
-/** Full status for display: overall unlocked state plus per-requirement labels. */
+/** Full status for display: overall unlocked state plus per-requirement labels/progress. */
 export function getUnlockStatus(
   definition: UnlockDefinition,
   quests: QuestState[],
   questDefinitions: QuestDefinition[],
   now: Date = getCurrentGameTime(),
 ): UnlockStatus {
-  const requirements = definition.requirements.map((requirement) => {
-    const met = checkRequirement(requirement, quests, questDefinitions, now)
-    return {
-      requirement,
-      met,
-      label: describeRequirement(requirement, questDefinitions, met),
-    }
-  })
+  const requirements = definition.requirements.map((requirement) =>
+    evaluateRequirement(requirement, quests, questDefinitions, now),
+  )
 
   return {
     definition,
@@ -119,6 +114,35 @@ export function evaluateUnlocks(
     id: definition.id,
     unlocked: checkUnlockRequirements(definition, quests, questDefinitions, now),
   }))
+}
+
+export interface UnlockProximity {
+  status: UnlockStatus
+  /** Requirements not yet met — `0` would mean unlocked, so this only ever contains locked entries. */
+  unmet: UnlockRequirementStatus[]
+}
+
+/**
+ * Every locked unlock, sorted fewest-unmet-requirements-first ("closest to
+ * completion"). Shared by Active Objectives (which surfaces just the
+ * single closest one) and the Daily Summary's Tomorrow Preview (which
+ * surfaces a short list) — kept here rather than duplicated in either
+ * consumer, since it's a straightforward composition of `getUnlockStatus`.
+ */
+export function getLockedUnlocksByProximity(
+  definitions: UnlockDefinition[],
+  quests: QuestState[],
+  questDefinitions: QuestDefinition[],
+  now: Date = getCurrentGameTime(),
+): UnlockProximity[] {
+  return definitions
+    .map((definition) => getUnlockStatus(definition, quests, questDefinitions, now))
+    .filter((status) => !status.unlocked)
+    .map((status) => ({
+      status,
+      unmet: status.requirements.filter((r) => !r.met),
+    }))
+    .sort((a, b) => a.unmet.length - b.unmet.length)
 }
 
 export function createInitialUnlockStates(

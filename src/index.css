@@ -21,3 +21,15 @@ body {
 #root {
   min-height: 100svh;
 }
+
+/* Achievement Unlocked popup entrance — see AchievementUnlockedPopup.tsx */
+@keyframes achievement-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

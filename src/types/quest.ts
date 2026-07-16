@@ -28,6 +28,11 @@ export type QuestStatus = (typeof QUEST_STATUSES)[number]
  * targetTime is local 24-hour time ("HH:mm"). graceMinutes extends the
  * completable window past targetTime before the quest becomes Missed.
  *
+ * Before `targetTime + graceMinutes` the quest remains Available and
+ * completable. After that deadline it becomes Missed. Grace windows that
+ * cross midnight (e.g. 23:45 + 30m) stay attached to the prior calendar
+ * night until the deadline.
+ *
  * A targetTime of "00:00" is treated as "end of the current day" (i.e. the
  * upcoming midnight) — not needed by any current quest, but kept for future
  * "before midnight" style quests.

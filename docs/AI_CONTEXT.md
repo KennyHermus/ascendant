@@ -13,14 +13,11 @@ The player completes real-life quests to strengthen a fictional hero.
 The application combines:
 
 - Habit tracking
-
 - RPG progression
-
 - Character development
-
-- Storytelling
-
 - Challenge systems
+
+(Storytelling and combat are designed but not yet implemented.)
 
 ---
 
@@ -29,17 +26,13 @@ The application combines:
 Inspirations include:
 
 - RPG progression systems
-
 - Training arcs
-
 - Hero journeys
-
 - Character transformation stories
 
 Examples:
 
 - Dragon Ball style growth
-
 - Solo Leveling style progression
 
 However:
@@ -55,56 +48,51 @@ The player's real-world improvement is the primary gameplay mechanic.
 The game exists to encourage:
 
 - Discipline
-
 - Learning
-
 - Fitness
-
 - Responsibility
-
 - Growth
 
 ---
 
-# Current Priority
+# Current Version
 
-Build a simple but enjoyable foundation.
+**Application version:** v0.0.2
 
-The first playable version should allow:
+## Implemented
 
-1. View hero.
+- Hero Dashboard 2.0 (Hero Banner, Today's Journey, Active Objectives, Recent Progress)
+- Quest system (Non-Negotiables + subcategories, Daily Bonus, Weekly, Weekly Bonus)
+- Timed quests + developer time simulation
+- Unlock system
+- Streaks (required Non-Negotiables)
+- Category / subcategory completion rewards
+- Internal GameEvent tracking (foundation)
+- Quest progress aggregation utilities
+- Lifetime statistics
+- Daily Summary
+- Achievements
 
-2. View quests.
+## Current Priority
 
-3. Complete quests.
+Maintain a clean, extensible foundation. Prefer consuming existing systems (events, progress utilities, lifetime stats) over inventing parallel ones.
 
-4. Gain XP.
-
-5. Level up.
-
-6. Track progress.
+**Next planned milestone:** v0.0.3 — History & Analytics (historical quest data, progress graphs, stat/completion trends). Do not mark History or Analytics as complete.
 
 ---
 
 # Long-Term Vision
 
-Future systems:
+Future systems (not implemented):
 
-- Combat
-
-- Boss battles
-
-- Equipment
-
-- Skills
-
-- Transformations
-
-- Story arcs
-
+- History & Analytics (**v0.0.3**)
+- Workout and Nutrition Tracking (**v0.0.4**)
+- Polish (**v0.0.5**)
+- Combat, bosses, abilities, transformations, equipment, inventory, story/world, skills (**v0.1.x only**)
 - AI-generated challenges
-
 - Mobile support
+
+See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -113,3 +101,5 @@ Future systems:
 Do not over-engineer early versions.
 
 A fun simple game is better than a complex unfinished game.
+
+Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. Do not invent History/Analytics storage until **v0.0.3**.

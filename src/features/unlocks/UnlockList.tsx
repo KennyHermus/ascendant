@@ -1,3 +1,5 @@
+import { Accordion } from '@/components/Accordion'
+import { Panel } from '@/components/Panel'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { UNLOCK_DEFINITIONS } from '@/data/unlocks'
 import { getUnlockStatus } from '@/features/unlocks/unlockLogic'
@@ -11,20 +13,46 @@ interface UnlockListProps {
 
 export function UnlockList({ quests }: UnlockListProps) {
   const now = getCurrentGameTime()
+  const statuses = UNLOCK_DEFINITIONS.map((definition) =>
+    getUnlockStatus(definition, quests, QUEST_DEFINITIONS, now),
+  )
+
+  const unlocked = statuses.filter((status) => status.unlocked)
+  const locked = statuses.filter((status) => !status.unlocked)
 
   return (
-    <section>
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-amber-400/90">
-        Unlocks
-      </h2>
-      <div className="space-y-3">
-        {UNLOCK_DEFINITIONS.map((definition) => (
-          <UnlockCard
-            key={definition.id}
-            status={getUnlockStatus(definition, quests, QUEST_DEFINITIONS, now)}
-          />
-        ))}
+    <Panel title="Unlocks">
+      <div className="space-y-4">
+        {unlocked.length > 0 && (
+          <Accordion
+            title="Unlocked"
+            meta={`${unlocked.length}`}
+            defaultExpanded={false}
+            persistKey="unlocks:unlocked"
+          >
+            <div className="space-y-3">
+              {unlocked.map((status) => (
+                <UnlockCard key={status.definition.id} status={status} />
+              ))}
+            </div>
+          </Accordion>
+        )}
+
+        {locked.length > 0 && (
+          <Accordion
+            title="Locked"
+            meta={`${locked.length}`}
+            defaultExpanded={false}
+            persistKey="unlocks:locked"
+          >
+            <div className="space-y-3">
+              {locked.map((status) => (
+                <UnlockCard key={status.definition.id} status={status} />
+              ))}
+            </div>
+          </Accordion>
+        )}
       </div>
-    </section>
+    </Panel>
   )
 }

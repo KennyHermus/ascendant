@@ -1,6 +1,8 @@
 # Combat System
 
-Version: 0.1
+> **Status: Future — v0.1.x only.** Not implemented. Do not build combat in v0.0.x milestones.
+
+Version: 0.1 (design)
 
 ---
 

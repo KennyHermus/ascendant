@@ -1,12 +1,16 @@
 import type { QuestDefinition, QuestStatus } from '@/types/quest'
 import type { StatKey } from '@/types/hero'
 import { STAT_LABELS } from '@/features/hero/heroLogic'
+import { QUEST_DEFINITIONS } from '@/data/quests'
+import { getActiveQuestDayKey } from '@/features/quests/questDay'
 import {
-  evaluateQuestTiming,
+  evaluateQuestTimingForDay,
   formatGraceLabel,
   formatTargetTime,
   formatTimingStatusLabel,
+  getEffectiveQuestStatus,
 } from '@/features/quests/questTiming'
+import { useGameTime } from '@/lib/useGameTime'
 
 interface QuestCardProps {
   quest: QuestDefinition
@@ -25,9 +29,13 @@ function formatStatRewards(statRewards: QuestDefinition['statRewards']): string 
 function TimingBadge({
   quest,
   status,
+  dayKey,
+  now,
 }: {
   quest: QuestDefinition
   status: QuestStatus
+  dayKey: string
+  now: Date
 }) {
   if (!quest.timing) return null
 
@@ -50,7 +58,7 @@ function TimingBadge({
     )
   }
 
-  const timing = evaluateQuestTiming(quest.timing)
+  const timing = evaluateQuestTimingForDay(quest.timing, dayKey, now)
   const label = formatTimingStatusLabel(
     timing.phase,
     timing.minutesUntilTarget,
@@ -74,9 +82,17 @@ function TimingBadge({
 }
 
 export function QuestCard({ quest, status, onComplete }: QuestCardProps) {
+  // Re-render when simulated time changes so countdown labels stay in sync
+  // even if persisted quest status did not change.
+  const now = useGameTime()
+  const dayKey = getActiveQuestDayKey(QUEST_DEFINITIONS, now)
+  // Availability is derived from definition + clock + completion — never
+  // from QUEST_FAILED history or a sticky persisted `missed`.
+  const effectiveStatus = getEffectiveQuestStatus(status, quest, now, dayKey)
+
   const statRewardText = formatStatRewards(quest.statRewards)
-  const completed = status === 'completed'
-  const missed = status === 'missed'
+  const completed = effectiveStatus === 'completed'
+  const missed = effectiveStatus === 'missed'
   const disabled = completed || missed
 
   return (
@@ -108,7 +124,12 @@ export function QuestCard({ quest, status, onComplete }: QuestCardProps) {
                 Optional
               </span>
             )}
-            <TimingBadge quest={quest} status={status} />
+            <TimingBadge
+              quest={quest}
+              status={effectiveStatus}
+              dayKey={dayKey}
+              now={now}
+            />
           </div>
           <p className="mt-1 text-sm text-stone-400">{quest.description}</p>
           <p className="mt-2 text-xs text-stone-500">

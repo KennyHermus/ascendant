@@ -35,8 +35,8 @@ A completed workout is not just a workout.
 
 It is:
 
-- Strength experience
-- Stamina experience
+- Strength growth
+- Stamina growth
 - Character growth
 - Progress toward future abilities
 
@@ -44,7 +44,7 @@ Reading is not just reading.
 
 It is:
 
-- Intellect experience
+- Intellect growth
 - Knowledge growth
 - Preparation for future challenges
 
@@ -52,55 +52,75 @@ Every action contributes to the hero's journey.
 
 ---
 
-
-
 # Core Gameplay Loop
 
-Complete Real-Life Quest  
-|  
-v  
-Receive Rewards  
-|  
-v  
-Improve Stats  
-|  
-v  
-Level Up  
-|  
-v  
-Unlock Abilities  
-|  
-v  
-Defeat Stronger Challenges  
-|  
-v  
-Continue Growing
+Complete quests
+→ Gain XP / gold
+→ Improve stats
+→ Maintain streaks
+→ Unlock features
+→ Grow hero
+
+(Future: face greater challenges — combat, bosses, story. Those systems are **v0.1.x only**.)
 
 ---
-
-
 
 # Current Version
 
+## v0.0.2
 
+Current application version: **0.0.2**
 
-## v0.0.1 Foundation
+A playable daily RPG foundation with:
 
-Initial goal:
+**Core**
 
-Create a usable daily RPG tracker.
+- React + TypeScript + Vite
+- Zustand state management
+- localStorage persistence (versioned saves)
+- Feature-based architecture
+- Data-driven quest definitions
 
-Features:
+**Hero**
 
-- Hero profile
-- Quest tracking
-- Experience system
-- Stat system foundation
-- Progress persistence
+- Level, XP, gold
+- Eight stats (Strength, HP, Defense, Stamina, Speed, Intellect, Willpower, Special Technique)
+- Hero title (level-based)
+- Lifetime statistics
+- Status + Next Objective on the Hero Banner
+
+**Quests**
+
+- Non-Negotiables (Morning Routine, Nutrition, Evening Routine)
+- Daily Bonus, Weekly, Weekly Bonus, Special (empty / future)
+- Optional quests, timed quests (target + grace), weekday schedules
+- Category / subcategory completion rewards
+- Streak based on required Non-Negotiables
+
+**Systems**
+
+- Unlock system (Messages, YouTube, Gaming, Social Media, Netflix)
+- Internal GameEvent log (Recent Progress foundation)
+- Daily Summary (end-of-day recap)
+- Achievements (data-driven, rarity, Achievement Points)
+- Quest progress aggregation utilities
+- Developer time simulation + quest/achievement testing tools
+
+**Dashboard order**
+
+1. Daily Summary banner (when available)
+2. Hero Banner
+3. Today's Journey
+4. Unlocks
+5. Active Objectives
+6. Quests
+7. Recent Progress
+8. Achievements
+9. Attributes
+
+**Next milestone:** v0.0.3 — History & Analytics
 
 ---
-
-
 
 # Technology
 
@@ -122,8 +142,6 @@ Future possibilities:
 
 ---
 
-
-
 # Development Philosophy
 
 Ascendant should prioritize:
@@ -135,33 +153,27 @@ Ascendant should prioritize:
 
 ---
 
-
-
 # Documentation
-
-
 
 ## Game Design
 
-- GAME_[BIBLE.md](http://BIBLE.md)
-- [QUESTS.md](http://QUESTS.md)
-- [PROGRESSION.md](http://PROGRESSION.md)
-- [COMBAT.md](http://COMBAT.md)
-- [STORY.md](http://STORY.md)
-
-
+- [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md)
+- [docs/QUESTS.md](docs/QUESTS.md)
+- [docs/PROGRESSION.md](docs/PROGRESSION.md)
+- [docs/ECONOMY.md](docs/ECONOMY.md)
+- [docs/COMBAT.md](docs/COMBAT.md)
+- [docs/STORY.md](docs/STORY.md)
 
 ## Technical Design
 
-- [ARCHITECTURE.md](http://ARCHITECTURE.md)
-- CODING_[STANDARDS.md](http://STANDARDS.md)
-- UI_[UX.md](http://UX.md)
-
-
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md)
+- [docs/UI_UX.md](docs/UI_UX.md)
+- [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
+- [docs/CHANGELOG.md](docs/CHANGELOG.md)
 
 ## AI Context
 
-- AI_[CONTEXT.md](http://CONTEXT.md)
-- [AGENTS.md](http://AGENTS.md)
-- [CLAUDE.md](http://CLAUDE.md)
-
+- [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)
+- [AGENTS.md](AGENTS.md)
+- [CLAUDE.md](CLAUDE.md)

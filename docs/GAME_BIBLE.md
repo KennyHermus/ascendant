@@ -60,31 +60,14 @@ The journey starts from weakness.
 
 # 4. Core Gameplay Loop
 
-Real Life Action
+Complete quests
+→ Gain XP / gold
+→ Improve stats
+→ Maintain streaks
+→ Unlock features
+→ Grow hero
 
-↓
-
-Quest Completion
-
-↓
-
-Rewards
-
-↓
-
-Stat Growth
-
-↓
-
-Level Up
-
-↓
-
-Unlock New Possibilities
-
-↓
-
-Face Greater Challenges
+(Future: face greater challenges — combat, bosses, story / world. Those systems are **v0.1.x only**.)
 
 ---
 

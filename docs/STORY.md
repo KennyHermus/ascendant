@@ -1,6 +1,8 @@
 # Story System
 
-Version: 0.1
+> **Status: Future — v0.1.x only.** Story, chapters, and world systems are not implemented. Do not build them in v0.0.x milestones.
+
+Version: 0.1 (design)
 
 ---
 

@@ -1,6 +1,6 @@
 # Quest System
 
-Version: 0.1
+Version: 0.2 (aligned with Ascendant v0.0.2)
 
 ---
 
@@ -8,351 +8,187 @@ Version: 0.1
 
 Quests represent real-life actions.
 
-A quest is:
-
-An action that improves the player.
+A quest is an action that improves the player.
 
 ---
 
-# Quest Categories
+# Current Categories (v0.0.2)
 
-## Daily Quests
+| Category | Role |
+|----------|------|
+| **Non-Negotiables** | Required for the streak. Split into subcategories. |
+| **Daily Bonus** | Optional daily growth. Never affects streak. |
+| **Weekly** | Weekly maintenance. |
+| **Weekly Bonus** | Extra weekly quests. |
+| **Special** | Future / empty today. |
 
-Completed every day.
+## Non-Negotiables
 
-Examples:
+### Morning Routine
 
-- Wake up on time
-
+- Wake Up *(weekdays only, timed)*
+- Morning Walk
+- Core
 - Workout
-
 - Rehab
 
-- Walk
+### Nutrition
 
-- Core work
+- Breakfast *(optional — never required for streak/subcategory bonus)*
+- Lunch
+- Dinner
+- Vitamins + Protein
 
-- Reading
+### Evening Routine
 
----
+- Learning / Work *(on weekends: shown under Daily Bonus, does not count toward streak)*
+- Evening Walk
+- Sleep *(weekdays only, timed)*
 
-## Daily Unlock Quests
+## Daily Bonus
 
-These control access to distractions.
+Finance, Duolingo, Trash, Dishes, Bible, Read, Journal, Call Family.
 
-The player earns the ability to use entertainment.
+## Weekly
 
-Examples:
+Cooking, Groceries, Cleaning, Grooming.
 
-Before:
+## Weekly Bonus
 
-- YouTube
+Laundry, Vacuum, Social, Call Family/Friends.
 
-- Gaming
+## Special
 
-- Social media
-
-- Messages
-
-After:
-
-- Required quests completed
-
----
-
-# Unlock Philosophy
-
-Entertainment is not forbidden.
-
-It is unlocked.
-
-The player proves discipline before accessing rewards.
+Empty and future-ready (personal records, major milestones, etc.).
 
 ---
 
-# Unlocks (v0.0.2 — Feature 2)
-
-Unlocks are a separate domain from quests — they are never stored as quest data, and the UI never hardcodes a quest check. Instead, an `UnlockDefinition` lists one or more requirements, and a pure logic layer evaluates them against current quest state.
+# Quest Model
 
 ```
-UnlockRequirement =
-  | { type: 'questCompletion', questId: string }
-  | { type: 'groupCompletion', group: CompletionRewardKey }  // e.g. 'morningRoutine'
-
-UnlockDefinition {
+QuestDefinition {
   id
   name
   description
-  target          // display name of the gated activity
-  requirements: UnlockRequirement[]   // ALL must be met
+  category            // nonNegotiable | dailyBonus | weekly | weeklyBonus | special
+  subcategory?        // morningRoutine | nutrition | eveningRoutine
+  xpReward
+  currencyReward
+  statRewards
+  optional?           // completable but excluded from streak / group rewards
+  contributesToStreak
+  schedule? {
+    weekdaysOnly?           // hidden on weekends
+    streakOnlyOnWeekdays?   // still shown; stops counting toward streak on weekends
+  }
+  timing? {
+    targetTime              // HH:mm local
+    graceMinutes
+  }
+}
+
+QuestState {
+  id
+  status                // available | completed | missed
 }
 ```
 
-The `type` discriminator is what keeps this extensible: future requirement kinds (achievements, level thresholds, currency cost, story flags, equipment) are additive, not a rewrite of existing checks or UI.
+There is no separate hardcoded "required quests" list. The required set for a day is derived from quest data (`category`, `optional`, `schedule`) via `questSchedule.ts` and `getNonNegotiableCompletionStatus()` in `questLogic.ts`.
 
-## Current Unlocks
+---
 
-### Messages
+# Streak Contribution
 
-Requirement: Morning Walk and Core complete.
+The streak increases only when **every Non-Negotiable quest required today** is completed.
 
-### YouTube
+- Weekdays: includes Wake Up, Learning/Work, Sleep (among other required Non-Negotiables).
+- Weekends: Wake Up and Sleep do not appear; Learning/Work becomes Daily Bonus for streak purposes.
+- Breakfast is always optional and never required.
+- Daily Bonus, Weekly, Weekly Bonus, and Special never affect the streak.
 
-Requirement: Rehab complete.
+Optional quests do not break or satisfy streak requirements.
 
-### Gaming
-
-Requirement: Learning / Work complete.
-
-### Social Media
-
-Requirement: Workout complete.
-
-### Netflix
-
-Requirement: All Morning Routine non-negotiables complete (reuses the existing `morningRoutine` reward-group completion check — no separate hardcoded quest-ID list).
-
-## Recompute, Not Claim-Once
-
-Unlocks are **not** a one-time achievement. They are recomputed from current quest state at the same points quests themselves are evaluated (app load/rehydrate, tab resume, quest completion, and period resets). This means an unlock re-locks if its underlying quest requirement reverts to incomplete — most notably, after the daily reset returns a non-negotiable quest to `available`. This matches the original design intent above: entertainment is unlocked *daily* by proving discipline that day, not permanently.
-
-## Persistence
-
-Unlock states persist in `GameState.unlocks`. Since old saves predate this feature, `saved.unlocks` is simply `undefined` on load — it defaults safely to all-locked and is immediately recomputed from the save's own quest data on rehydrate. No save schema migration was required for this feature.
+If a day ends without completing its required Non-Negotiables, the streak resets to **0 immediately** at that day's end deadline (Sleep's grace period when Sleep is required; otherwise midnight) — it does not stay elevated until the next successful day.
 
 ---
 
 # Timed Quests
 
-Certain quests have deadlines.
-
-Examples:
-
-Wake Up:
-
-Target:
-
-Before 7:00 AM
-
-Sleep:
-
-Target:
-
-Before midnight
-
-Meals:
-
-Within one hour of planned meal time
-
----
-
-# Grace Periods
-
-Life is unpredictable.
-
-Timed quests may include:
-
-- Small buffer windows
-
-- Emergency rescheduling
-
-However:
-
-Repeated rescheduling reduces discipline.
-
----
-
-# Quest Types
-
-## Core
-
-Essential daily improvement.
-
-Reward:
-
-Small XP
-
----
-
-## Bonus
-
-Optional growth quests.
-
-Examples:
-
-- Bible reading
-
-- Journal
-
-- Extra learning
-
-Reward:
-
-Higher XP
-
----
-
-## Weekly
-
-Maintenance quests.
-
-Examples:
-
-- Cooking
-
-- Grocery shopping
-
-- Cleaning
-
-- Grooming
-
-- Laundry
-
----
-
-## Special
-
-Rare achievements.
-
-Examples:
-
-- Personal records
-
-- Major goals
-
-- Milestones
-
----
-
-# Initial Quest Template
-
-Quest {  
-id  
-name  
-category  
-description  
-frequency  
-deadline  
-xpReward  
-currencyReward  
-statRewards  
-completed  
-}
-
----
-
-# Timed Quests (v0.0.2)
-
 A quest may optionally declare `timing`:
 
-Quest.timing {  
-targetTime (HH:mm, local time)  
-graceMinutes  
-}
+- `targetTime` (HH:mm, local)
+- `graceMinutes`
 
-Quest completion state is a status, not a boolean:
+Status is independent of timing phase:
 
-Quest status:
+| Status | Meaning |
+|--------|---------|
+| Available | Can still be completed (before deadline) |
+| Completed | Rewards granted |
+| Missed | Past deadline; cannot complete; no rewards |
 
-- Available
-- Completed
-- Missed
+Timing phases (display/urgency only): On Time → In Grace Period → Expired.
 
-Timed quests additionally expose a timing phase, evaluated independently of status:
+**Current availability is never read from events.** `QUEST_FAILED` (missed) events are immutable history for Recent Progress / Daily Summary / future Analytics. Availability is always recalculated from quest definition + current application time + completion state. Rewinding simulated time before a deadline restores Available even if a miss event for that window remains in history. Re-entering the same missed window does not emit a duplicate `QUEST_FAILED` (deduped by quest id + quest-day `periodKey`).
 
-- On Time
-- In Grace Period
-- Expired
+If local time is past `targetTime + graceMinutes` and status is still Available, the quest becomes Missed. Before that deadline the quest stays Available and completable. Evaluated on app load, refresh, tab resume, and every simulated-time change — never on a background timer.
 
-Grace Period is a timing window, not a completion state — it never appears as a quest status.
+Grace windows that cross midnight (Sleep 23:45 + 30m → 00:15) keep evaluating against the prior night until the deadline. The daily quest-day boundary uses that same deadline (not calendar midnight), so 00:00–00:15 still belongs to the night that just ended.
 
-If the local time is past `targetTime + graceMinutes` and the quest is still Available, it automatically becomes Missed. Missed quests cannot be completed, grant no rewards, and cause no penalties.
+### Current timed quests
 
-Timing is evaluated on app load, refresh, and tab resume — never on a background timer.
+- **Wake Up** — weekdays only, 6:45 AM, 30-minute grace
+- **Sleep** — weekdays only, 11:45 PM, 30-minute grace
 
-Initial timed quests:
+Meals are not timed in the current data.
 
-- Wake Up — 7:00 AM, 30-minute grace
-- Sleep — 12:00 AM (midnight), 15-minute grace
+### Developer time simulation
 
-All other quests remain untimed.
+`src/lib/gameTime.ts` → `getCurrentGameTime()`. Dev tools can toggle simulated time, set a custom date/time, advance (+15m / +30m / +1h / +6h / +1d), or reset to real time. Simulated time persists in save state when enabled. Time changes re-run `applyPeriodResets()` + `evaluateTimedQuests()`.
 
 ---
 
-# Quest Categories (v0.0.2 — Non-Negotiables restructure)
+# Unlocks
 
-The daily categories were restructured into a more intentional life system. `dailyCore` was replaced by `nonNegotiable`, split into three subcategories, and a `weeklyBonus` category was introduced:
-
-- **Non-Negotiables** — determine the streak. Split into subcategories:
-  - **Morning Routine**: Wake Up, Morning Walk, Core, Workout, Rehab
-  - **Nutrition**: Breakfast (optional), Lunch, Dinner, Vitamins + Protein
-  - **Evening Routine**: Learning/Work, Evening Walk, Sleep
-- **Daily Bonus** — never affects the streak. Finance, Duolingo, Trash, Dishes, Bible, Read, Journal, Call Family.
-- **Weekly** — Cooking, Groceries, Cleaning, Grooming.
-- **Weekly Bonus** (new) — Laundry, Vacuum, Social, Call Family/Friends.
-- **Special** — unchanged, still empty and future-ready.
-
-## Quest Model Additions
+Unlocks are a **separate domain** from quests. Entertainment is not forbidden — it is unlocked after proving discipline that day.
 
 ```
-QuestDefinition {
-  ...
-  subcategory?: 'morningRoutine' | 'nutrition' | 'eveningRoutine'
-  schedule?: {
-    weekdaysOnly?: boolean          // hidden entirely on weekends
-    streakOnlyOnWeekdays?: boolean  // still shown, but stops counting toward streak on weekends
-  }
-  contributesToStreak: boolean
-  optional?: boolean                 // completable, but excluded from streak/subcategory rewards
+UnlockRequirement =
+  | { type: 'questCompletion', questId: string }
+  | { type: 'groupCompletion', group: CompletionRewardKey }
+
+UnlockDefinition {
+  id, name, description, target, requirements[]
 }
 ```
 
-There is no separate hardcoded "required quests" list anywhere in the codebase. The required set for a given day is always derived from the quest data itself (`category`, `optional`, `schedule`) — see `questSchedule.ts` and `getNonNegotiableCompletionStatus()` in `questLogic.ts`.
+### Current unlocks
 
-## Weekday / Weekend Behavior
+| Unlock | Requirement |
+|--------|-------------|
+| Messages | Morning Walk + Core complete |
+| YouTube | Rehab complete |
+| Gaming | Learning / Work complete |
+| Social Media | Workout complete |
+| Netflix | All Morning Routine Non-Negotiables complete |
 
-- **Wake Up** and **Sleep** (`schedule.weekdaysOnly`) do not appear at all on weekends — not shown, not required, not completable.
-- **Learning/Work** (`schedule.streakOnlyOnWeekdays`) still appears and is completable every day, but on weekends it is displayed under Daily Bonus and does not count toward the streak or the Evening Routine subcategory bonus.
-- **Breakfast** (`optional: true`) is completable every day for its own small reward, but never required for the streak or the Nutrition subcategory bonus.
-- All other non-negotiables (Morning Walk, Core, Workout, Rehab, Lunch, Dinner, Vitamins + Protein, Evening Walk) are required every day, weekday or weekend.
+Unlocks are **recomputed** from current quest state (not permanent claim-once). After daily reset, they re-lock until requirements are met again.
 
-This resolves an internal inconsistency in the original request: the streak rules bullet list included "Sleep" under weekend requirements while the surrounding prose explicitly said Sleep should not affect weekend requirements, and separately omitted Morning Walk / Vitamins + Protein from both lists despite no stated weekday-only intent. The data-driven `schedule` field is the single source of truth going forward, so this kind of drift can't recur.
-
-## Timed Quests (v0.0.2 update)
-
-- **Wake Up**: weekdays only, target 6:45 AM, 30-minute grace.
-- **Sleep**: weekdays only, target 11:45 PM, 30-minute grace.
-
-(The original v0.0.2 targets of 7:00 AM / midnight were replaced by the above.)
-
-## Developer Time Simulation
-
-`src/lib/gameTime.ts` centralizes all "current time" access via `getCurrentGameTime()`. A developer-only override lets `src/dev/DevTools.tsx` fast-forward time (toggle, set custom date/time, +15m/+30m/+1h/+6h/+1d, reset to real time) to test streaks, resets, and timed quests without waiting. Every time-adjustment action re-runs the normal load/resume evaluation pipeline (`applyPeriodResets()` + `evaluateTimedQuests()`) — there is still no background timer anywhere in the app.
+Persisted in `GameState.unlocks`; old saves default safely to locked and recompute on rehydrate.
 
 ---
 
-# Initial Philosophy
+# Philosophy
 
 Quests should improve:
 
-Body
+Body · Mind · Character · Environment · Relationships · Skills
 
-Mind
-
-Character
-
-Environment
-
-Relationships
-
-Skills
+Entertainment is unlocked, not banned.
 
 ---
 
-# v0.0.1 Streak Qualification
+# Historical Notes
 
-In v0.0.1, the streak increases only when **all daily core quests** (`daily` category) are completed for the day.
-
-- Daily bonus quests are tracked separately and do not affect streak.
-- Weekly and special quests do not affect streak.
-- Completing individual core quests before the full set is done does not advance the streak.
+- v0.0.1 used a `dailyCore` / boolean `completed` model and looser timed targets (7:00 AM / midnight). Those are superseded by this document.
+- Early prose sometimes said "Daily Quests" or "growth quests" — current names are **Non-Negotiables** and **Daily Bonus**.

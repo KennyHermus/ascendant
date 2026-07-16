@@ -1,3 +1,4 @@
+import { createInitialLifetimeStats } from '@/features/hero/lifetimeStats'
 import {
   DEFAULT_HERO_NAME,
   DEFAULT_STARTING_STAT_VALUE,
@@ -19,6 +20,7 @@ export function createInitialHero(): Hero {
     currentXp: 0,
     currency: 0,
     stats: createDefaultStats(),
+    lifetimeStats: createInitialLifetimeStats(),
   }
 }
 
@@ -64,4 +66,15 @@ export const STAT_LABELS: Record<StatKey, string> = {
   intellect: 'Intellect',
   willpower: 'Willpower',
   specialTechnique: 'Special Technique',
+}
+
+export const STAT_ICONS: Record<StatKey, string> = {
+  strength: '💪',
+  hp: '❤️',
+  defense: '🛡️',
+  stamina: '🏃',
+  speed: '⚡',
+  intellect: '🧠',
+  willpower: '🔥',
+  specialTechnique: '✨',
 }

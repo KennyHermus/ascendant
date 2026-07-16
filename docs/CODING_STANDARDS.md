@@ -50,7 +50,9 @@ PascalCase
 
 Example:
 
-HeroCard.tsx
+HeroBanner.tsx
+
+(Older docs may say `HeroCard.tsx` — that component was replaced by `HeroBanner.tsx` in v0.0.2.)
 
 ---
 
@@ -78,11 +80,9 @@ QuestReward
 
 Prefer:
 
-HeroCard.tsx
+HeroBanner.tsx
 
-HeroCard.test.ts
-
-HeroCard.types.ts
+HeroBanner.test.ts
 
 over large mixed files.
 
@@ -143,10 +143,9 @@ When adding major features:
 Update:
 
 - GAME_BIBLE
-
 - ARCHITECTURE
-
-- ROADMAP
+- IMPLEMENTATION_PLAN (roadmap)
+- Relevant feature docs (QUESTS, PROGRESSION, UI_UX, …)
 
 ---
 

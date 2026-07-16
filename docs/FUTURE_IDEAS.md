@@ -1,10 +1,12 @@
 # Future Ideas
 
+> Aspirational only. Combat, inventory, equipment, story, and world ideas below are **v0.1.x** (or later) — not v0.0.x scope.
+
 Version: 0.1
 
 This document contains possible expansions.
 
-Nothing here is required for the initial version.
+Nothing here is required for the current version (v0.0.2) or for v0.0.3–v0.0.5 unless promoted into `IMPLEMENTATION_PLAN.md`.
 
 ---
 

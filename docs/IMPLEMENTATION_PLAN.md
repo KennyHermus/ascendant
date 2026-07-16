@@ -1,18 +1,17 @@
-# Ascendant Implementation Plan
+# Ascendant Implementation Plan & Roadmap
 
-Version: 0.0.1
+Version: 0.0.2 (documentation aligned with current codebase)
 
 ---
 
 # Purpose
 
-This document defines the first implementation milestone for Ascendant.
+This document tracks milestones: what shipped, what is next, and what remains future.
 
-The goal of v0.0.1 is not to build the entire RPG.
+The documentation and code should agree on version numbers:
 
-The goal is to create the first playable foundation:
-
-A user can complete real-life quests, gain experience, improve their hero, and return the next day to continue progressing.
+- **Application version:** `package.json` → currently **0.0.2**
+- **Save schema version:** `CURRENT_SAVE_VERSION` → currently **0.0.2** (only bumps when persisted shape/meaning changes)
 
 ---
 
@@ -20,7 +19,7 @@ A user can complete real-life quests, gain experience, improve their hero, and r
 
 Build the smallest version that creates the core gameplay loop.
 
-The first version should prioritize:
+Prioritize:
 
 1. Functionality
 2. Clean architecture
@@ -31,447 +30,121 @@ Avoid implementing complex systems before the foundation exists.
 
 ---
 
-# v0.0.1 Core Gameplay Loop
+# Completed: v0.0.1 Foundation
 
-The player should be able to:
+First playable loop:
 
+- Hero profile (level, XP, gold, stats)
+- Quest completion with rewards
+- Persistence via localStorage
+- Single dashboard
 
-
-Open Application
-
-↓
-
-View Hero Status
-
-↓
-
-View Available Quests
-
-↓
-
-Complete Quest
-
-↓
-
-Receive Rewards
-
-↓
-
-Gain XP
-
-↓
-
-Increase Progress
-
-↓
-
-Return Later  
-
-
----  
-  
-# Features Included  
-  
-## 1. Hero System  
-  
-The application must display:  
-  
-- Hero name  
-- Level  
-- Current XP  
-- XP required for next level  
-- Currency  
-- Stats  
-  
-Initial stats:  
-
-
-Strength: 1
-
-HP: 1
-
-Defense: 1
-
-Stamina: 1
-
-Speed: 1
-
-Intellect: 1
-
-Willpower: 1
-
-Special Technique: 1  
----  
-  
-# 2. Quest System  
-  
-The application must support:  
-  
-Quest categories:  
-  
-- Daily  
-- Daily Bonus  
-- Weekly  
-- Special  
-  
-Each quest contains:  
-
-
-id
-
-name
-
-description
-
-category
-
-xpReward
-
-currencyReward
-
-statRewards
-
-completed  
----  
-  
-# Initial Quest Data  
-  
-Create sample quests:  
-  
-## Daily  
-  
-- Wake Up  
-- Workout  
-- Core  
-- Rehab  
-- Walk  
-- Learning / Work  
-  
----  
-  
-## Daily Bonus  
-  
-- Journal  
-- Bible Reading  
-- Extra Learning  
-  
----  
-  
-## Weekly  
-  
-- Cooking  
-- Groceries  
-- Cleaning  
-- Grooming  
-- Laundry  
-  
----  
-  
-# 3. Quest Completion  
-  
-When a quest is completed:  
-  
-The player receives:  
-  
-- XP  
-- Currency  
-- Stat experience  
-  
-The quest changes state:  
-  
-Incomplete:
-
-false  
-
-
-Completed:
-
-true  
-
-
----  
-  
-# 4. Progression System  
-  
-Implement:  
-  
-## XP Tracking  
-  
-Hero has:  
-
-
-currentXP
-
-level
-
-xpToNextLevel
-
-  
----  
-  
-## Level Up  
-  
-When XP reaches required amount:  
-  
-Increase:  
-  
-- Level +1  
-- All base stats +1  
-  
-Reset XP remainder.  
-  
----  
-  
-# 5. Persistence  
-  
-Progress should survive page refresh.  
-  
-Use:  
-  
-Browser localStorage  
-  
-Store:  
-  
-- Hero state  
-- Quest completion state  
-- Settings  
-  
----  
-  
-# 6. Dashboard  
-  
-Create a main dashboard screen.  
-  
-Layout:
+Historical detail (quest categories, boolean completion, etc.) lived in earlier plans and has been superseded by v0.0.2. See git history / older ARCHITECTURE notes if needed.
 
 ---
 
-Hero Card
+# Completed: v0.0.2
 
-Level  
-XP Bar  
-Stats
+✓ Hero Dashboard 2.0 (Hero Banner, Today's Journey, Active Objectives, Recent Progress, Attributes)  
+✓ Non-Negotiables quest restructure (subcategories, optional quests, weekday schedules)  
+✓ Timed quest system (target times, grace periods, weekday-only)  
+✓ Developer time simulation (persisted)  
+✓ Unlock system (Messages, YouTube, Gaming, Social Media, Netflix)  
+✓ Streak system based on required Non-Negotiables  
+✓ Category / subcategory completion rewards  
+✓ Internal GameEvent tracking foundation  
+✓ Quest progress aggregation utilities (`questProgress.ts`)  
+✓ Lifetime statistics  
+✓ Daily Summary  
+✓ Achievements (data-driven, rarity, Achievement Points, popup + panel)  
+✓ Accordion organization (Quests, Unlocks, Achievements, Today's Journey Non-Negotiables)
+
+**Not completed in v0.0.2 (do not mark done):** History UI, Analytics, Combat, Inventory, Story, Equipment, Skills.
 
 ---
 
-Today's Quests
+# Next: v0.0.3 — History and Analytics
 
-Quest Cards
+Includes:
+
+- Historical quest data
+- Progress graphs
+- Stat trends
+- Completion trends
+
+Should **consume** existing foundations — `GameState.events`, `lifetimeStats`, quest progress utilities, and summary snapshots — not invent parallel tracking or reconstruct history by scanning current quest state.
+
+**Event retention:** v0.0.2 keeps a recent-event buffer (~50). v0.0.3 should introduce long-term historical storage; do not change that until this milestone.
 
 ---
 
-Progress Summary
+# v0.0.4 — Workout and Nutrition Tracking
 
-Currency  
-Streak (increases only when all daily core quests are complete)  
-Daily Core completion (e.g. 4 / 6)  
-Daily Bonus completion (tracked separately; does not affect streak)  
----  
-  
-# Technical Requirements  
-  
-## Framework  
-  
-Use:  
-  
-- React  
-- TypeScript  
-- Vite  
-  
----  
-  
-## State Management  
-  
-Use:  
-  
-Zustand  
-  
-Global state:  
+Includes:
 
+- Workout history
+- PR tracking
+- Stat adjustments based on performance
+- Workout recommendations
+- Nutrition tracking
 
-Hero
+---
 
-Quests
+# v0.0.5 — Polish and refinement
 
-Progression
+Quality-of-life, visual polish, balance pass, bug fixes — no major new domains.
 
-Settings
+---
 
-  
----  
-  
-# Folder Structure  
-  
-The initial source code should follow:  
+# v0.1.x — Combat / World systems
 
+**Explicitly future.** Do not implement in v0.0.x.
 
-src/
+- Enemies
+- Bosses
+- Combat calculations
+- Abilities
+- Transformations
+- Equipment / inventory
+- Story / world
 
-├── app/
+Achievements already shipped in v0.0.2 — do not list them again as a v0.1 deliverable.
 
-├── features/
+Design references: `docs/COMBAT.md`, `docs/STORY.md`, `docs/ECONOMY.md` (equipment), `docs/FUTURE_IDEAS.md`.
 
-│ ├── hero/
+---
 
-│ ├── quests/
+# Later / v1.0 direction
 
-│ └── progression/
+- Mobile / PWA support
+- Cloud saves
+- Advanced RPG systems
+- Long-term progression depth
 
-├── components/
+See also `docs/FUTURE_IDEAS.md`, `docs/COMBAT.md`, `docs/STORY.md`.
 
-├── data/
+---
 
-├── store/
+# Explicitly Out of Scope Until Milestone Asks
 
-├── types/
+Do not implement early:
 
-├── lib/
+- Combat / inventory / story / skills folders
+- History & Analytics UI (wait for v0.0.3)
+- OS-level app blocking for unlocks
+- AI-generated quests / story
 
-└── utils/  
+---
 
+# Cursor / AI Instructions
 
----  
-  
-# Initial Files  
-  
-Create:  
+Before writing code:
 
+1. Read all relevant documentation.
+2. Follow `ARCHITECTURE.md` and `CODING_STANDARDS.md`.
+3. Implement only the current milestone's scope.
+4. Do not create future systems early.
+5. Prefer simple extensible solutions.
+6. Update docs when architecture or major features change.
 
-src/
-
-├── app/  
-│ └── App.tsx
-
-├── features/
-
-│ ├── hero/  
-│ │ ├── HeroCard.tsx  
-│ │ ├── heroTypes.ts  
-│ │ └── heroLogic.ts  
-│  
-│ ├── quests/  
-│ │ ├── QuestCard.tsx  
-│ │ ├── questTypes.ts  
-│ │ └── questLogic.ts  
-│  
-│ └── progression/  
-│ └── progressionLogic.ts  
-│  
-├── data/
-
-│ └── quests.ts
-
-├── store/
-
-│ └── gameStore.ts
-
-├── types/
-
-│ ├── hero.ts  
-│ └── quest.ts
-
-├── lib/
-
-│ └── storage.ts
-
-└── main.tsx  
----  
-  
-# Explicitly NOT Included  
-  
-Do NOT implement yet:  
-  
-## Combat  
-  
-Wait until:  
-  
-- Hero system is stable  
-- Progression is working  
-  
----  
-  
-## Inventory  
-  
-Wait until:  
-  
-- Currency exists  
-- Rewards are meaningful  
-  
----  
-  
-## Story  
-  
-Wait until:  
-  
-- Gameplay loop is enjoyable  
-  
----  
-  
-## AI Features  
-  
-Wait until:  
-  
-- Core data model is proven  
-  
----  
-  
-# Future Milestones  
-  
----  
-  
-# v0.0.2  
-  
-Quality of life:  
-  
-- Better UI  
-- Animations  
-- Streak tracking  
-- Quest timers  
-  
----  
-  
-# v0.1  
-  
-RPG Foundation:  
-  
-- Combat prototype  
-- Enemies  
-- Equipment  
-- Achievements  
-  
----  
-  
-# v0.2  
-  
-Advanced progression:  
-  
-- Skills  
-- Abilities  
-- Story chapters  
-- Boss fights  
-  
----  
-  
-# v1.0  
-  
-Full Ascendant experience:  
-  
-- Mobile support  
-- Cloud saves  
-- Advanced RPG systems  
-- Long-term progression  
-  
----  
-  
-# Cursor Instructions  
-  
-Before writing code:  
-  
-1. Read all documentation.  
-2. Follow ARCHITECTURE.md.  
-3. Follow CODING_STANDARDS.md.  
-4. Implement only v0.0.1.  
-5. Do not create future systems.  
-6. Prefer simple extensible solutions.  
-  
-The goal is a clean foundation, not maximum features.
+The goal is a clean foundation that grows deliberately — not maximum features.

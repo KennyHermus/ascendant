@@ -1,4 +1,5 @@
-import { getStatValue, STAT_LABELS } from '@/features/hero/heroLogic'
+import { Panel } from '@/components/Panel'
+import { getStatValue, STAT_ICONS, STAT_LABELS } from '@/features/hero/heroLogic'
 import type { HeroStats } from '@/types/hero'
 import { STAT_KEYS } from '@/types/hero'
 
@@ -8,23 +9,23 @@ interface StatsPanelProps {
 
 export function StatsPanel({ stats }: StatsPanelProps) {
   return (
-    <section className="rounded-xl border border-stone-700/50 bg-stone-900/60 p-5">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-emerald-400/90">
-        Attributes
-      </h2>
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <Panel title="Attributes" titleClassName="text-emerald-400/90">
+      <dl className="grid grid-cols-2 gap-3">
         {STAT_KEYS.map((key) => (
           <div
             key={key}
-            className="rounded-lg border border-stone-700/40 bg-stone-950/50 px-3 py-2"
+            className="flex items-center gap-3 rounded-lg border border-stone-700/40 bg-stone-950/50 px-3 py-2.5"
           >
-            <dt className="text-xs text-stone-400">{STAT_LABELS[key]}</dt>
-            <dd className="mt-0.5 text-lg font-semibold text-stone-100">
-              {getStatValue(stats, key)}
-            </dd>
+            <span aria-hidden="true" className="text-xl leading-none">
+              {STAT_ICONS[key]}
+            </span>
+            <div className="min-w-0">
+              <dt className="truncate text-xs text-stone-400">{STAT_LABELS[key]}</dt>
+              <dd className="text-lg font-semibold text-stone-100">{getStatValue(stats, key)}</dd>
+            </div>
           </div>
         ))}
       </dl>
-    </section>
+    </Panel>
   )
 }

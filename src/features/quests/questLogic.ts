@@ -3,25 +3,29 @@ import {
   resolveCompletionRewards,
   type CompletionRewardClaims,
 } from '@/features/quests/completionRewardLogic'
+import { computeProgress } from '@/features/quests/questProgress'
 import {
   isQuestActiveOn,
   questContributesToStreakOn,
 } from '@/features/quests/questSchedule'
+import {
+  addDaysToDateKey,
+  getActiveQuestDayKey,
+  getStreakDayEndDeadline,
+} from '@/features/quests/questDay'
 import { getCurrentGameTime } from '@/lib/gameTime'
-import { formatDateKey } from '@/lib/storage'
-import type { QuestDefinition, QuestState } from '@/types/quest'
+import { parseDateKey } from '@/lib/storage'
+import { NON_NEGOTIABLE_SUBCATEGORIES } from '@/types/quest'
+import type {
+  NonNegotiableSubcategory,
+  QuestDefinition,
+  QuestState,
+} from '@/types/quest'
 
 export interface CategoryCompletionStatus {
   completed: number
   total: number
   allComplete: boolean
-}
-
-export interface QuestProgressSummary {
-  morningRoutine: CategoryCompletionStatus
-  nutrition: CategoryCompletionStatus
-  eveningRoutine: CategoryCompletionStatus
-  dailyBonus: CategoryCompletionStatus
 }
 
 export interface StreakState {
@@ -141,12 +145,7 @@ export function getGroupCompletionStatus(
   now: Date = getCurrentGameTime(),
 ): CategoryCompletionStatus {
   const requiredQuests = getRequiredQuestsForGroup(definitions, group, now)
-  const stateMap = new Map(quests.map((q) => [q.id, q.status]))
-
-  const total = requiredQuests.length
-  const completed = requiredQuests.filter(
-    (q) => stateMap.get(q.id) === 'completed',
-  ).length
+  const { completed, total } = computeProgress(requiredQuests, quests)
 
   return {
     completed,
@@ -164,12 +163,7 @@ export function getNonNegotiableCompletionStatus(
   const required = definitions.filter((d) =>
     questContributesToStreakOn(d, now),
   )
-  const stateMap = new Map(quests.map((q) => [q.id, q.status]))
-
-  const total = required.length
-  const completed = required.filter(
-    (q) => stateMap.get(q.id) === 'completed',
-  ).length
+  const { completed, total } = computeProgress(required, quests)
 
   return {
     completed,
@@ -178,59 +172,91 @@ export function getNonNegotiableCompletionStatus(
   }
 }
 
-/** Dashboard-facing summary: the three non-negotiable subcategories plus daily bonus. */
-export function getQuestProgressSummary(
+export interface NonNegotiableStatusBreakdown {
+  overall: CategoryCompletionStatus
+  subcategories: Record<NonNegotiableSubcategory, CategoryCompletionStatus>
+}
+
+/**
+ * Streak-authoritative completion status for today's non-negotiables, both
+ * overall and per subcategory — the input the Hero Card's Status ladder
+ * (`getHeroStatus` in `heroPresentation.ts`) is built from. Reuses
+ * `getGroupCompletionStatus`/`getNonNegotiableCompletionStatus` rather than
+ * re-deriving "what's required today," so Hero Status can never drift from
+ * the same rules that drive the streak and subcategory completion rewards.
+ */
+export function getNonNegotiableStatusBreakdown(
   quests: QuestState[],
   definitions: QuestDefinition[],
   now: Date = getCurrentGameTime(),
-): QuestProgressSummary {
-  const stateMap = new Map(quests.map((q) => [q.id, q.status]))
-
-  const dailyBonusQuests = definitions.filter(
-    (d) => d.category === 'dailyBonus' && isQuestActiveOn(d, now),
+): NonNegotiableStatusBreakdown {
+  const subcategories = NON_NEGOTIABLE_SUBCATEGORIES.reduce(
+    (acc, subcategory) => {
+      acc[subcategory] = getGroupCompletionStatus(
+        quests,
+        definitions,
+        subcategory,
+        now,
+      )
+      return acc
+    },
+    {} as Record<NonNegotiableSubcategory, CategoryCompletionStatus>,
   )
-  const weekendBonusLearningWork = definitions.filter(
-    (d) =>
-      d.category === 'nonNegotiable' &&
-      d.schedule?.streakOnlyOnWeekdays &&
-      !questContributesToStreakOn(d, now) &&
-      isQuestActiveOn(d, now),
-  )
-  const allDailyBonus = [...dailyBonusQuests, ...weekendBonusLearningWork]
 
   return {
-    morningRoutine: getGroupCompletionStatus(
-      quests,
-      definitions,
-      'morningRoutine',
-      now,
-    ),
-    nutrition: getGroupCompletionStatus(quests, definitions, 'nutrition', now),
-    eveningRoutine: getGroupCompletionStatus(
-      quests,
-      definitions,
-      'eveningRoutine',
-      now,
-    ),
-    dailyBonus: {
-      total: allDailyBonus.length,
-      completed: allDailyBonus.filter(
-        (d) => stateMap.get(d.id) === 'completed',
-      ).length,
-      allComplete:
-        allDailyBonus.length > 0 &&
-        allDailyBonus.every((d) => stateMap.get(d.id) === 'completed'),
-    },
+    overall: getNonNegotiableCompletionStatus(quests, definitions, now),
+    subcategories,
+  }
+}
+
+export {
+  addDaysToDateKey,
+  getActiveQuestDayKey,
+  getStreakDayEndDeadline,
+} from '@/features/quests/questDay'
+
+/**
+ * If the calendar day *after* the last successful Non-Negotiable day has
+ * already ended (past that day's streak deadline) without being completed,
+ * the streak breaks immediately to 0. Does not wait for the next successful
+ * day to "restart at 1" before reflecting the break.
+ */
+function expireStreakIfDayEnded(
+  streak: StreakState,
+  definitions: QuestDefinition[],
+  now: Date,
+): StreakState {
+  if (streak.currentStreak <= 0) return streak
+  if (!streak.lastNonNegotiableCompleteDate) {
+    return { currentStreak: 0, lastNonNegotiableCompleteDate: null }
+  }
+
+  const dayAfterLastComplete = addDaysToDateKey(
+    streak.lastNonNegotiableCompleteDate,
+    1,
+  )
+  const deadline = getStreakDayEndDeadline(dayAfterLastComplete, definitions)
+
+  if (now.getTime() < deadline.getTime()) return streak
+
+  return {
+    currentStreak: 0,
+    lastNonNegotiableCompleteDate: streak.lastNonNegotiableCompleteDate,
   }
 }
 
 /**
- * Resolves streak state from current quest completion.
- * Called after every quest completion and on persistence rehydrate.
+ * Resolves streak state from current quest completion and day-end expiry.
+ * Called after every quest completion, on timed-quest evaluation, on period
+ * resets, and on persistence rehydrate.
  *
  * Streak advances only when every non-negotiable quest required *today*
  * (weekday/weekend-aware) is complete. Daily bonus, weekly, and special
  * quests never affect it.
+ *
+ * Streak breaks to 0 as soon as the day after `lastNonNegotiableCompleteDate`
+ * ends without being completed (Sleep grace deadline when Sleep is required
+ * that day; otherwise midnight) — not later when a new streak is started.
  */
 export function resolveStreakState(
   quests: QuestState[],
@@ -238,20 +264,27 @@ export function resolveStreakState(
   streak: StreakState,
   now: Date = getCurrentGameTime(),
 ): StreakState {
-  const today = formatDateKey(now)
+  streak = expireStreakIfDayEnded(streak, definitions, now)
+
+  const today = getActiveQuestDayKey(definitions, now)
+  const questDay = parseDateKey(today)
   const nonNegotiable = getNonNegotiableCompletionStatus(
     quests,
     definitions,
-    now,
+    questDay,
   )
 
   if (!nonNegotiable.allComplete) {
     // Clear a stale "completed today" marker left by legacy data or partial resets.
     if (streak.lastNonNegotiableCompleteDate === today) {
-      return {
-        currentStreak: streak.currentStreak,
-        lastNonNegotiableCompleteDate: null,
-      }
+      return expireStreakIfDayEnded(
+        {
+          currentStreak: streak.currentStreak,
+          lastNonNegotiableCompleteDate: null,
+        },
+        definitions,
+        now,
+      )
     }
     return streak
   }
@@ -260,9 +293,7 @@ export function resolveStreakState(
     return streak
   }
 
-  const yesterdayDate = new Date(now)
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
-  const yesterday = formatDateKey(yesterdayDate)
+  const yesterday = addDaysToDateKey(today, -1)
 
   const newStreak =
     streak.lastNonNegotiableCompleteDate === yesterday
@@ -291,11 +322,14 @@ export function processQuestCompletion(
   const questState = findQuestState(quests, questId)
   const definition = findQuestDefinition(definitions, questId)
 
+  const dayKey = getActiveQuestDayKey(definitions, now)
+  const questDay = parseDateKey(dayKey)
+
   if (
     !questState ||
     !definition ||
     questState.status !== 'available' ||
-    !isQuestActiveOn(definition, now)
+    !isQuestActiveOn(definition, questDay)
   ) {
     return null
   }

@@ -1,6 +1,6 @@
 # Economy System
 
-Version: 0.1
+Version: 0.2 (aligned with Ascendant v0.0.2)
 
 ---
 
@@ -14,129 +14,61 @@ It should enhance progression without replacing real achievement.
 
 # Currency
 
-Initial currency:
-
-Gold
+Initial currency: **Gold** (`Hero.currency`)
 
 ---
 
-# Sources
+# Current Sources (v0.0.2)
 
-## Daily Completion
+Gold is earned from:
 
-Reward:
+1. **Per-quest `currencyReward`** — some quests grant gold directly (see `src/data/quests.ts`)
+2. **Category / subcategory completion bonuses** (`src/data/completionRewards.ts`):
+   - Morning Routine / Nutrition / Evening Routine: +1 gold each
+   - Weekly: +1
+   - Weekly Bonus: +2
+   - Special: +3
+3. **Achievement rewards** — gold granted once when an achievement unlocks
 
-$1
-
----
-
-## Weekly Quest
-
-Reward:
-
-$1
-
----
-
-## Weekly Bonus
-
-Reward:
-
-$2
-
----
-
-## Special Quest
-
-Reward:
-
-$3
+Lifetime total gold earned is tracked in `Hero.lifetimeStats.totalGoldEarned` (includes quest and achievement gold).
 
 ---
 
 # Uses
 
-Gold can purchase:
+**Not implemented yet.** Designed spending targets (primarily **v0.1.x** with equipment / world systems):
 
-## Equipment
+## Equipment (future — v0.1.x)
 
-Examples:
+Examples: Training Gloves, Scholar's Tome, Focus Charm
 
-- Training Gloves
+## Cosmetics (future)
 
-- Scholar's Tome
+Examples: Titles, profile backgrounds, visual effects
 
-- Focus Charm
+## Convenience (future)
 
----
-
-## Cosmetics
-
-Examples:
-
-- Titles
-
-- Profile backgrounds
-
-- Visual effects
-
----
-
-## Convenience
-
-Examples:
-
-- Extra customization
-
-- Tracking tools
+Examples: Extra customization, tracking tools
 
 ---
 
 # Avoid
 
-Do not create systems where:
-
-Money replaces effort.
+Do not create systems where money replaces effort.
 
 The player should still need to complete real actions.
 
 ---
 
-# Equipment
+# Equipment (future — v0.1.x)
 
-Equipment modifies stats.
-
-Example:
-
-Training Gloves:
-
-+Strength
-
-Scholar's Tome:
-
-+Intellect
-
-Focus Charm:
-
-+Willpower
+Equipment would modify stats. Not implemented. See also `COMBAT.md` / `IMPLEMENTATION_PLAN.md` v0.1.x.
 
 ---
 
-# Rarity
+# Rarity (future)
 
-Possible rarity system:
-
-Common
-
-Uncommon
-
-Rare
-
-Epic
-
-Legendary
-
-Mythic
+Possible rarity system: Common → Mythic. Achievement rarity already exists for presentation; item rarity does not.
 
 ---
 
@@ -145,11 +77,8 @@ Mythic
 Possible additions:
 
 - Crafting
-
 - Shops
-
 - Trading
-
-- Achievement rewards
-
 - Seasonal events
+
+Achievement XP/Gold rewards are **already implemented**; titles/items/cosmetics from achievements remain future.

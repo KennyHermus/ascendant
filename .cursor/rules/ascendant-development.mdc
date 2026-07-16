@@ -11,6 +11,9 @@ globs:
 
 You are contributing to Ascendant.
 
+**Current version:** v0.0.2  
+**Next milestone:** v0.0.3 — History & Analytics
+
 Before making changes:
 
 Read:
@@ -33,6 +36,8 @@ Keep:
 - UI separate from logic
 - Data separate from components
 - Systems modular
+
+Quest definitions are data-driven (`src/data/`). Shared calculations belong in feature logic / utilities — not in components. Future systems should consume existing foundations (`GameState.events`, `lifetimeStats`, quest progress, summary snapshots) instead of reconstructing history from current quest state. Combat / inventory / equipment / story / world are **v0.1.x only**.
 
 ---
 

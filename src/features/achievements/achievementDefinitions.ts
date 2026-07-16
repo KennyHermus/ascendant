@@ -1,0 +1,262 @@
+import type { AchievementDefinition } from '@/types/achievement'
+
+/**
+ * Data-driven Achievement catalog — every achievement is declared here as
+ * plain data; nothing in `achievementLogic.ts` or the UI components
+ * hardcodes an achievement's id, thresholds, or copy. Adding a new
+ * achievement (or retuning a threshold/reward) is a change to this array
+ * only.
+ *
+ * Quest ids referenced by `questCompletionCount` conditions come from
+ * `data/quests.ts` — if a quest is ever renamed, update the id here the
+ * same way any other quest-id rename is handled (see
+ * `lib/migrations/migrations.ts`).
+ */
+export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
+  // ── Progression ──────────────────────────────────────────────────────
+  {
+    id: 'first-level',
+    name: 'First Level',
+    description: 'Reach Level 2 — your first taste of growth.',
+    category: 'progression',
+    icon: '🌱',
+    rarity: 'common',
+    reward: [{ type: 'xp', amount: 10 }, { type: 'gold', amount: 2 }],
+    condition: { type: 'heroLevel', level: 2 },
+  },
+  {
+    id: 'level-5',
+    name: 'Rising Hero',
+    description: 'Reach Level 5.',
+    category: 'progression',
+    icon: '⭐',
+    rarity: 'uncommon',
+    reward: [{ type: 'xp', amount: 25 }, { type: 'gold', amount: 5 }],
+    condition: { type: 'heroLevel', level: 5 },
+  },
+  {
+    id: 'level-10',
+    name: 'Seasoned Adventurer',
+    description: 'Reach Level 10.',
+    category: 'progression',
+    icon: '🌟',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 50 }, { type: 'gold', amount: 10 }],
+    condition: { type: 'heroLevel', level: 10 },
+  },
+  {
+    id: 'level-25',
+    name: 'Veteran of the Path',
+    description: 'Reach Level 25.',
+    category: 'progression',
+    icon: '💫',
+    rarity: 'epic',
+    reward: [{ type: 'xp', amount: 150 }, { type: 'gold', amount: 30 }],
+    condition: { type: 'heroLevel', level: 25 },
+  },
+
+  // ── Consistency ──────────────────────────────────────────────────────
+  {
+    id: 'first-streak',
+    name: 'First Streak',
+    description: 'Complete every non-negotiable in a single day.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'common',
+    reward: [{ type: 'xp', amount: 5 }, { type: 'gold', amount: 2 }],
+    condition: { type: 'longestStreak', days: 1 },
+  },
+  {
+    id: 'streak-3',
+    name: '3 Day Streak',
+    description: 'Maintain a 3-day streak.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'common',
+    reward: [{ type: 'xp', amount: 10 }, { type: 'gold', amount: 3 }],
+    condition: { type: 'longestStreak', days: 3 },
+  },
+  {
+    id: 'streak-7',
+    name: '7 Day Streak',
+    description: 'Maintain a 7-day streak.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'uncommon',
+    reward: [{ type: 'xp', amount: 25 }, { type: 'gold', amount: 5 }],
+    condition: { type: 'longestStreak', days: 7 },
+  },
+  {
+    id: 'streak-14',
+    name: '14 Day Streak',
+    description: 'Maintain a 14-day streak.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 50 }, { type: 'gold', amount: 10 }],
+    condition: { type: 'longestStreak', days: 14 },
+  },
+  {
+    id: 'streak-30',
+    name: '30 Day Streak',
+    description: 'Maintain a 30-day streak.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'epic',
+    reward: [{ type: 'xp', amount: 100 }, { type: 'gold', amount: 25 }],
+    condition: { type: 'longestStreak', days: 30 },
+  },
+  {
+    id: 'streak-90',
+    name: '90 Day Streak',
+    description: 'Maintain a 90-day streak.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'legendary',
+    reward: [{ type: 'xp', amount: 300 }, { type: 'gold', amount: 75 }],
+    condition: { type: 'longestStreak', days: 90 },
+  },
+  {
+    id: 'streak-365',
+    name: '365 Day Streak',
+    description: 'Maintain a full year-long streak.',
+    category: 'consistency',
+    icon: '🔥',
+    rarity: 'legendary',
+    reward: [{ type: 'xp', amount: 1000 }, { type: 'gold', amount: 250 }],
+    condition: { type: 'longestStreak', days: 365 },
+  },
+
+  // ── Quests ───────────────────────────────────────────────────────────
+  {
+    id: 'first-quest',
+    name: 'First Quest',
+    description: 'Complete your first quest.',
+    category: 'quests',
+    icon: '✅',
+    rarity: 'common',
+    reward: [{ type: 'xp', amount: 5 }, { type: 'gold', amount: 2 }],
+    condition: { type: 'totalQuestsCompleted', count: 1 },
+  },
+  {
+    id: 'quests-100',
+    name: 'Dedicated',
+    description: 'Complete 100 quests.',
+    category: 'quests',
+    icon: '📋',
+    rarity: 'uncommon',
+    reward: [{ type: 'xp', amount: 50 }, { type: 'gold', amount: 10 }],
+    condition: { type: 'totalQuestsCompleted', count: 100 },
+  },
+  {
+    id: 'quests-500',
+    name: 'Relentless',
+    description: 'Complete 500 quests.',
+    category: 'quests',
+    icon: '📋',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 150 }, { type: 'gold', amount: 30 }],
+    condition: { type: 'totalQuestsCompleted', count: 500 },
+  },
+  {
+    id: 'quests-1000',
+    name: 'Unstoppable',
+    description: 'Complete 1000 quests.',
+    category: 'quests',
+    icon: '📋',
+    rarity: 'epic',
+    reward: [{ type: 'xp', amount: 400 }, { type: 'gold', amount: 75 }],
+    condition: { type: 'totalQuestsCompleted', count: 1000 },
+  },
+
+  // ── Fitness ──────────────────────────────────────────────────────────
+  {
+    id: 'workouts-100',
+    name: '100 Workouts',
+    description: 'Complete 100 Workout sessions.',
+    category: 'fitness',
+    icon: '💪',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 100 }, { type: 'gold', amount: 20 }],
+    condition: { type: 'questCompletionCount', questIds: ['workout'], count: 100 },
+  },
+  {
+    id: 'walks-100',
+    name: '100 Walks',
+    description: 'Complete 100 Morning or Evening Walks combined.',
+    category: 'fitness',
+    icon: '🏃',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 100 }, { type: 'gold', amount: 20 }],
+    condition: {
+      type: 'questCompletionCount',
+      questIds: ['morning-walk', 'evening-walk'],
+      count: 100,
+    },
+  },
+
+  // ── Learning ─────────────────────────────────────────────────────────
+  {
+    id: 'learning-sessions-100',
+    name: '100 Learning Sessions',
+    description: 'Complete 100 Learning / Work sessions.',
+    category: 'learning',
+    icon: '🧠',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 100 }, { type: 'gold', amount: 20 }],
+    condition: { type: 'questCompletionCount', questIds: ['learning-work'], count: 100 },
+  },
+  {
+    id: 'duolingo-100',
+    name: '100 Duolingo Lessons',
+    description: 'Complete 100 Duolingo lessons.',
+    category: 'learning',
+    icon: '📚',
+    rarity: 'rare',
+    reward: [{ type: 'xp', amount: 100 }, { type: 'gold', amount: 20 }],
+    condition: { type: 'questCompletionCount', questIds: ['duolingo'], count: 100 },
+  },
+
+  // ── Special ──────────────────────────────────────────────────────────
+  {
+    id: 'first-timed-quest',
+    name: 'Beat the Clock',
+    description: 'Complete a quest with a deadline before it expires.',
+    category: 'special',
+    icon: '⏱️',
+    rarity: 'common',
+    reward: [{ type: 'xp', amount: 10 }, { type: 'gold', amount: 2 }],
+    condition: { type: 'timedQuestCompleted' },
+  },
+  {
+    id: 'every-non-negotiable',
+    name: 'Fully Committed',
+    description: 'Complete every non-negotiable quest required in a single day.',
+    category: 'special',
+    icon: '🛡️',
+    rarity: 'uncommon',
+    reward: [{ type: 'xp', amount: 20 }, { type: 'gold', amount: 5 }],
+    condition: { type: 'categoryCompletedInDay', category: 'nonNegotiable' },
+  },
+  {
+    id: 'every-daily-bonus',
+    name: 'Above and Beyond',
+    description: 'Complete every Daily Bonus quest in a single day.',
+    category: 'special',
+    icon: '🎯',
+    rarity: 'uncommon',
+    reward: [{ type: 'xp', amount: 20 }, { type: 'gold', amount: 5 }],
+    condition: { type: 'categoryCompletedInDay', category: 'dailyBonus' },
+  },
+  {
+    id: 'perfect-day',
+    name: 'Perfect Day',
+    description: 'Complete every Non-Negotiable and every Daily Bonus quest in the same day.',
+    category: 'special',
+    icon: '👑',
+    hidden: true,
+    rarity: 'epic',
+    reward: [{ type: 'xp', amount: 75 }, { type: 'gold', amount: 15 }],
+    condition: { type: 'perfectDay' },
+  },
+]
