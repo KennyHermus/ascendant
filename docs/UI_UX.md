@@ -197,3 +197,17 @@ Support:
 - Readable text
 
 - Reduced motion settings
+
+---
+
+# Implementation Notes (v0.0.2 Polish Pass)
+
+The dashboard follows a fixed top-to-bottom flow, closest-to-character-identity first:
+
+1. Hero Summary (name, level, XP, gold, streak)
+2. Today's Progress (subcategory completion badges)
+3. Unlocks (earned access, feels like abilities unlocking)
+4. Quests — collapsible by category/subcategory, so daily use doesn't require scrolling past sections you're not touching that day
+5. Attributes (deepest character detail, lowest priority to see first)
+
+Quest categories use a generic, reusable `Accordion` component (`src/components/Accordion.tsx`), not a quest-specific one — it's meant to be reused for inventory, skill trees, achievements, and story chapters later. Non-Negotiables (and its subcategories) default to expanded, since that's the daily checklist; everything else defaults to collapsed to reduce clutter. Expanded/collapsed state is remembered across refreshes via its own `localStorage` namespace, kept separate from save data.

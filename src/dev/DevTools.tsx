@@ -1,13 +1,11 @@
 import { useSyncExternalStore } from 'react'
 
 import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
+import { QuestTestingTools } from '@/dev/QuestTestingTools'
 import { getXpProgress } from '@/features/progression/progressionLogic'
 import {
-  advanceSimulatedGameTime,
-  clearSimulatedGameTime,
   getGameTimeSnapshot,
   isGameTimeSimulated,
-  setSimulatedGameTime,
   subscribeToGameTimeChanges,
 } from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
@@ -37,13 +35,21 @@ function formatDisplayTime(date: Date): string {
 
 /**
  * Developer-only time simulation controls. Every action re-runs the same
- * evaluation pipeline used for real load/resume events (period resets +
- * timed quest sweep) so quest state reflects the new time immediately —
- * no background timers involved.
+ * evaluation pipeline used for real load/resume events (period resets,
+ * timed quest sweep, unlock recompute) so quest/unlock state reflects the
+ * new time immediately — no background timers involved.
+ *
+ * Mutations go through the store's `dev*SimulatedTime` actions (not
+ * `lib/gameTime.ts`'s setters directly) so the override is persisted and
+ * survives a refresh — see `GameState.devSimulatedTime`.
  */
 function TimeSimulationTools() {
   const applyPeriodResets = useGameStore((s) => s.applyPeriodResets)
   const evaluateTimedQuests = useGameStore((s) => s.evaluateTimedQuests)
+  const evaluateUnlocks = useGameStore((s) => s.evaluateUnlocks)
+  const devSetSimulatedTime = useGameStore((s) => s.devSetSimulatedTime)
+  const devAdvanceSimulatedTime = useGameStore((s) => s.devAdvanceSimulatedTime)
+  const devClearSimulatedTime = useGameStore((s) => s.devClearSimulatedTime)
 
   const now = useSyncExternalStore(
     subscribeToGameTimeChanges,
@@ -57,30 +63,31 @@ function TimeSimulationTools() {
   function reEvaluate() {
     applyPeriodResets()
     evaluateTimedQuests()
+    evaluateUnlocks()
   }
 
   function handleAdvance(ms: number) {
-    advanceSimulatedGameTime(ms)
+    devAdvanceSimulatedTime(ms)
     reEvaluate()
   }
 
   function handleSetCustomTime(value: string) {
     if (!value) return
-    setSimulatedGameTime(new Date(value))
+    devSetSimulatedTime(new Date(value))
     reEvaluate()
   }
 
   function handleToggle() {
     if (simulated) {
-      clearSimulatedGameTime()
+      devClearSimulatedTime()
     } else {
-      setSimulatedGameTime(new Date())
+      devSetSimulatedTime(new Date())
     }
     reEvaluate()
   }
 
   function handleResetToRealTime() {
-    clearSimulatedGameTime()
+    devClearSimulatedTime()
     reEvaluate()
   }
 
@@ -188,6 +195,7 @@ export function DevTools() {
       </div>
 
       <TimeSimulationTools />
+      <QuestTestingTools />
     </div>
   )
 }

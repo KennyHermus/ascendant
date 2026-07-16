@@ -7,6 +7,7 @@ import { HeroCard } from '@/features/hero/HeroCard'
 import { StatsPanel } from '@/features/hero/StatsPanel'
 import { getQuestProgressSummary } from '@/features/quests/questLogic'
 import { QuestList } from '@/features/quests/QuestList'
+import { UnlockList } from '@/features/unlocks/UnlockList'
 import { getCurrentGameTime } from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
 
@@ -17,6 +18,7 @@ export function Dashboard() {
   const completeQuest = useGameStore((s) => s.completeQuest)
   const applyPeriodResets = useGameStore((s) => s.applyPeriodResets)
   const evaluateTimedQuests = useGameStore((s) => s.evaluateTimedQuests)
+  const evaluateUnlocks = useGameStore((s) => s.evaluateUnlocks)
 
   const progress = useMemo(
     () => getQuestProgressSummary(quests, QUEST_DEFINITIONS, getCurrentGameTime()),
@@ -26,7 +28,8 @@ export function Dashboard() {
   useEffect(() => {
     applyPeriodResets()
     evaluateTimedQuests()
-  }, [applyPeriodResets, evaluateTimedQuests])
+    evaluateUnlocks()
+  }, [applyPeriodResets, evaluateTimedQuests, evaluateUnlocks])
 
   // No background timers — re-evaluate timed quests only when the tab
   // regains focus (app "resumes after being inactive").
@@ -35,13 +38,14 @@ export function Dashboard() {
       if (document.visibilityState === 'visible') {
         applyPeriodResets()
         evaluateTimedQuests()
+        evaluateUnlocks()
       }
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () =>
       document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [applyPeriodResets, evaluateTimedQuests])
+  }, [applyPeriodResets, evaluateTimedQuests, evaluateUnlocks])
 
   return (
     <main className="mx-auto min-h-svh max-w-2xl px-4 py-6">
@@ -53,14 +57,11 @@ export function Dashboard() {
       </header>
 
       <div className="space-y-5">
-        <HeroCard hero={hero} />
-        <StatsPanel stats={hero.stats} />
+        <HeroCard hero={hero} currentStreak={currentStreak} />
+        <ProgressSummary progress={progress} />
+        <UnlockList quests={quests} />
         <QuestList quests={quests} onComplete={completeQuest} />
-        <ProgressSummary
-          currency={hero.currency}
-          currentStreak={currentStreak}
-          progress={progress}
-        />
+        <StatsPanel stats={hero.stats} />
 
         {import.meta.env.DEV && <DevToolsLazy />}
       </div>

@@ -72,33 +72,53 @@ function questsEqual(a: QuestState[], b: QuestState[]): boolean {
 }
 
 /**
- * Transitions `available` timed quests whose deadline has passed to `missed`.
- * Pure and side-effect free; callers persist the result if it differs.
+ * Reconciles `available`/`missed` timed-quest status against the current
+ * timing evaluation, in *both* directions:
+ *  - `available` quests whose deadline has passed become `missed`.
+ *  - `missed` quests whose deadline is no longer passed become `available`
+ *    again.
  *
- * Called on app load, tab resume, and refresh — never on a background timer.
+ * The second direction can't happen from real time passing (time only moves
+ * forward), but it's reachable through the dev time-simulation tool moving
+ * the clock backward — e.g. rewinding past a quest's deadline after it was
+ * already swept to `missed`. `missed` isn't independent state; it's a pure
+ * function of "is this quest, right now, past its deadline and not yet
+ * completed" — this sweep IS the only thing that ever sets or clears it, so
+ * treating it as re-derivable rather than sticky keeps displayed state
+ * always consistent with the current clock. `completed` quests are never
+ * touched, timing or not.
+ *
+ * Pure and side-effect free; callers persist the result if it differs.
+ * Called on app load, tab resume, refresh, quest completion, and every dev
+ * time-simulation action — never on a background timer.
  */
-export function sweepExpiredTimedQuests(
+export function reconcileTimedQuestStatuses(
   quests: QuestState[],
   definitions: QuestDefinition[],
   now: Date = getCurrentGameTime(),
 ): QuestState[] {
   const definitionMap = new Map(definitions.map((d) => [d.id, d]))
 
-  const swept = quests.map((quest) => {
-    if (quest.status !== 'available') return quest
+  const reconciled = quests.map((quest) => {
+    if (quest.status === 'completed') return quest
 
     const definition = definitionMap.get(quest.id)
     if (!definition?.timing) return quest
 
     const timing = evaluateQuestTiming(definition.timing, now)
-    if (timing.phase === 'expired') {
+    const shouldBeMissed = timing.phase === 'expired'
+
+    if (shouldBeMissed && quest.status !== 'missed') {
       return { ...quest, status: 'missed' as const }
+    }
+    if (!shouldBeMissed && quest.status === 'missed') {
+      return { ...quest, status: 'available' as const }
     }
 
     return quest
   })
 
-  return questsEqual(swept, quests) ? quests : swept
+  return questsEqual(reconciled, quests) ? quests : reconciled
 }
 
 export function formatTargetTime(targetTime: string): string {

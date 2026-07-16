@@ -94,7 +94,7 @@ v0.0.2 was developed as two features shipped together under the same save versio
 Timing evaluation (`src/features/quests/questTiming.ts`) is deliberately independent of quest status:
 
 - `evaluateQuestTiming()` — pure function returning the current phase (`onTime` / `inGracePeriod` / `expired`) for display/urgency purposes.
-- `sweepExpiredTimedQuests()` — transitions `available` quests past their deadline to `missed`.
+- `reconcileTimedQuestStatuses()` — transitions `available` quests past their deadline to `missed`, *and* reverts `missed` quests back to `available` if the deadline is no longer passed (only reachable via the dev time-simulation tool moving the clock backward — `missed` is re-derived from the clock every time, not sticky, so displayed state can never disagree with "is this actually past its deadline right now").
 
 "Grace Period" is a timing phase, not a quest status — the status enum stays exactly `available` / `completed` / `missed` per the game design docs.
 
@@ -150,6 +150,85 @@ Because `getTodayDateString()`, `getWeekKey()`, and the default `now` parameters
 ### Migration
 
 Renames 3 quest ids (`walk`→`morning-walk`, `bible-reading`→`bible`, `extra-learning`→`read`) to preserve their status, remaps `completionRewardClaims` (old `dailyCore` claim is dropped in favor of 3 fresh subcategory claims; `weekly`/`weeklyBonus`/`special` carry over), and renames `lastDailyCoreCompleteDate` → `lastNonNegotiableCompleteDate`. Hero level/XP/currency/stats are untouched. New quests with no prior persisted state initialize to `available` automatically via the existing `mergeQuestStates()` fallback — no special-casing needed for quests that didn't previously exist. See the `normalizeShape()` note above for why this runs independent of the version check.
+
+---
+
+## Feature 2 — Unlock Quests (also v0.0.2)
+
+### A separate domain, not a quest flag
+
+Unlocks live entirely outside the quest system: `src/types/unlock.ts` (`UnlockDefinition`, `UnlockRequirement`, `UnlockState`), `src/data/unlocks.ts` (the 5 definitions), and `src/features/unlocks/unlockLogic.ts` (pure evaluation). `QuestDefinition` and `QuestState` are untouched by this feature.
+
+`UnlockRequirement` is a discriminated union on `type`:
+
+```
+UnlockRequirement =
+  | { type: 'questCompletion', questId: string }
+  | { type: 'groupCompletion', group: CompletionRewardKey }
+```
+
+`groupCompletion` reuses `getGroupCompletionStatus()` from `questLogic.ts` (the same reward-group machinery backing subcategory completion bonuses) rather than duplicating a "these 5 quest IDs" check for Netflix's "all Morning Routine complete" requirement. Adding a future requirement kind (achievement, level, currency, story flag, equipment) means adding one case to the union and one branch in `checkRequirement()`/`describeRequirement()` — no changes to existing requirement types, `UnlockDefinition` data, or UI components.
+
+### Pure logic, UI only displays results
+
+`unlockLogic.ts` exports:
+
+- `checkUnlockRequirements(definition, quests, questDefinitions, now?)` — boolean, all requirements met.
+- `getUnlockStatus(definition, quests, questDefinitions, now?)` — full display data: overall `unlocked` plus a per-requirement `{ met, label }` list (e.g. `"Rehab incomplete"` / `"Rehab complete"`).
+- `evaluateUnlocks(definitions, quests, questDefinitions, now?)` — recomputes every `UnlockState` from scratch.
+- `createInitialUnlockStates()` / `mergeUnlockStates()` — same shape as `createQuestStates()` / `mergeQuestStates()`.
+
+`UnlockCard.tsx` / `UnlockList.tsx` (in `src/features/unlocks/`) only call `getUnlockStatus()` and render the result — no requirement checks live in a component.
+
+### Recompute, not claim-once
+
+Unlike category completion rewards (`completionRewardClaims`, granted once per period and tracked so they can't repeat), unlocks are **re-evaluated** every time relevant state changes, and can re-lock. The store's `evaluateUnlocks()` action is called inline (in the same `set()`) right after `completeQuest` and `applyPeriodResets` change quest state, and again on `onRehydrateStorage`. This means completing "Rehab" unlocks YouTube immediately, and the next daily reset (which returns Rehab to `available`) re-locks it — matching the "earn access each day" framing in `docs/QUESTS.md`, and confirmed by the testing checklist (reset day → unlock recalculates).
+
+### State & persistence — no migration required
+
+`GameState` gained one field: `unlocks: UnlockState[]`. This was evaluated against the "save schema version vs. app version" distinction and did **not** warrant a migration:
+
+- Old saves simply don't have `unlocks` — `saved.unlocks` is `undefined`.
+- `merge()` calls `mergeUnlockStates(saved.unlocks, UNLOCK_DEFINITIONS)`, which does `persisted ?? []` and defaults every definition to `unlocked: false` if there's no persisted entry for it.
+- `onRehydrateStorage` immediately calls `evaluateUnlocks()` afterward, which recomputes every unlock from the save's own (already-migrated) quest data — so the "all locked" default from the merge step is corrected within the same load, before first render.
+- `CURRENT_SAVE_VERSION` stays `"0.0.2"`; `MIGRATIONS` in `src/lib/migrations/migrations.ts` gained no new entry.
+
+**When a future feature *should* bump the save version**: if a change alters the *meaning* or *shape* of already-persisted fields in a way that can't be safely defaulted (e.g. renaming/restructuring `QuestState`, splitting `Hero.stats`, or introducing a requirement type whose persisted `unlocked` flag must NOT be freshly recomputed — e.g. a future "currency purchase" unlock that should stay unlocked even after currency is spent below the threshold, unlike the current recompute-based types). That kind of change is additive to `MIGRATIONS` — one new entry plus a `CURRENT_SAVE_VERSION` bump, per the existing versioning system; no other files need to change.
+
+---
+
+## v0.0.2 Polish Pass — Persisted Dev Time, Dev Quest Tools, Dashboard Reorg
+
+Three independent changes, still under save version `0.0.2` (see save-schema reasoning below — the one new field defaults safely, same pattern as `unlocks`).
+
+### Persisted developer time simulation
+
+Previously, `lib/gameTime.ts`'s `overrideTime` was purely in-memory and reset to real time on every refresh. It's now backed by one new persisted field, `GameState.devSimulatedTime: string | null` (ISO string or `null`):
+
+- `gameTime.ts` itself is **unchanged** — still a small, framework-agnostic module with no knowledge of Zustand or persistence, per the original design constraint. It remains the single in-memory runtime authority (`getCurrentGameTime()` etc.) that the rest of the app calls.
+- The store owns persistence. Three new actions — `devSetSimulatedTime`, `devAdvanceSimulatedTime`, `devClearSimulatedTime` — call `gameTime.ts`'s existing setters *and* mirror the result into `devSimulatedTime` in the same action, so there's exactly one persisted representation and no risk of the two drifting apart.
+- On rehydrate, `persist`'s `merge()` function primes `gameTime.ts`'s in-memory override from `saved.devSimulatedTime` *before* computing anything date-dependent (including its own streak resolution, and everything `onRehydrateStorage` runs afterward) — otherwise the very first evaluation after a refresh would briefly use real time before snapping to simulated time. A malformed/unparseable stored date is ignored rather than propagated as an `Invalid Date`.
+- `DevTools.tsx`'s `TimeSimulationTools` now calls the three store actions instead of `gameTime.ts`'s setters directly, so every time change is automatically persisted.
+- Resetting to real time (`devClearSimulatedTime`) sets `devSimulatedTime: null`, so a refresh afterward stays on real time.
+- `resetProgress()` (`createInitialState()`) deliberately **re-reads** the live override via `getSimulatedTimeOverride()` rather than hardcoding `null` — resetting player progress is orthogonal to a developer's active time simulation, so it doesn't fight it.
+- No migration: `devSimulatedTime` is `undefined` on any save predating this change; `merge()` defaults it to `null` (real time), identical in spirit to how `unlocks` was defaulted in the prior feature.
+
+### Developer quest testing tools (`src/dev/QuestTestingTools.tsx`)
+
+Bulk actions for faster manual testing, kept entirely inside the existing dev-only architecture (`src/dev/`, lazy-loaded, guarded by `import.meta.env.DEV`):
+
+- **Bulk complete** (`devCompleteGroup(category, subcategory?)`) loops `get().completeQuest(id)` over every quest in the target category/subcategory. It never writes quest state directly — each iteration re-reads fresh state through the same action a player's click uses, so XP, gold, stats, streak, and unlocks all accumulate exactly as if each card were clicked individually. Quests that are already completed/missed/inactive today are silently skipped by `completeQuest`'s own guard.
+- **Reset Daily/Weekly Quests** (`devResetDailyQuests` / `devResetWeeklyQuests`) reuse a new shared helper, `computeResetPatch()`, extracted from `applyPeriodResets`'s body — it runs the exact same `resetQuestsForPeriod` → `resetCompletionClaims` → `resolveStreakState` → `evaluateUnlocks` sequence, just force-triggered instead of gated on `lastDailyResetDate`/`lastWeeklyResetWeek`. Those two bookkeeping fields are deliberately left untouched by the forced dev reset, so it stays orthogonal to the real date-based gate (no double-reset risk if the automatic reset fires later the same day).
+- **Reset All Quests** (`devResetAllQuests`) is a genuinely testing-only operation: it resets every quest to `available` including `special`, which the real reset pipeline intentionally never touches. Its pure helper (`resetAllQuestsForTesting`) lives in `src/dev/devQuestActions.ts`, not `questLogic.ts`, so this shortcut can never be reached from production logic.
+- **Reset Streak** (`devResetStreak`) just zeroes `currentStreak`/`lastNonNegotiableCompleteDate` directly.
+
+### Dashboard reorganization & the `Accordion` component
+
+`src/components/Accordion.tsx` is a new, generic, feature-agnostic collapsible section (title, optional completion-count `meta` badge, optional expand/collapse persistence) — not quest-specific, so it's intended for reuse by future grouped content (inventory, skill trees, achievements, story chapters).
+
+- Its expanded/collapsed state is persisted via its own `localStorage` namespace (`ascendant-accordion:<persistKey>`), completely decoupled from `GameState`/the save schema. Expand/collapse is a UI display preference, not save data — this keeps `docs/ARCHITECTURE.md`'s "game logic separate from UI" rule intact and means no migration path is ever needed for it.
+- `QuestList.tsx` is rebuilt on top of it: Non-Negotiables (and its three subcategories) default to expanded; Daily Bonus, Weekly, Weekly Bonus, and Special default to collapsed. Category/subcategory display labels were deduplicated into `src/data/questLabels.ts` (previously only defined inline in `QuestList.tsx`), now shared by both the player-facing quest list and `QuestTestingTools`.
+- Dashboard order became: Hero Summary (name, level, XP, gold, streak — gold/streak moved from `ProgressSummary` into `HeroCard`) → Today's Progress (subcategory completion badges, `ProgressSummary` stripped of gold/streak) → Unlocks → Quests (accordion) → Attributes → dev tools.
 
 ---
 

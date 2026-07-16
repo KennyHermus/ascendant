@@ -70,59 +70,55 @@ The player proves discipline before accessing rewards.
 
 ---
 
-# Example Unlock Chain
+# Unlocks (v0.0.2 — Feature 2)
 
-## Messages
+Unlocks are a separate domain from quests — they are never stored as quest data, and the UI never hardcodes a quest check. Instead, an `UnlockDefinition` lists one or more requirements, and a pure logic layer evaluates them against current quest state.
 
-Requirement:
+```
+UnlockRequirement =
+  | { type: 'questCompletion', questId: string }
+  | { type: 'groupCompletion', group: CompletionRewardKey }  // e.g. 'morningRoutine'
 
-Complete:
+UnlockDefinition {
+  id
+  name
+  description
+  target          // display name of the gated activity
+  requirements: UnlockRequirement[]   // ALL must be met
+}
+```
 
-- Core
+The `type` discriminator is what keeps this extensible: future requirement kinds (achievements, level thresholds, currency cost, story flags, equipment) are additive, not a rewrite of existing checks or UI.
 
-- Rehab
+## Current Unlocks
 
-- Walk
+### Messages
 
-Restriction:
+Requirement: Morning Walk and Core complete.
 
-Do Not Disturb active during:
+### YouTube
 
-- Work hours
+Requirement: Rehab complete.
 
-- Until noon on weekends
+### Gaming
 
----
+Requirement: Learning / Work complete.
 
-## YouTube
+### Social Media
 
-Requirement:
+Requirement: Workout complete.
 
-Workout complete
+### Netflix
 
----
+Requirement: All Morning Routine non-negotiables complete (reuses the existing `morningRoutine` reward-group completion check — no separate hardcoded quest-ID list).
 
-## Gaming
+## Recompute, Not Claim-Once
 
-Requirement:
+Unlocks are **not** a one-time achievement. They are recomputed from current quest state at the same points quests themselves are evaluated (app load/rehydrate, tab resume, quest completion, and period resets). This means an unlock re-locks if its underlying quest requirement reverts to incomplete — most notably, after the daily reset returns a non-negotiable quest to `available`. This matches the original design intent above: entertainment is unlocked *daily* by proving discipline that day, not permanently.
 
-Learning or Work complete
+## Persistence
 
----
-
-## Social Media
-
-Requirement:
-
-Duolingo complete
-
----
-
-## Netflix
-
-Requirement:
-
-All daily core quests complete
+Unlock states persist in `GameState.unlocks`. Since old saves predate this feature, `saved.unlocks` is simply `undefined` on load — it defaults safely to all-locked and is immediately recomputed from the save's own quest data on rehydrate. No save schema migration was required for this feature.
 
 ---
 

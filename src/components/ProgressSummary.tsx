@@ -1,8 +1,6 @@
 import type { QuestProgressSummary } from '@/features/quests/questLogic'
 
 interface ProgressSummaryProps {
-  currency: number
-  currentStreak: number
   progress: QuestProgressSummary
 }
 
@@ -37,34 +35,15 @@ function CompletionBadge({
   )
 }
 
-export function ProgressSummary({
-  currency,
-  currentStreak,
-  progress,
-}: ProgressSummaryProps) {
+export function ProgressSummary({ progress }: ProgressSummaryProps) {
   const { morningRoutine, nutrition, eveningRoutine, dailyBonus } = progress
 
   return (
     <section className="rounded-xl border border-stone-700/50 bg-stone-900/60 p-5">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-amber-400/90">
-        Progress
+        Today's Progress
       </h2>
       <dl className="grid grid-cols-2 gap-4">
-        <div className="rounded-lg border border-amber-900/30 bg-stone-950/50 px-4 py-3">
-          <dt className="text-xs text-stone-400">Gold</dt>
-          <dd className="mt-1 text-xl font-semibold text-amber-300">
-            {currency}
-          </dd>
-        </div>
-        <div className="rounded-lg border border-emerald-900/30 bg-stone-950/50 px-4 py-3">
-          <dt className="text-xs text-stone-400">Streak</dt>
-          <dd className="mt-1 text-xl font-semibold text-emerald-300">
-            {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
-          </dd>
-          <p className="mt-1 text-xs text-stone-500">
-            Requires all non-negotiables today
-          </p>
-        </div>
         <CompletionBadge
           label="Morning Routine"
           completed={morningRoutine.completed}

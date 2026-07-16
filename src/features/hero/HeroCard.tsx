@@ -4,9 +4,10 @@ import type { Hero } from '@/types/hero'
 
 interface HeroCardProps {
   hero: Hero
+  currentStreak: number
 }
 
-export function HeroCard({ hero }: HeroCardProps) {
+export function HeroCard({ hero, currentStreak }: HeroCardProps) {
   const xp = getXpProgress(hero)
 
   return (
@@ -26,6 +27,24 @@ export function HeroCard({ hero }: HeroCardProps) {
         percent={xp.percent}
         level={hero.level}
       />
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="rounded-lg border border-amber-900/30 bg-stone-950/50 px-4 py-3">
+          <dt className="text-xs text-stone-400">Gold</dt>
+          <dd className="mt-1 text-xl font-semibold text-amber-300">
+            {hero.currency}
+          </dd>
+        </div>
+        <div className="rounded-lg border border-emerald-900/30 bg-stone-950/50 px-4 py-3">
+          <dt className="text-xs text-stone-400">Streak</dt>
+          <dd className="mt-1 text-xl font-semibold text-emerald-300">
+            {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
+          </dd>
+          <p className="mt-1 text-xs text-stone-500">
+            Requires all non-negotiables today
+          </p>
+        </div>
+      </div>
     </section>
   )
 }
