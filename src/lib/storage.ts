@@ -1,15 +1,24 @@
-export const STORAGE_KEY = 'ascendant-game-v0.0.1'
+import { getCurrentGameTime } from '@/lib/gameTime'
 
-export function getTodayDateString(): string {
-  const d = new Date()
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
+/**
+ * Stable storage key. Do not embed a version in this string — the persisted
+ * shape now evolves via `src/lib/migrations`, not by changing the key.
+ */
+export const STORAGE_KEY = 'ascendant-game'
+
+export function formatDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
+export function getTodayDateString(): string {
+  return formatDateKey(getCurrentGameTime())
+}
+
 /** ISO week key: YYYY-Www */
-export function getWeekKey(date: Date = new Date()): string {
+export function getWeekKey(date: Date = getCurrentGameTime()): string {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
   const day = d.getUTCDay() || 7
   d.setUTCDate(d.getUTCDate() + 4 - day)
@@ -19,10 +28,7 @@ export function getWeekKey(date: Date = new Date()): string {
 }
 
 export function getYesterdayDateString(): string {
-  const d = new Date()
+  const d = getCurrentGameTime()
   d.setDate(d.getDate() - 1)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return formatDateKey(d)
 }

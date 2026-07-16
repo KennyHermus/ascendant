@@ -1,9 +1,9 @@
-import type { DailyCompletionStatus } from '@/features/quests/questLogic'
+import type { QuestProgressSummary } from '@/features/quests/questLogic'
 
 interface ProgressSummaryProps {
   currency: number
   currentStreak: number
-  dailyCompletion: DailyCompletionStatus
+  progress: QuestProgressSummary
 }
 
 function CompletionBadge({
@@ -40,9 +40,9 @@ function CompletionBadge({
 export function ProgressSummary({
   currency,
   currentStreak,
-  dailyCompletion,
+  progress,
 }: ProgressSummaryProps) {
-  const { dailyCore, dailyBonus } = dailyCompletion
+  const { morningRoutine, nutrition, eveningRoutine, dailyBonus } = progress
 
   return (
     <section className="rounded-xl border border-stone-700/50 bg-stone-900/60 p-5">
@@ -62,14 +62,26 @@ export function ProgressSummary({
             {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
           </dd>
           <p className="mt-1 text-xs text-stone-500">
-            Requires all daily core quests
+            Requires all non-negotiables today
           </p>
         </div>
         <CompletionBadge
-          label="Daily Core"
-          completed={dailyCore.completed}
-          total={dailyCore.total}
-          allComplete={dailyCore.allComplete}
+          label="Morning Routine"
+          completed={morningRoutine.completed}
+          total={morningRoutine.total}
+          allComplete={morningRoutine.allComplete}
+        />
+        <CompletionBadge
+          label="Nutrition"
+          completed={nutrition.completed}
+          total={nutrition.total}
+          allComplete={nutrition.allComplete}
+        />
+        <CompletionBadge
+          label="Evening Routine"
+          completed={eveningRoutine.completed}
+          total={eveningRoutine.total}
+          allComplete={eveningRoutine.allComplete}
         />
         <CompletionBadge
           label="Daily Bonus"

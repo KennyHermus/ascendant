@@ -5,8 +5,9 @@ import { QUEST_DEFINITIONS } from '@/data/quests'
 import { DevToolsLazy } from '@/dev/DevToolsLazy'
 import { HeroCard } from '@/features/hero/HeroCard'
 import { StatsPanel } from '@/features/hero/StatsPanel'
-import { getDailyCompletionStatus } from '@/features/quests/questLogic'
+import { getQuestProgressSummary } from '@/features/quests/questLogic'
 import { QuestList } from '@/features/quests/QuestList'
+import { getCurrentGameTime } from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
 
 export function Dashboard() {
@@ -15,15 +16,32 @@ export function Dashboard() {
   const currentStreak = useGameStore((s) => s.currentStreak)
   const completeQuest = useGameStore((s) => s.completeQuest)
   const applyPeriodResets = useGameStore((s) => s.applyPeriodResets)
+  const evaluateTimedQuests = useGameStore((s) => s.evaluateTimedQuests)
 
-  const dailyCompletion = useMemo(
-    () => getDailyCompletionStatus(quests, QUEST_DEFINITIONS),
+  const progress = useMemo(
+    () => getQuestProgressSummary(quests, QUEST_DEFINITIONS, getCurrentGameTime()),
     [quests],
   )
 
   useEffect(() => {
     applyPeriodResets()
-  }, [applyPeriodResets])
+    evaluateTimedQuests()
+  }, [applyPeriodResets, evaluateTimedQuests])
+
+  // No background timers — re-evaluate timed quests only when the tab
+  // regains focus (app "resumes after being inactive").
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        applyPeriodResets()
+        evaluateTimedQuests()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [applyPeriodResets, evaluateTimedQuests])
 
   return (
     <main className="mx-auto min-h-svh max-w-2xl px-4 py-6">
@@ -41,7 +59,7 @@ export function Dashboard() {
         <ProgressSummary
           currency={hero.currency}
           currentStreak={currentStreak}
-          dailyCompletion={dailyCompletion}
+          progress={progress}
         />
 
         {import.meta.env.DEV && <DevToolsLazy />}

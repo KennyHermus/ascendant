@@ -1,6 +1,141 @@
-import { getXpProgress } from '@/features/progression/progressionLogic'
+import { useSyncExternalStore } from 'react'
+
 import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
+import { getXpProgress } from '@/features/progression/progressionLogic'
+import {
+  advanceSimulatedGameTime,
+  clearSimulatedGameTime,
+  getGameTimeSnapshot,
+  isGameTimeSimulated,
+  setSimulatedGameTime,
+  subscribeToGameTimeChanges,
+} from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
+
+const QUICK_ADVANCE_OPTIONS = [
+  { label: '+15m', ms: 15 * 60 * 1000 },
+  { label: '+30m', ms: 30 * 60 * 1000 },
+  { label: '+1h', ms: 60 * 60 * 1000 },
+  { label: '+6h', ms: 6 * 60 * 60 * 1000 },
+  { label: '+1d', ms: 24 * 60 * 60 * 1000 },
+]
+
+function toDatetimeLocalValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function formatDisplayTime(date: Date): string {
+  return date.toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/**
+ * Developer-only time simulation controls. Every action re-runs the same
+ * evaluation pipeline used for real load/resume events (period resets +
+ * timed quest sweep) so quest state reflects the new time immediately —
+ * no background timers involved.
+ */
+function TimeSimulationTools() {
+  const applyPeriodResets = useGameStore((s) => s.applyPeriodResets)
+  const evaluateTimedQuests = useGameStore((s) => s.evaluateTimedQuests)
+
+  const now = useSyncExternalStore(
+    subscribeToGameTimeChanges,
+    getGameTimeSnapshot,
+  )
+  const simulated = useSyncExternalStore(
+    subscribeToGameTimeChanges,
+    isGameTimeSimulated,
+  )
+
+  function reEvaluate() {
+    applyPeriodResets()
+    evaluateTimedQuests()
+  }
+
+  function handleAdvance(ms: number) {
+    advanceSimulatedGameTime(ms)
+    reEvaluate()
+  }
+
+  function handleSetCustomTime(value: string) {
+    if (!value) return
+    setSimulatedGameTime(new Date(value))
+    reEvaluate()
+  }
+
+  function handleToggle() {
+    if (simulated) {
+      clearSimulatedGameTime()
+    } else {
+      setSimulatedGameTime(new Date())
+    }
+    reEvaluate()
+  }
+
+  function handleResetToRealTime() {
+    clearSimulatedGameTime()
+    reEvaluate()
+  }
+
+  return (
+    <div className="mt-4 border-t border-red-800/30 pt-4">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-widest text-red-300/80">
+          Time Simulation
+        </p>
+        <button
+          type="button"
+          onClick={handleToggle}
+          className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${
+            simulated
+              ? 'border-amber-700/50 bg-amber-900/40 text-amber-200'
+              : 'border-stone-700/50 bg-stone-900/40 text-stone-400'
+          }`}
+        >
+          {simulated ? 'Simulated' : 'Real Time'}
+        </button>
+      </div>
+
+      <p className="mb-3 text-sm text-stone-300">{formatDisplayTime(now)}</p>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <input
+          type="datetime-local"
+          defaultValue={toDatetimeLocalValue(now)}
+          onChange={(e) => handleSetCustomTime(e.target.value)}
+          className="rounded-md border border-stone-700/50 bg-stone-900/60 px-2 py-1 text-sm text-stone-200"
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {QUICK_ADVANCE_OPTIONS.map((option) => (
+          <button
+            key={option.label}
+            type="button"
+            onClick={() => handleAdvance(option.ms)}
+            className="rounded-md border border-stone-700/50 bg-stone-900/40 px-2.5 py-1 text-xs text-stone-300 transition hover:bg-stone-800/60"
+          >
+            {option.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={handleResetToRealTime}
+          className="rounded-md border border-red-700/50 bg-red-900/30 px-2.5 py-1 text-xs text-red-200 transition hover:bg-red-900/50"
+        >
+          Reset to Real Time
+        </button>
+      </div>
+    </div>
+  )
+}
 
 /**
  * Development-only tools panel.
@@ -51,6 +186,8 @@ export function DevTools() {
           Reset Progress
         </button>
       </div>
+
+      <TimeSimulationTools />
     </div>
   )
 }

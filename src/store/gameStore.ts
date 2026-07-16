@@ -14,22 +14,25 @@ import {
   processQuestCompletion,
   resetQuestsForPeriod,
   resolveStreakState,
+  type StreakState,
 } from '@/features/quests/questLogic'
-import {
-  getTodayDateString,
-  getWeekKey,
-  STORAGE_KEY,
-} from '@/lib/storage'
+import { sweepExpiredTimedQuests } from '@/features/quests/questTiming'
+import { getCurrentGameTime } from '@/lib/gameTime'
+import { CURRENT_SAVE_VERSION } from '@/lib/migrations/migrations'
+import { createMigratingStorage } from '@/lib/migrations/migratingStorage'
+import { getTodayDateString, getWeekKey, STORAGE_KEY } from '@/lib/storage'
 import type { Hero } from '@/types/hero'
 import type { QuestState } from '@/types/quest'
 
 interface GameState {
+  /** Aligned with the app/git version (e.g. "0.0.2"). Drives save migrations. */
+  saveVersion: string
   hero: Hero
   quests: QuestState[]
   currentStreak: number
-  /** Last calendar day all daily core quests were completed (streak qualifier). */
-  lastDailyCoreCompleteDate: string | null
-  /** Tracks which category completion bonuses have been claimed this period. */
+  /** Last calendar day every non-negotiable quest required that day was completed. */
+  lastNonNegotiableCompleteDate: string | null
+  /** Tracks which group completion bonuses have been claimed this period. */
   completionRewardClaims: ReturnType<typeof createInitialCompletionClaims>
   lastDailyResetDate: string | null
   lastWeeklyResetWeek: string | null
@@ -41,26 +44,30 @@ interface GameActions {
   resetProgress: () => void
   applyPeriodResets: () => void
   reconcileStreak: () => void
+  /** Marks `available` timed quests past their deadline as `missed`. Call on
+   * load, tab resume, and refresh — never on a background timer. */
+  evaluateTimedQuests: () => void
 }
 
 type GameStore = GameState & GameActions
 
 function createInitialState(): GameState {
   return {
+    saveVersion: CURRENT_SAVE_VERSION,
     hero: createInitialHero(),
     quests: createQuestStates(QUEST_DEFINITIONS),
     currentStreak: 0,
-    lastDailyCoreCompleteDate: null,
+    lastNonNegotiableCompleteDate: null,
     completionRewardClaims: createInitialCompletionClaims(),
     lastDailyResetDate: getTodayDateString(),
     lastWeeklyResetWeek: getWeekKey(),
   }
 }
 
-function getStreakSnapshot(state: GameState) {
+function getStreakSnapshot(state: GameState): StreakState {
   return {
     currentStreak: state.currentStreak,
-    lastDailyCoreCompleteDate: state.lastDailyCoreCompleteDate,
+    lastNonNegotiableCompleteDate: state.lastNonNegotiableCompleteDate,
   }
 }
 
@@ -70,8 +77,9 @@ export const useGameStore = create<GameStore>()(
       ...createInitialState(),
 
       applyPeriodResets: () => {
+        const now = getCurrentGameTime()
         const today = getTodayDateString()
-        const week = getWeekKey()
+        const week = getWeekKey(now)
         const state = get()
         const { lastDailyResetDate, lastWeeklyResetWeek, quests } = state
 
@@ -94,56 +102,77 @@ export const useGameStore = create<GameStore>()(
           resetQuests,
           QUEST_DEFINITIONS,
           getStreakSnapshot(state),
-          today,
+          now,
         )
 
         set({
           quests: resetQuests,
           completionRewardClaims: resetClaims,
           currentStreak: streak.currentStreak,
-          lastDailyCoreCompleteDate: streak.lastDailyCoreCompleteDate,
+          lastNonNegotiableCompleteDate: streak.lastNonNegotiableCompleteDate,
           lastDailyResetDate: resetDaily ? today : lastDailyResetDate,
           lastWeeklyResetWeek: resetWeekly ? week : lastWeeklyResetWeek,
         })
       },
 
+      evaluateTimedQuests: () => {
+        const state = get()
+        const sweptQuests = sweepExpiredTimedQuests(
+          state.quests,
+          QUEST_DEFINITIONS,
+        )
+
+        if (sweptQuests === state.quests) return
+
+        set({ quests: sweptQuests })
+      },
+
       reconcileStreak: () => {
         const state = get()
-        const today = getTodayDateString()
         const streak = resolveStreakState(
           state.quests,
           QUEST_DEFINITIONS,
           getStreakSnapshot(state),
-          today,
         )
 
         if (
           streak.currentStreak === state.currentStreak &&
-          streak.lastDailyCoreCompleteDate === state.lastDailyCoreCompleteDate
+          streak.lastNonNegotiableCompleteDate ===
+            state.lastNonNegotiableCompleteDate
         ) {
           return
         }
 
         set({
           currentStreak: streak.currentStreak,
-          lastDailyCoreCompleteDate: streak.lastDailyCoreCompleteDate,
+          lastNonNegotiableCompleteDate: streak.lastNonNegotiableCompleteDate,
         })
       },
 
       completeQuest: (questId: string) => {
         const state = get()
-        const today = getTodayDateString()
+
+        // Sweep first so a quest whose deadline just passed can't be
+        // completed even if no evaluation event has fired yet.
+        const sweptQuests = sweepExpiredTimedQuests(
+          state.quests,
+          QUEST_DEFINITIONS,
+        )
 
         const result = processQuestCompletion(
           questId,
-          state.quests,
+          sweptQuests,
           QUEST_DEFINITIONS,
           getStreakSnapshot(state),
           state.completionRewardClaims,
-          today,
         )
 
-        if (!result) return false
+        if (!result) {
+          if (sweptQuests !== state.quests) {
+            set({ quests: sweptQuests })
+          }
+          return false
+        }
 
         const withQuestRewards: Hero = {
           ...state.hero,
@@ -169,7 +198,8 @@ export const useGameStore = create<GameStore>()(
           quests: result.updatedQuests,
           completionRewardClaims: result.completionClaims,
           currentStreak: result.streak.currentStreak,
-          lastDailyCoreCompleteDate: result.streak.lastDailyCoreCompleteDate,
+          lastNonNegotiableCompleteDate:
+            result.streak.lastNonNegotiableCompleteDate,
         })
 
         return true
@@ -190,6 +220,7 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: STORAGE_KEY,
+      storage: createMigratingStorage<GameStore>(),
       merge: (persisted, current) => {
         const saved = persisted as Partial<GameState> | undefined
         if (!saved) return current
@@ -199,33 +230,30 @@ export const useGameStore = create<GameStore>()(
           QUEST_DEFINITIONS,
         )
 
-        const today = getTodayDateString()
-        const streak = resolveStreakState(
-          quests,
-          QUEST_DEFINITIONS,
-          {
-            currentStreak: saved.currentStreak ?? current.currentStreak,
-            lastDailyCoreCompleteDate:
-              saved.lastDailyCoreCompleteDate ??
-              current.lastDailyCoreCompleteDate,
-          },
-          today,
-        )
+        const streak = resolveStreakState(quests, QUEST_DEFINITIONS, {
+          currentStreak: saved.currentStreak ?? current.currentStreak,
+          lastNonNegotiableCompleteDate:
+            saved.lastNonNegotiableCompleteDate ??
+            current.lastNonNegotiableCompleteDate,
+        })
 
         return {
           ...current,
           ...saved,
+          saveVersion: saved.saveVersion ?? CURRENT_SAVE_VERSION,
           hero: saved.hero ?? current.hero,
           quests,
           completionRewardClaims:
             saved.completionRewardClaims ?? createInitialCompletionClaims(),
           currentStreak: streak.currentStreak,
-          lastDailyCoreCompleteDate: streak.lastDailyCoreCompleteDate,
+          lastNonNegotiableCompleteDate:
+            streak.lastNonNegotiableCompleteDate,
         }
       },
       onRehydrateStorage: () => (state) => {
         state?.applyPeriodResets()
         state?.reconcileStreak()
+        state?.evaluateTimedQuests()
       },
     },
   ),

@@ -1,9 +1,12 @@
 import {
-  COMPLETION_REWARD_CATEGORIES,
+  COMPLETION_REWARD_KEYS,
   COMPLETION_REWARDS,
+  DAILY_RESET_REWARD_KEYS,
+  WEEKLY_RESET_REWARD_KEYS,
   type CompletionRewardKey,
 } from '@/data/completionRewards'
-import { getCategoryCompletionStatus } from '@/features/quests/questLogic'
+import { getCurrentGameTime } from '@/lib/gameTime'
+import { getGroupCompletionStatus } from '@/features/quests/questLogic'
 import type { QuestDefinition, QuestState } from '@/types/quest'
 
 export type CompletionRewardClaims = Record<CompletionRewardKey, boolean>
@@ -17,7 +20,9 @@ export interface CompletionRewardResult {
 
 export function createInitialCompletionClaims(): CompletionRewardClaims {
   return {
-    dailyCore: false,
+    morningRoutine: false,
+    nutrition: false,
+    eveningRoutine: false,
     weekly: false,
     weeklyBonus: false,
     special: false,
@@ -28,39 +33,44 @@ export function resetCompletionClaims(
   claims: CompletionRewardClaims,
   options: { resetDaily: boolean; resetWeekly: boolean },
 ): CompletionRewardClaims {
-  return {
-    ...claims,
-    dailyCore: options.resetDaily ? false : claims.dailyCore,
-    weekly: options.resetWeekly ? false : claims.weekly,
-    weeklyBonus: options.resetWeekly ? false : claims.weeklyBonus,
+  const next = { ...claims }
+
+  if (options.resetDaily) {
+    for (const key of DAILY_RESET_REWARD_KEYS) next[key] = false
   }
+  if (options.resetWeekly) {
+    for (const key of WEEKLY_RESET_REWARD_KEYS) next[key] = false
+  }
+
+  return next
 }
 
 /**
- * Evaluates category completion and grants rewards for newly completed
- * categories that have not yet been claimed this period.
+ * Evaluates group completion and grants rewards for newly completed
+ * groups that have not yet been claimed this period.
  */
 export function resolveCompletionRewards(
   quests: QuestState[],
   definitions: QuestDefinition[],
   claims: CompletionRewardClaims,
+  now: Date = getCurrentGameTime(),
 ): CompletionRewardResult {
   const nextClaims = { ...claims }
   let totalXp = 0
   let totalCurrency = 0
   const granted: CompletionRewardKey[] = []
 
-  for (const category of COMPLETION_REWARD_CATEGORIES) {
-    if (nextClaims[category]) continue
+  for (const group of COMPLETION_REWARD_KEYS) {
+    if (nextClaims[group]) continue
 
-    const status = getCategoryCompletionStatus(quests, definitions, category)
+    const status = getGroupCompletionStatus(quests, definitions, group, now)
     if (!status.allComplete) continue
 
-    const reward = COMPLETION_REWARDS[category]
-    nextClaims[category] = true
+    const reward = COMPLETION_REWARDS[group]
+    nextClaims[group] = true
     totalXp += reward.xpReward
     totalCurrency += reward.currencyReward
-    granted.push(category)
+    granted.push(group)
   }
 
   return {

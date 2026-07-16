@@ -1,9 +1,15 @@
+import type { CompletionRewardKey } from '@/data/completionRewards'
 import {
   resolveCompletionRewards,
   type CompletionRewardClaims,
 } from '@/features/quests/completionRewardLogic'
-import type { QuestCategory, QuestDefinition, QuestState } from '@/types/quest'
-import { getYesterdayDateString } from '@/lib/storage'
+import {
+  isQuestActiveOn,
+  questContributesToStreakOn,
+} from '@/features/quests/questSchedule'
+import { getCurrentGameTime } from '@/lib/gameTime'
+import { formatDateKey } from '@/lib/storage'
+import type { QuestDefinition, QuestState } from '@/types/quest'
 
 export interface CategoryCompletionStatus {
   completed: number
@@ -11,14 +17,16 @@ export interface CategoryCompletionStatus {
   allComplete: boolean
 }
 
-export interface DailyCompletionStatus {
-  dailyCore: CategoryCompletionStatus
+export interface QuestProgressSummary {
+  morningRoutine: CategoryCompletionStatus
+  nutrition: CategoryCompletionStatus
+  eveningRoutine: CategoryCompletionStatus
   dailyBonus: CategoryCompletionStatus
 }
 
 export interface StreakState {
   currentStreak: number
-  lastDailyCoreCompleteDate: string | null
+  lastNonNegotiableCompleteDate: string | null
 }
 
 export interface QuestCompletionResult {
@@ -38,7 +46,7 @@ export function mergeQuestStates(
 
   return definitions.map((definition) => ({
     id: definition.id,
-    completed: persistedMap.get(definition.id)?.completed ?? false,
+    status: persistedMap.get(definition.id)?.status ?? 'available',
   }))
 }
 
@@ -47,7 +55,7 @@ export function createQuestStates(
 ): QuestState[] {
   return definitions.map((quest) => ({
     id: quest.id,
-    completed: false,
+    status: 'available',
   }))
 }
 
@@ -64,25 +72,18 @@ export function resetQuestsForPeriod(
 
     const shouldReset =
       (options.resetDaily &&
-        (definition.category === 'dailyCore' ||
+        (definition.category === 'nonNegotiable' ||
           definition.category === 'dailyBonus')) ||
       (options.resetWeekly &&
         (definition.category === 'weekly' ||
           definition.category === 'weeklyBonus'))
 
-    if (shouldReset && quest.completed) {
-      return { ...quest, completed: false }
+    if (shouldReset && quest.status !== 'available') {
+      return { ...quest, status: 'available' }
     }
 
     return quest
   })
-}
-
-export function getQuestsByCategory(
-  definitions: QuestDefinition[],
-  category: QuestCategory,
-): QuestDefinition[] {
-  return definitions.filter((quest) => quest.category === category)
 }
 
 export function findQuestDefinition(
@@ -99,16 +100,53 @@ export function findQuestState(
   return quests.find((quest) => quest.id === id)
 }
 
-export function getCategoryCompletionStatus(
+/** Resolves the completion-reward group a quest belongs to, if any. */
+function getQuestRewardGroup(
+  definition: QuestDefinition,
+): CompletionRewardKey | null {
+  if (definition.category === 'nonNegotiable') {
+    return definition.subcategory ?? null
+  }
+  if (
+    definition.category === 'weekly' ||
+    definition.category === 'weeklyBonus' ||
+    definition.category === 'special'
+  ) {
+    return definition.category
+  }
+  return null
+}
+
+/** Quests required for a given reward group today (optional/inactive/weekend-suspended excluded). */
+function getRequiredQuestsForGroup(
+  definitions: QuestDefinition[],
+  group: CompletionRewardKey,
+  now: Date,
+): QuestDefinition[] {
+  return definitions.filter((definition) => {
+    if (getQuestRewardGroup(definition) !== group) return false
+
+    if (definition.category === 'nonNegotiable') {
+      return questContributesToStreakOn(definition, now)
+    }
+
+    return isQuestActiveOn(definition, now) && !definition.optional
+  })
+}
+
+export function getGroupCompletionStatus(
   quests: QuestState[],
   definitions: QuestDefinition[],
-  category: QuestCategory,
+  group: CompletionRewardKey,
+  now: Date = getCurrentGameTime(),
 ): CategoryCompletionStatus {
-  const categoryQuests = getQuestsByCategory(definitions, category)
-  const stateMap = new Map(quests.map((q) => [q.id, q.completed]))
+  const requiredQuests = getRequiredQuestsForGroup(definitions, group, now)
+  const stateMap = new Map(quests.map((q) => [q.id, q.status]))
 
-  const total = categoryQuests.length
-  const completed = categoryQuests.filter((q) => stateMap.get(q.id)).length
+  const total = requiredQuests.length
+  const completed = requiredQuests.filter(
+    (q) => stateMap.get(q.id) === 'completed',
+  ).length
 
   return {
     completed,
@@ -117,13 +155,72 @@ export function getCategoryCompletionStatus(
   }
 }
 
-export function getDailyCompletionStatus(
+/** All non-negotiable quests required today, across every subcategory. */
+export function getNonNegotiableCompletionStatus(
   quests: QuestState[],
   definitions: QuestDefinition[],
-): DailyCompletionStatus {
+  now: Date = getCurrentGameTime(),
+): CategoryCompletionStatus {
+  const required = definitions.filter((d) =>
+    questContributesToStreakOn(d, now),
+  )
+  const stateMap = new Map(quests.map((q) => [q.id, q.status]))
+
+  const total = required.length
+  const completed = required.filter(
+    (q) => stateMap.get(q.id) === 'completed',
+  ).length
+
   return {
-    dailyCore: getCategoryCompletionStatus(quests, definitions, 'dailyCore'),
-    dailyBonus: getCategoryCompletionStatus(quests, definitions, 'dailyBonus'),
+    completed,
+    total,
+    allComplete: total > 0 && completed === total,
+  }
+}
+
+/** Dashboard-facing summary: the three non-negotiable subcategories plus daily bonus. */
+export function getQuestProgressSummary(
+  quests: QuestState[],
+  definitions: QuestDefinition[],
+  now: Date = getCurrentGameTime(),
+): QuestProgressSummary {
+  const stateMap = new Map(quests.map((q) => [q.id, q.status]))
+
+  const dailyBonusQuests = definitions.filter(
+    (d) => d.category === 'dailyBonus' && isQuestActiveOn(d, now),
+  )
+  const weekendBonusLearningWork = definitions.filter(
+    (d) =>
+      d.category === 'nonNegotiable' &&
+      d.schedule?.streakOnlyOnWeekdays &&
+      !questContributesToStreakOn(d, now) &&
+      isQuestActiveOn(d, now),
+  )
+  const allDailyBonus = [...dailyBonusQuests, ...weekendBonusLearningWork]
+
+  return {
+    morningRoutine: getGroupCompletionStatus(
+      quests,
+      definitions,
+      'morningRoutine',
+      now,
+    ),
+    nutrition: getGroupCompletionStatus(quests, definitions, 'nutrition', now),
+    eveningRoutine: getGroupCompletionStatus(
+      quests,
+      definitions,
+      'eveningRoutine',
+      now,
+    ),
+    dailyBonus: {
+      total: allDailyBonus.length,
+      completed: allDailyBonus.filter(
+        (d) => stateMap.get(d.id) === 'completed',
+      ).length,
+      allComplete:
+        allDailyBonus.length > 0 &&
+        allDailyBonus.every((d) => stateMap.get(d.id) === 'completed'),
+    },
   }
 }
 
@@ -131,47 +228,57 @@ export function getDailyCompletionStatus(
  * Resolves streak state from current quest completion.
  * Called after every quest completion and on persistence rehydrate.
  *
- * Streak advances only when all daily core quests are complete for the day.
- * Daily bonus, weekly, and special quests do not affect streak.
+ * Streak advances only when every non-negotiable quest required *today*
+ * (weekday/weekend-aware) is complete. Daily bonus, weekly, and special
+ * quests never affect it.
  */
 export function resolveStreakState(
   quests: QuestState[],
   definitions: QuestDefinition[],
   streak: StreakState,
-  today: string,
+  now: Date = getCurrentGameTime(),
 ): StreakState {
-  const { dailyCore } = getDailyCompletionStatus(quests, definitions)
+  const today = formatDateKey(now)
+  const nonNegotiable = getNonNegotiableCompletionStatus(
+    quests,
+    definitions,
+    now,
+  )
 
-  if (!dailyCore.allComplete) {
+  if (!nonNegotiable.allComplete) {
     // Clear a stale "completed today" marker left by legacy data or partial resets.
-    if (streak.lastDailyCoreCompleteDate === today) {
+    if (streak.lastNonNegotiableCompleteDate === today) {
       return {
         currentStreak: streak.currentStreak,
-        lastDailyCoreCompleteDate: null,
+        lastNonNegotiableCompleteDate: null,
       }
     }
     return streak
   }
 
-  if (streak.lastDailyCoreCompleteDate === today) {
+  if (streak.lastNonNegotiableCompleteDate === today) {
     return streak
   }
 
-  const yesterday = getYesterdayDateString()
+  const yesterdayDate = new Date(now)
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+  const yesterday = formatDateKey(yesterdayDate)
+
   const newStreak =
-    streak.lastDailyCoreCompleteDate === yesterday
+    streak.lastNonNegotiableCompleteDate === yesterday
       ? streak.currentStreak + 1
       : 1
 
   return {
     currentStreak: newStreak,
-    lastDailyCoreCompleteDate: today,
+    lastNonNegotiableCompleteDate: today,
   }
 }
 
 /**
- * Processes a quest completion: marks quest done and resolves streak.
- * Returns null if the quest cannot be completed.
+ * Processes a quest completion: marks quest done and resolves streak
+ * and completion rewards. Returns null if the quest cannot be completed
+ * (already terminal, unknown, or not active today).
  */
 export function processQuestCompletion(
   questId: string,
@@ -179,30 +286,36 @@ export function processQuestCompletion(
   definitions: QuestDefinition[],
   streak: StreakState,
   completionClaims: CompletionRewardClaims,
-  today: string,
+  now: Date = getCurrentGameTime(),
 ): QuestCompletionResult | null {
   const questState = findQuestState(quests, questId)
   const definition = findQuestDefinition(definitions, questId)
 
-  if (!questState || !definition || questState.completed) {
+  if (
+    !questState ||
+    !definition ||
+    questState.status !== 'available' ||
+    !isQuestActiveOn(definition, now)
+  ) {
     return null
   }
 
   const updatedQuests = quests.map((quest) =>
-    quest.id === questId ? { ...quest, completed: true } : quest,
+    quest.id === questId ? { ...quest, status: 'completed' as const } : quest,
   )
 
   const completionRewards = resolveCompletionRewards(
     updatedQuests,
     definitions,
     completionClaims,
+    now,
   )
 
   const updatedStreak = resolveStreakState(
     updatedQuests,
     definitions,
     streak,
-    today,
+    now,
   )
 
   return {
