@@ -2,16 +2,15 @@ import { useState, type ReactNode } from 'react'
 
 interface AccordionProps {
   title: ReactNode
-  /** Optional small badge shown next to the title, visible even when collapsed (e.g. "3/5"). */
+  /** Optional summary shown beside the title (e.g. event count, metric count). */
   meta?: ReactNode
+  /** Secondary control in the header — does not toggle expansion (e.g. Overview link). */
+  headerAction?: ReactNode
   children: ReactNode
   defaultExpanded?: boolean
   /**
    * Unique id used to remember this accordion's expanded/collapsed state
-   * across refreshes. This is a UI display preference, not save data, so
-   * it's stored in its own `localStorage` namespace — entirely separate
-   * from the game's persisted save (`GameState`) and its migrations.
-   * Omit to not persist (state resets to `defaultExpanded` each load).
+   * across refreshes. UI preference only — separate from game save data.
    */
   persistKey?: string
   /** Visual weight — `category` for top-level sections, `subcategory` for nested ones. */
@@ -34,18 +33,17 @@ function writePersistedExpanded(key: string, expanded: boolean): void {
   try {
     window.localStorage.setItem(`${STORAGE_PREFIX}${key}`, String(expanded))
   } catch {
-    // localStorage unavailable (e.g. private browsing) — state just won't persist.
+    // localStorage unavailable — state just won't persist.
   }
 }
 
 /**
- * Generic collapsible section. Not quest-specific — reusable for any future
- * grouped content (inventory, skill trees, achievements, story chapters,
- * combat abilities, etc).
+ * Generic collapsible section with optional persisted state and header actions.
  */
 export function Accordion({
   title,
   meta,
+  headerAction,
   children,
   defaultExpanded = false,
   persistKey,
@@ -65,34 +63,44 @@ export function Accordion({
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-expanded={expanded}
-        className={`flex w-full items-center justify-between gap-2 text-left transition ${
-          isCategory
-            ? 'text-sm font-semibold uppercase tracking-widest text-amber-400/90'
-            : 'text-xs font-semibold uppercase tracking-wider text-stone-500'
-        }`}
-      >
-        <span className="flex items-center gap-2">
+      <div className="flex w-full items-center gap-2">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={expanded}
+          className={`flex min-w-0 flex-1 items-center gap-2 text-left transition ${
+            isCategory
+              ? 'text-sm font-semibold uppercase tracking-widest text-amber-400/90'
+              : 'text-xs font-semibold uppercase tracking-wider text-stone-500'
+          }`}
+        >
           <span
-            className={`inline-block transition-transform ${expanded ? 'rotate-90' : ''}`}
+            className={`inline-block shrink-0 transition-transform duration-200 ${
+              expanded ? 'rotate-90' : ''
+            }`}
             aria-hidden="true"
           >
             ▸
           </span>
-          {title}
-        </span>
+          <span className="truncate">{title}</span>
+        </button>
         {meta !== undefined && (
-          <span className="text-xs font-normal tracking-normal text-stone-500">
+          <span className="shrink-0 text-xs font-normal tracking-normal text-stone-500">
             {meta}
           </span>
         )}
-      </button>
-      {expanded && (
-        <div className={isCategory ? 'mt-3' : 'mt-2'}>{children}</div>
-      )}
+        {headerAction}
+      </div>
+      <div
+        className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
+          isCategory ? 'mt-3' : 'mt-2'
+        }`}
+        style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div>{children}</div>
+        </div>
+      </div>
     </div>
   )
 }

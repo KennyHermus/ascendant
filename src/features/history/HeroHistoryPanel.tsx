@@ -107,8 +107,8 @@ export function HeroHistoryPanel() {
           <div className="mt-4">
             <HeroTimeline
               groups={timelineGroups}
-              onSelectDay={handleSelectDay}
-              onSelectEvent={handleSelectDay}
+              todayKey={todayKey}
+              onOpenDayOverview={handleSelectDay}
             />
           </div>
         </Accordion>

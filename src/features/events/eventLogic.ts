@@ -1,6 +1,10 @@
+import { QUEST_DEFINITIONS } from '@/data/quests'
+import { isPlayerVisibleQuestFailedEvent, questSupportsPlayerMiss } from '@/features/quests/questMissPolicy'
 import type { StreakState } from '@/features/quests/questLogic'
 import { getCurrentGameTime } from '@/lib/gameTime'
+import { getActiveHeroDayKey } from '@/lib/timeService'
 import type { AchievementDefinition } from '@/types/achievement'
+import type { CompletionGrade } from '@/types/completion'
 import type { GameEvent } from '@/types/event'
 import type { QuestDefinition, QuestState } from '@/types/quest'
 import type { UnlockDefinition, UnlockState } from '@/types/unlock'
@@ -12,29 +16,69 @@ function makeEventBase(now: Date): { id: string; timestamp: string } {
   return { id: crypto.randomUUID(), timestamp: now.toISOString() }
 }
 
+export interface QuestCompletedEventInput {
+  definition: QuestDefinition
+  heroDayKey: string
+  completedAt: string
+  grade: Exclude<CompletionGrade, 'missed'>
+  minutesOffset: number
+  now?: Date
+}
+
+export function recordQuestCompleted(
+  input: QuestCompletedEventInput,
+): GameEvent
 export function recordQuestCompleted(
   definition: QuestDefinition,
+  now?: Date,
+): GameEvent
+export function recordQuestCompleted(
+  definitionOrInput: QuestDefinition | QuestCompletedEventInput,
   now: Date = getCurrentGameTime(),
 ): GameEvent {
+  if ('heroDayKey' in definitionOrInput) {
+    const input = definitionOrInput
+    return {
+      id: crypto.randomUUID(),
+      timestamp: input.now?.toISOString() ?? input.completedAt,
+      type: 'QUEST_COMPLETED',
+      questId: input.definition.id,
+      questName: input.definition.name,
+      heroDayKey: input.heroDayKey,
+      completedAt: input.completedAt,
+      grade: input.grade,
+      minutesOffset: input.minutesOffset,
+    }
+  }
+
+  const definition = definitionOrInput
+  const completedAt = now.toISOString()
   return {
-    ...makeEventBase(now),
+    id: crypto.randomUUID(),
+    timestamp: completedAt,
     type: 'QUEST_COMPLETED',
     questId: definition.id,
     questName: definition.name,
+    heroDayKey: getActiveHeroDayKey(now),
+    completedAt,
+    grade: 'completed',
+    minutesOffset: 0,
   }
 }
 
 export function recordQuestFailed(
   definition: QuestDefinition,
   now: Date = getCurrentGameTime(),
-  periodKey?: string,
+  heroDayKey?: string,
 ): GameEvent {
+  const key = heroDayKey ?? getActiveHeroDayKey(now)
   return {
     ...makeEventBase(now),
     type: 'QUEST_FAILED',
     questId: definition.id,
     questName: definition.name,
-    ...(periodKey !== undefined ? { periodKey } : {}),
+    heroDayKey: key,
+    periodKey: key,
   }
 }
 
@@ -106,15 +150,12 @@ export function findNewlyMissedQuestEvents(
 
   for (const quest of after) {
     if (quest.status === 'missed' && beforeStatus.get(quest.id) !== 'missed') {
-      if (
-        periodKey &&
-        hasQuestFailedEventForPeriod(existingEvents, quest.id, periodKey)
-      ) {
+      if (periodKey && hasQuestFailedEventForPeriod(existingEvents, quest.id, periodKey)) {
         continue
       }
 
       const definition = definitionMap.get(quest.id)
-      if (definition) {
+      if (definition && questSupportsPlayerMiss(definition)) {
         events.push(recordQuestFailed(definition, now, periodKey))
       }
     }
@@ -133,8 +174,18 @@ export function hasQuestFailedEventForPeriod(
     (event) =>
       event.type === 'QUEST_FAILED' &&
       event.questId === questId &&
-      event.periodKey === periodKey,
+      (event.heroDayKey === periodKey || event.periodKey === periodKey),
   )
+}
+
+export function getEventHeroDayKey(event: GameEvent): string | null {
+  if (event.type === 'QUEST_FAILED') {
+    return event.heroDayKey ?? event.periodKey ?? null
+  }
+  if (event.type === 'QUEST_COMPLETED') {
+    return event.heroDayKey
+  }
+  return null
 }
 
 /** Diffs unlock state before/after and returns one `UNLOCK_EARNED` event per newly-unlocked entry. */
@@ -202,9 +253,12 @@ export function appendEvents(events: GameEvent[], newEvents: GameEvent[]): GameE
     : combined
 }
 
-/** Most recent events first, capped to `limit`. */
+/** Most recent player-visible events first, capped to `limit`. */
 export function getRecentEvents(events: GameEvent[], limit = 5): GameEvent[] {
-  return events.slice(-limit).reverse()
+  return events
+    .filter((event) => isPlayerVisibleQuestFailedEvent(event, QUEST_DEFINITIONS))
+    .slice(-limit)
+    .reverse()
 }
 
 export function getEventIcon(event: GameEvent): string {

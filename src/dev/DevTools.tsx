@@ -6,6 +6,7 @@ import { AchievementTestingTools } from '@/dev/AchievementTestingTools'
 import { AnalyticsTestingTools } from '@/dev/AnalyticsTestingTools'
 import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
 import { HistoryTestingTools } from '@/dev/HistoryTestingTools'
+import { InsightsTestingTools } from '@/dev/InsightsTestingTools'
 import { QuestTestingTools } from '@/dev/QuestTestingTools'
 import { generateDailySummary } from '@/features/summary/dailySummaryLogic'
 import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
@@ -241,6 +242,7 @@ export function DevTools() {
       <AchievementTestingTools />
       <HistoryTestingTools />
       <AnalyticsTestingTools />
+      <InsightsTestingTools />
 
       {previewSummary && (
         <DailySummaryModal summary={previewSummary} onClose={() => setPreviewSummary(null)} />

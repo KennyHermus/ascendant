@@ -12,6 +12,7 @@ import {
 } from '@/features/analytics/analyticsPeriods'
 import { getAchievementSummary } from '@/features/achievements/achievementLogic'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
+import { questSupportsPlayerMiss } from '@/features/quests/questMissPolicy'
 import { formatDateKey } from '@/lib/storage'
 import type {
   AchievementAnalytics,
@@ -21,6 +22,7 @@ import type {
   HistoryAnalytics,
   PeriodAnalytics,
   ProgressAnalytics,
+  PunctualityAnalytics,
   QuestAnalytics,
   TimedQuestAnalytics,
 } from '@/types/analytics'
@@ -30,6 +32,7 @@ import type { Hero } from '@/types/hero'
 import type { DailySnapshot, HeroHistory } from '@/types/history'
 import type { QuestDefinition, QuestState } from '@/types/quest'
 import type { DayStartHeroSnapshot } from '@/types/summary'
+import type { QuestHistory } from '@/types/questHistory'
 
 /**
  * Read-only inputs the Analytics Engine needs. Callers assemble this from
@@ -45,6 +48,7 @@ export interface AnalyticsInput {
   achievementDefinitions: AchievementDefinition[]
   achievements: AchievementState[]
   dayStartHeroSnapshot: DayStartHeroSnapshot
+  questHistory: QuestHistory
   /** Application / simulated clock. */
   now: Date
 }
@@ -264,13 +268,21 @@ function liveDayQuestTotals(input: AnalyticsInput): {
   completed: number
   missed: number
 } {
-  const definitionIds = new Set(input.questDefinitions.map((d) => d.id))
+  const definitionById = new Map(
+    input.questDefinitions.map((definition) => [definition.id, definition]),
+  )
   let completed = 0
   let missed = 0
   for (const quest of input.quests) {
-    if (!definitionIds.has(quest.id)) continue
+    const definition = definitionById.get(quest.id)
+    if (!definition) continue
     if (quest.status === 'completed') completed += 1
-    else if (quest.status === 'missed') missed += 1
+    else if (
+      quest.status === 'missed' &&
+      questSupportsPlayerMiss(definition)
+    ) {
+      missed += 1
+    }
   }
   return { completed, missed }
 }
@@ -416,6 +428,68 @@ export function getTimedQuestAnalytics(
   }
 }
 
+// ── Punctuality ────────────────────────────────────────────────────────
+
+function mean(values: number[]): number | null {
+  if (values.length === 0) return null
+  return values.reduce((a, b) => a + b, 0) / values.length
+}
+
+export function getPunctualityAnalytics(
+  input: AnalyticsInput,
+  period: AnalyticsPeriod,
+): PunctualityAnalytics {
+  const range = resolvePeriodRange(period, input.questDefinitions, input.now)
+  const timedIds = new Set(
+    input.questDefinitions.filter((d) => d.timing).map((d) => d.id),
+  )
+
+  const completions = input.questHistory.completions.filter(
+    (c) =>
+      timedIds.has(c.questId) && isDateInRange(c.heroDayKey, range),
+  )
+
+  if (completions.length === 0) {
+    return {
+      timedCompletions: 0,
+      perfectPercent: null,
+      onTimePercent: null,
+      punctualPercent: null,
+      avgMinutesLate: null,
+      avgMinutesEarly: null,
+      avgCompletionTimeMinutes: null,
+    }
+  }
+
+  let perfect = 0
+  let onTime = 0
+  const lateOffsets: number[] = []
+  const earlyOffsets: number[] = []
+  const clockMinutes: number[] = []
+
+  for (const c of completions) {
+    if (c.grade === 'perfect') perfect += 1
+    if (c.grade === 'onTime') onTime += 1
+    if (c.minutesOffset > 0) lateOffsets.push(c.minutesOffset)
+    if (c.minutesOffset < 0) earlyOffsets.push(-c.minutesOffset)
+    const d = new Date(c.completedAt)
+    clockMinutes.push(d.getHours() * 60 + d.getMinutes())
+  }
+
+  const total = completions.length
+  const punctual = perfect + onTime
+
+  return {
+    timedCompletions: total,
+    perfectPercent: perfect / total,
+    onTimePercent: onTime / total,
+    punctualPercent: punctual / total,
+    avgMinutesLate: mean(lateOffsets),
+    avgMinutesEarly: mean(earlyOffsets),
+    avgCompletionTimeMinutes: mean(clockMinutes),
+  }
+}
+
 // ── Bundles ────────────────────────────────────────────────────────────
 
 export function getAnalyticsForPeriod(
@@ -428,6 +502,7 @@ export function getAnalyticsForPeriod(
     hero: getHeroAnalytics(input, period),
     quests: getQuestAnalytics(input, period),
     timedQuests: getTimedQuestAnalytics(input, period),
+    punctuality: getPunctualityAnalytics(input, period),
     progress: getProgressAnalytics(input, period),
     history: getHistoryAnalytics(input, period),
     achievements: getAchievementAnalytics(input),

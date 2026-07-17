@@ -1,4 +1,5 @@
 import type { StatRewards } from '@/types/hero'
+import type { CompletionGrade } from '@/types/completion'
 
 export const QUEST_CATEGORIES = [
   'nonNegotiable',
@@ -77,4 +78,8 @@ export interface QuestDefinition {
 export interface QuestState {
   id: string
   status: QuestStatus
+  /** ISO timestamp when this quest was completed for the current period. */
+  completedAt?: string | null
+  /** Grade at completion; cleared on daily reset. */
+  completionGrade?: Exclude<CompletionGrade, 'missed'> | null
 }

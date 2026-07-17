@@ -1,6 +1,7 @@
 import {
   formatChartInteger,
   formatChartPercent,
+  formatChartTimeOfDay,
   seriesToChartData,
   type ChartDataPoint,
 } from '@/features/analytics/chartPresentation'
@@ -24,8 +25,8 @@ interface TimeSeriesLineChartProps {
   title: string
   series: ChartSeries
   color?: ChartColorKey
-  /** Raw 0–1 values; axis shows 0–100%. */
-  valueMode?: 'integer' | 'percent'
+  /** `percent`: series values in [0, 1]. `timeOfDay`: minutes from local midnight. */
+  valueMode?: 'integer' | 'percent' | 'timeOfDay'
   yDomain?: [number, number]
   onDaySelect?: (date: string) => void
 }
@@ -37,14 +38,18 @@ function ChartTooltip({
 }: {
   active?: boolean
   payload?: { payload: ChartDataPoint }[]
-  valueMode: 'integer' | 'percent'
+  valueMode: 'integer' | 'percent' | 'timeOfDay'
 }) {
   if (!active || !payload?.[0]) return null
   const row = payload[0].payload
-  const displayValue =
-    valueMode === 'percent'
-      ? formatChartPercent(row.value / 100)
-      : formatChartInteger(row.value)
+  let displayValue: string
+  if (valueMode === 'percent') {
+    displayValue = formatChartPercent(row.value)
+  } else if (valueMode === 'timeOfDay') {
+    displayValue = formatChartTimeOfDay(row.value)
+  } else {
+    displayValue = formatChartInteger(row.value)
+  }
 
   return (
     <div
@@ -77,12 +82,18 @@ export function TimeSeriesLineChart({
       : rawData
 
   const stroke = CHART_THEME.colors[color]
+  const resolvedYDomain =
+    yDomain ??
+    (valueMode === 'timeOfDay' ? ([0, 24 * 60] as [number, number]) : undefined)
 
   return (
     <ChartPanel title={title} seriesLabel={series.label} pointCount={rawData.length}>
       <div className="h-44 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+          <LineChart
+            data={data}
+            margin={{ top: 4, right: 8, left: 4, bottom: 0 }}
+          >
             <CartesianGrid stroke={CHART_THEME.grid} strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="dateLabel"
@@ -95,20 +106,28 @@ export function TimeSeriesLineChart({
               tick={{ fill: CHART_THEME.axis, fontSize: 10 }}
               tickLine={false}
               axisLine={false}
-              domain={yDomain ?? ['auto', 'auto']}
-              tickFormatter={(v) =>
-                valueMode === 'percent'
-                  ? `${Math.round(Number(v))}%`
-                  : formatChartInteger(Number(v))
-              }
-              width={36}
+              domain={resolvedYDomain ?? ['auto', 'auto']}
+              tickFormatter={(v) => {
+                if (valueMode === 'percent') return `${Math.round(Number(v))}%`
+                if (valueMode === 'timeOfDay') return formatChartTimeOfDay(Number(v))
+                return formatChartInteger(Number(v))
+              }}
+              width={44}
             />
             <Tooltip
               content={({ active, payload }) => {
                 const row = payload?.[0]?.payload as ChartDataPoint | undefined
                 if (!active || !row) return null
+                const tooltipValue =
+                  valueMode === 'percent'
+                    ? { ...row, value: row.value / 100 }
+                    : row
                 return (
-                  <ChartTooltip active payload={[{ payload: row }]} valueMode={valueMode} />
+                  <ChartTooltip
+                    active
+                    payload={[{ payload: tooltipValue }]}
+                    valueMode={valueMode}
+                  />
                 )
               }}
             />

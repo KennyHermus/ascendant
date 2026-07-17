@@ -143,6 +143,24 @@ Read-only statistics layer — `src/types/analytics.ts`, `src/features/analytics
 
 Presentation metrics + Recharts visualizations on the Hero Dashboard — `AnalyticsDashboard.tsx`, `AnalyticsCharts.tsx`. Metrics use Engine/registry; charts use `usePeriodChartBundle` → `ChartSeries` only. See [ANALYTICS.md](ANALYTICS.md).
 
+### Insights Engine (also v0.0.3)
+
+Behavioral interpretation layer — `src/types/insights.ts`, `src/features/insights/`. Consumes `AnalyticsInput` / Analytics quest stats / History snapshots / recent events. Produces `PeriodInsights` for Insight Cards. **Never coaches or recommends.** See [INSIGHTS.md](INSIGHTS.md).
+
+---
+
+## v0.0.4 Implementation Notes — Time, Quest History & Quest Explorer
+
+Final **v0.0.3 milestone** features; save version bumped to `0.0.4` for persistence changes.
+
+- **Time Service** — `src/lib/timeService.ts`; Hero Day rolls at **5:00 AM**. All daily systems consume `getActiveHeroDayKey()` (via `getActiveQuestDayKey()`).
+- **Completion grades** — `src/types/completion.ts`, `completionGradeLogic.ts`; multipliers applied in `processQuestCompletion`.
+- **Quest History** — `GameState.questHistory` append-only log; written on complete / day-end miss sweep.
+- **Quest Explorer** — `src/features/questExplorer/`; per-quest stats + charts from `questHistory`.
+- **Punctuality analytics** — aggregate timed-quest metrics in Analytics Engine; punctuality insight types in Insights Engine.
+
+See [TIME.md](TIME.md), [QUEST_EXPLORER.md](QUEST_EXPLORER.md).
+
 ---
 
 ## Non-Negotiables Restructure & Time Simulation (also v0.0.2)
@@ -376,6 +394,7 @@ src/
 │   ├── hero/            # Hero Banner, stats panel, titles, lifetime stats
 │   ├── history/         # DailySnapshot persistence + Hero History UI
 │   ├── analytics/       # Engine + series builders + Analytics Dashboard
+│   ├── insights/        # Insights Engine + Insight Cards
 │   ├── progression/     # XP / level-up pure logic
 │   ├── quests/          # Quest list/cards, timing, schedule, progress aggregation
 │   ├── summary/         # Daily Summary logic + UI
@@ -399,28 +418,29 @@ These principles apply to every new feature. They are the source of truth for ho
 
 - **UI must not contain game logic** — components render results of pure functions and store actions.
 - **Definitions are data-driven** — quests, unlocks, and achievements live in data/definition files, not hardcoded in components.
-- **Shared calculations belong in logic modules** — e.g. `questProgress.ts`, `eventLogic.ts`, `lifetimeStats.ts`, `dailySummaryLogic.ts`, `historyLogic.ts`, `analyticsLogic.ts`.
+- **Shared calculations belong in logic modules** — e.g. `questProgress.ts`, `eventLogic.ts`, `lifetimeStats.ts`, `dailySummaryLogic.ts`, `historyLogic.ts`, `analyticsLogic.ts`, `insightsLogic.ts`.
 
 ## Consume existing foundations
 
-Future systems (especially **v0.0.3 Analytics UI**, and later combat/world features) must **consume** these foundations rather than reinventing them:
+Future systems must **consume** these foundations rather than reinventing them:
 
 | Foundation | Location | Purpose |
 |------------|----------|---------|
 | **`GameState.events`** | `types/event.ts`, `features/events/` | Fine-grained recent moments (capped buffer for UI) |
 | **`GameState.history`** | `types/history.ts`, `features/history/` | Append-only daily snapshots for long-term trends |
 | **Analytics Engine** | `types/analytics.ts`, `features/analytics/` | Read-only derived stats over History / lifetime / events |
+| **Insights Engine** | `types/insights.ts`, `features/insights/` | Behavioral interpretations (no coaching / recommendations) |
 | **`lifetimeStats`** | `Hero.lifetimeStats` | Incremental long-term counters (not a time series) |
 | **Quest progress** | `features/quests/questProgress.ts` | Completed / total / percent for any category or subcategory slice |
 | **Daily Summary** | `types/summary.ts` `SummarySnapshot` | Player-facing period recap (not an Analytics input) |
 
-**Do not** reconstruct history by scanning current quest state (quest statuses reset daily/weekly and cannot answer "what happened last week"). Prefer `HeroHistory` daily snapshots for multi-day series; use the Analytics Engine for derived metrics. Full detail: [HISTORY.md](HISTORY.md), [ANALYTICS.md](ANALYTICS.md).
+**Do not** reconstruct history by scanning current quest state (quest statuses reset daily/weekly and cannot answer "what happened last week"). Prefer `HeroHistory` daily snapshots for multi-day series; use the Analytics Engine for derived metrics; use the Insights Engine for pattern narration. Full detail: [HISTORY.md](HISTORY.md), [ANALYTICS.md](ANALYTICS.md), [INSIGHTS.md](INSIGHTS.md).
 
 ## Event retention strategy
 
 **Recent events:** `GameState.events` remains a **recent-event** buffer. `appendEvents()` keeps only the most recent **50** entries for Recent Progress and Daily Summary's "Major Events" slice. It is **not** long-term historical storage.
 
-**Long-term History + Analytics (v0.0.3):** `GameState.history` stores append-only `DailySnapshot` records. The Analytics Engine reads those snapshots (plus lifetime stats / limited events). Future charts should call Analytics APIs — not scan the event buffer as a complete archive. See [HISTORY.md](HISTORY.md) and [ANALYTICS.md](ANALYTICS.md).
+**Long-term History + Analytics + Insights (v0.0.3):** `GameState.history` stores append-only `DailySnapshot` records. The Analytics Engine reads those snapshots (plus lifetime stats / limited events). The Insights Engine interprets Analytics / History into Insight Cards — never coaching. See [HISTORY.md](HISTORY.md), [ANALYTICS.md](ANALYTICS.md), and [INSIGHTS.md](INSIGHTS.md).
 
 ---
 

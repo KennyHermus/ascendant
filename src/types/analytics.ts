@@ -55,6 +55,18 @@ export interface TimedQuestAnalytics {
   successRate: number | null
 }
 
+/** Punctuality rollups from `questHistory` completion records. */
+export interface PunctualityAnalytics {
+  timedCompletions: number
+  perfectPercent: number | null
+  onTimePercent: number | null
+  /** Share of timed completions graded `onTime` or `perfect`. */
+  punctualPercent: number | null
+  avgMinutesLate: number | null
+  avgMinutesEarly: number | null
+  avgCompletionTimeMinutes: number | null
+}
+
 export interface ProgressAnalytics {
   xpEarned: number
   goldEarned: number
@@ -86,6 +98,7 @@ export interface PeriodAnalytics {
   hero: HeroAnalytics
   quests: QuestAnalytics
   timedQuests: TimedQuestAnalytics
+  punctuality: PunctualityAnalytics
   progress: ProgressAnalytics
   history: HistoryAnalytics
   achievements: AchievementAnalytics

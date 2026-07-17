@@ -1,4 +1,4 @@
-import { parseDateKey } from '@/lib/storage'
+import { parseCalendarDateKey } from '@/lib/timeService'
 import type { ChartSeries } from '@/features/analytics/analyticsSeries'
 
 export interface ChartDataPoint {
@@ -6,6 +6,8 @@ export interface ChartDataPoint {
   dateLabel: string
   value: number
 }
+
+const HERO_DAY_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 /** Maps a ChartSeries into Recharts-friendly rows (presentation only). */
 export function seriesToChartData(series: ChartSeries): ChartDataPoint[] {
@@ -17,8 +19,21 @@ export function seriesToChartData(series: ChartSeries): ChartDataPoint[] {
 }
 
 export function formatChartDateLabel(dateKey: string): string {
-  const date = parseDateKey(dateKey)
+  if (!HERO_DAY_KEY_PATTERN.test(dateKey)) {
+    return dateKey
+  }
+  const date = parseCalendarDateKey(dateKey)
+  if (Number.isNaN(date.getTime())) return dateKey
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
+export function formatChartTimeOfDay(minutesFromMidnight: number): string {
+  const hours = Math.floor(minutesFromMidnight / 60) % 24
+  const minutes = Math.round(minutesFromMidnight % 60)
+  return new Date(2000, 0, 1, hours, minutes).toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 export function formatChartInteger(value: number): string {

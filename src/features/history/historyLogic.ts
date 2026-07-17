@@ -1,3 +1,4 @@
+import { questSupportsPlayerMiss } from '@/features/quests/questMissPolicy'
 import { getStatValue } from '@/features/hero/heroLogic'
 import { getCurrentGameTime } from '@/lib/gameTime'
 import { formatDateKey } from '@/lib/storage'
@@ -122,13 +123,19 @@ export function buildDailySnapshot(input: BuildDailySnapshotInput): DailySnapsho
   } = input
 
   const definitionIds = new Set(questDefinitions.map((d) => d.id))
+  const definitionById = new Map(questDefinitions.map((d) => [d.id, d]))
   let questsCompleted = 0
   let questsMissed = 0
 
   for (const quest of quests) {
     if (!definitionIds.has(quest.id)) continue
     if (quest.status === 'completed') questsCompleted += 1
-    else if (quest.status === 'missed') questsMissed += 1
+    else if (quest.status === 'missed') {
+      const definition = definitionById.get(quest.id)
+      if (definition && questSupportsPlayerMiss(definition)) {
+        questsMissed += 1
+      }
+    }
   }
 
   const dayEvents = eventsForPeriod(events, date)

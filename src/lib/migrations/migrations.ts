@@ -4,7 +4,7 @@ import type { SaveMigration } from '@/lib/migrations/types'
  * Semantic save version, kept aligned with the app/git version.
  * Bump this whenever the persisted shape changes, and add a migration below.
  */
-export const CURRENT_SAVE_VERSION = '0.0.3'
+export const CURRENT_SAVE_VERSION = '0.0.4'
 
 /**
  * Saves written before `saveVersion` existed have no version field at all.
@@ -82,6 +82,27 @@ const MIGRATIONS: SaveMigration[] = [
         schemaVersion: 1,
         dailySnapshots: [],
       },
+    }),
+  },
+  {
+    fromVersion: '0.0.3',
+    toVersion: '0.0.4',
+    migrate: (state) => ({
+      ...state,
+      saveVersion: '0.0.4',
+      questHistory: state.questHistory ?? {
+        schemaVersion: 1,
+        completions: [],
+        misses: [],
+      },
+      quests: Array.isArray(state.quests)
+        ? state.quests.map((q: { id: string; status: string; completedAt?: string | null; completionGrade?: string | null }) => ({
+            id: q.id,
+            status: q.status,
+            completedAt: q.completedAt ?? null,
+            completionGrade: q.completionGrade ?? null,
+          }))
+        : state.quests,
     }),
   },
 ]

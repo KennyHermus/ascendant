@@ -29,6 +29,13 @@ import {
   resetHistory,
 } from '@/features/history/historyLogic'
 import { generateSampleHistory } from '@/features/history/historySample'
+import { generateSampleInsightData } from '@/features/insights/insightsSample'
+import {
+  createEmptyQuestHistory,
+  mergeQuestHistory,
+  recordQuestCompletion as appendQuestCompletionRecord,
+  recordQuestMiss as appendQuestMissRecord,
+} from '@/features/questHistory/questHistoryLogic'
 import { captureDayStartSnapshot, generateDailySummary, isDailySummaryAvailable } from '@/features/summary/dailySummaryLogic'
 import { applyStatRewards, createInitialHero } from '@/features/hero/heroLogic'
 import {
@@ -142,6 +149,11 @@ interface GameState {
    * UI-facing `dailySummary`. See `docs/HISTORY.md`.
    */
   history: HeroHistory
+  /**
+   * Append-only per-quest completion / miss log for Quest Explorer and
+   * punctuality analytics. Distinct from capped `events` and `history`.
+   */
+  questHistory: import('@/types/questHistory').QuestHistory
 }
 
 interface GameActions {
@@ -212,6 +224,14 @@ interface GameActions {
   devResetHistory: () => void
   /** Dev-only: backfills synthetic daily snapshots for Hero History testing. No-ops outside DEV. */
   devGenerateSampleHistory: (days?: number) => number
+  /**
+   * Dev-only: backfills sample History + quest events so Insights has signal.
+   * Mutates history and events only. No-ops outside DEV.
+   */
+  devGenerateSampleInsightData: (days?: number) => {
+    snapshotsAdded: number
+    eventsAdded: number
+  }
 }
 
 type GameStore = GameState & GameActions
@@ -239,6 +259,7 @@ function createInitialState(): GameState {
     dayStartHeroSnapshot: captureDayStartSnapshot(hero),
     achievements: createInitialAchievementStates(ACHIEVEMENT_DEFINITIONS),
     history: createEmptyHistory(),
+    questHistory: createEmptyQuestHistory(),
   }
 }
 
@@ -400,6 +421,7 @@ export const useGameStore = create<GameStore>()(
 
         let questsForReset = state.quests
         let missedEvents: ReturnType<typeof findNewlyMissedQuestEvents> = []
+        let questHistory = state.questHistory
         if (advancingDaily && lastDailyResetDate) {
           const swept = reconcileTimedQuestStatusesForDay(
             state.quests,
@@ -417,6 +439,14 @@ export const useGameStore = create<GameStore>()(
               existingEvents: state.events,
             },
           )
+          for (const event of missedEvents) {
+            if (event.type !== 'QUEST_FAILED') continue
+            questHistory = appendQuestMissRecord(questHistory, {
+              questId: event.questId,
+              heroDayKey: lastDailyResetDate,
+              missedAt: event.timestamp,
+            })
+          }
           questsForReset = swept
         }
 
@@ -472,6 +502,7 @@ export const useGameStore = create<GameStore>()(
           ...dailySummaryPatch,
           events,
           history,
+          questHistory,
           lastDailyResetDate: resetDaily ? today : lastDailyResetDate,
           lastWeeklyResetWeek: resetWeekly ? week : lastWeeklyResetWeek,
         })
@@ -862,9 +893,23 @@ export const useGameStore = create<GameStore>()(
         const { hero: heroWithAchievementRewards, levelsGained: bonusLevelsGained } =
           applyAchievementRewards(heroWithLifetimeStats, newlyUnlocked)
 
+        const questHistory = appendQuestCompletionRecord(state.questHistory, {
+          questId: result.definition.id,
+          heroDayKey: result.heroDayKey,
+          completedAt: result.completedAt,
+          grade: result.gradeResult.grade,
+          minutesOffset: result.gradeResult.minutesOffset,
+        })
+
         const newEvents: GameEvent[] = [
           ...missedEvents,
-          recordQuestCompleted(result.definition),
+          recordQuestCompleted({
+            definition: result.definition,
+            heroDayKey: result.heroDayKey,
+            completedAt: result.completedAt,
+            grade: result.gradeResult.grade,
+            minutesOffset: result.gradeResult.minutesOffset,
+          }),
           ...findNewlyUnlockedEvents(state.unlocks, unlocks, UNLOCK_DEFINITIONS),
           ...deriveStreakEvents(getStreakSnapshot(state), result.streak),
           ...newlyUnlocked.map((achievement) =>
@@ -900,6 +945,7 @@ export const useGameStore = create<GameStore>()(
           unlocks,
           achievements,
           events,
+          questHistory,
           ...summaryPatch,
         })
 
@@ -1013,6 +1059,30 @@ export const useGameStore = create<GameStore>()(
         set({ history: next })
         return next.dailySnapshots.length - beforeCount
       },
+
+      devGenerateSampleInsightData: (days = 60) => {
+        if (!import.meta.env.DEV) {
+          return { snapshotsAdded: 0, eventsAdded: 0 }
+        }
+
+        const state = get()
+        const now = getCurrentGameTime()
+        const todayKey = getActiveQuestDayKey(QUEST_DEFINITIONS, now)
+        const result = generateSampleInsightData({
+          history: state.history,
+          events: state.events,
+          hero: state.hero,
+          questDefinitions: QUEST_DEFINITIONS,
+          todayKey,
+          days,
+        })
+
+        set({ history: result.history, events: result.events })
+        return {
+          snapshotsAdded: result.snapshotsAdded,
+          eventsAdded: result.eventsAdded,
+        }
+      },
     }),
     {
       name: STORAGE_KEY,
@@ -1104,6 +1174,7 @@ export const useGameStore = create<GameStore>()(
           // Missing on any save from before v0.0.3 — empty history is safe;
           // the 0.0.2 → 0.0.3 migration also writes this field.
           history: mergeHistory(saved.history),
+          questHistory: mergeQuestHistory(saved.questHistory),
         }
       },
       onRehydrateStorage: () => (state) => {

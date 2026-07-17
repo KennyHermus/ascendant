@@ -115,7 +115,15 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ History DevTools (sample history, inspect snapshot, jump to date)
 ✓ Docs: [HISTORY.md](HISTORY.md)
 
-**v0.0.3 complete** (History → Analytics → Dashboard → Charts → Hero History).
+## Completed: Insights Engine
+
+✓ Behavior Analytics / Insights Engine (`features/insights/`)
+✓ Quest, Routine, and Behavior Trend insight generators
+✓ Reusable Insight Card + Insights Dashboard
+✓ DevTools: sample insight data, refresh, raw JSON
+✓ Docs: [INSIGHTS.md](INSIGHTS.md)
+
+**v0.0.3 complete** (History → Analytics → Charts → Hero History → Insights).
 
 ---
 

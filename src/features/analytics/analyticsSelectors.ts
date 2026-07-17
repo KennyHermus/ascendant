@@ -9,6 +9,7 @@ import {
   getHeroAnalytics,
   getHistoryAnalytics,
   getProgressAnalytics,
+  getPunctualityAnalytics,
   getQuestAnalytics,
   getTimedQuestAnalytics,
   type AnalyticsInput,
@@ -56,6 +57,7 @@ export function selectAnalyticsInput(
     quests: AnalyticsInput['quests']
     achievements: AnalyticsInput['achievements']
     dayStartHeroSnapshot: AnalyticsInput['dayStartHeroSnapshot']
+    questHistory: AnalyticsInput['questHistory']
   },
   now: Date = getCurrentGameTime(),
 ): AnalyticsInput {
@@ -69,6 +71,7 @@ export function selectAnalyticsInput(
     achievementDefinitions: ACHIEVEMENT_DEFINITIONS,
     achievements: state.achievements,
     dayStartHeroSnapshot: state.dayStartHeroSnapshot,
+    questHistory: state.questHistory,
     now,
   }
 }
@@ -80,6 +83,7 @@ export {
   getHeroAnalytics,
   getHistoryAnalytics,
   getProgressAnalytics,
+  getPunctualityAnalytics,
   getQuestAnalytics,
   getTimedQuestAnalytics,
 }
@@ -98,6 +102,7 @@ export function useFullAnalytics() {
   const quests = useGameStore((s) => s.quests)
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
+  const questHistory = useGameStore((s) => s.questHistory)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -109,6 +114,7 @@ export function useFullAnalytics() {
         quests,
         achievements,
         dayStartHeroSnapshot,
+        questHistory,
       },
       now,
     )
@@ -122,6 +128,7 @@ export function useFullAnalytics() {
     quests,
     achievements,
     dayStartHeroSnapshot,
+    questHistory,
   ])
 }
 
@@ -134,6 +141,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
   const quests = useGameStore((s) => s.quests)
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
+  const questHistory = useGameStore((s) => s.questHistory)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -145,6 +153,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
         quests,
         achievements,
         dayStartHeroSnapshot,
+        questHistory,
       },
       now,
     )
@@ -159,6 +168,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
     quests,
     achievements,
     dayStartHeroSnapshot,
+    questHistory,
   ])
 }
 
@@ -192,6 +202,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
   const quests = useGameStore((s) => s.quests)
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
+  const questHistory = useGameStore((s) => s.questHistory)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -203,6 +214,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
         quests,
         achievements,
         dayStartHeroSnapshot,
+        questHistory,
       },
       now,
     )
@@ -217,6 +229,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
     quests,
     achievements,
     dayStartHeroSnapshot,
+    questHistory,
   ])
 }
 

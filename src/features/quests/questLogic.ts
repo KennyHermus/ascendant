@@ -1,3 +1,8 @@
+import {
+  applyGradeMultiplier,
+  evaluateCompletionGrade,
+  type CompletionGradeResult,
+} from '@/features/quests/completionGradeLogic'
 import type { CompletionRewardKey } from '@/data/completionRewards'
 import {
   resolveCompletionRewards,
@@ -40,6 +45,9 @@ export interface QuestCompletionResult {
   completionClaims: CompletionRewardClaims
   completionXp: number
   completionCurrency: number
+  gradeResult: CompletionGradeResult
+  completedAt: string
+  heroDayKey: string
 }
 
 export function mergeQuestStates(
@@ -48,10 +56,15 @@ export function mergeQuestStates(
 ): QuestState[] {
   const persistedMap = new Map(persisted.map((q) => [q.id, q]))
 
-  return definitions.map((definition) => ({
-    id: definition.id,
-    status: persistedMap.get(definition.id)?.status ?? 'available',
-  }))
+  return definitions.map((definition) => {
+    const persisted = persistedMap.get(definition.id)
+    return {
+      id: definition.id,
+      status: persisted?.status ?? 'available',
+      completedAt: persisted?.completedAt ?? null,
+      completionGrade: persisted?.completionGrade ?? null,
+    }
+  })
 }
 
 export function createQuestStates(
@@ -59,7 +72,9 @@ export function createQuestStates(
 ): QuestState[] {
   return definitions.map((quest) => ({
     id: quest.id,
-    status: 'available',
+    status: 'available' as const,
+    completedAt: null,
+    completionGrade: null,
   }))
 }
 
@@ -83,7 +98,12 @@ export function resetQuestsForPeriod(
           definition.category === 'weeklyBonus'))
 
     if (shouldReset && quest.status !== 'available') {
-      return { ...quest, status: 'available' }
+      return {
+        ...quest,
+        status: 'available' as const,
+        completedAt: null,
+        completionGrade: null,
+      }
     }
 
     return quest
@@ -334,8 +354,30 @@ export function processQuestCompletion(
     return null
   }
 
+  const gradeResult = evaluateCompletionGrade(definition, now, dayKey)
+  const completedAt = now.toISOString()
+
+  const scaledXp = applyGradeMultiplier(definition.xpReward, gradeResult.multiplier)
+  const scaledGold = applyGradeMultiplier(
+    definition.currencyReward,
+    gradeResult.multiplier,
+  )
+  const scaledStats = Object.fromEntries(
+    Object.entries(definition.statRewards).map(([key, value]) => [
+      key,
+      value !== undefined ? applyGradeMultiplier(value, gradeResult.multiplier) : undefined,
+    ]),
+  ) as typeof definition.statRewards
+
   const updatedQuests = quests.map((quest) =>
-    quest.id === questId ? { ...quest, status: 'completed' as const } : quest,
+    quest.id === questId
+      ? {
+          ...quest,
+          status: 'completed' as const,
+          completedAt,
+          completionGrade: gradeResult.grade,
+        }
+      : quest,
   )
 
   const completionRewards = resolveCompletionRewards(
@@ -355,9 +397,17 @@ export function processQuestCompletion(
   return {
     updatedQuests,
     streak: updatedStreak,
-    definition,
+    definition: {
+      ...definition,
+      xpReward: scaledXp,
+      currencyReward: scaledGold,
+      statRewards: scaledStats,
+    },
     completionClaims: completionRewards.claims,
     completionXp: completionRewards.totalXp,
     completionCurrency: completionRewards.totalCurrency,
+    gradeResult,
+    completedAt,
+    heroDayKey: dayKey,
   }
 }

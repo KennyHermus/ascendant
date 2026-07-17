@@ -1,72 +1,41 @@
-import { questContributesToStreakOn } from '@/features/quests/questSchedule'
-import { evaluateQuestTimingForDay } from '@/features/quests/questTiming'
+import { getActiveHeroDayKey, addHeroDays, getHeroDayEnd } from '@/lib/timeService'
 import { getCurrentGameTime } from '@/lib/gameTime'
-import { formatDateKey, parseDateKey } from '@/lib/storage'
 import type { QuestDefinition } from '@/types/quest'
 
 /**
- * When the calendar day `dateKey` stops being "in play" for streak / daily
- * reset purposes.
- *
- * If any timed Non-Negotiable is required that day (Sleep on weekdays), the
- * day ends at the latest of those quests' grace deadlines (Sleep's
- * 23:45 + 30m → 00:15 the next morning). Otherwise the day ends at midnight
- * at the start of the following calendar day.
+ * When the Hero Day `heroDayKey` ends (exclusive — start of next Hero Day).
+ * Replaces the prior Sleep-grace deadline model with a centralized 5:00 AM boundary.
  */
-export function getStreakDayEndDeadline(
-  dateKey: string,
-  definitions: QuestDefinition[],
+export function getHeroDayEndDeadline(
+  heroDayKey: string,
 ): Date {
-  const dayReference = parseDateKey(dateKey)
-
-  let latestDeadline: Date | null = null
-  for (const definition of definitions) {
-    if (!definition.timing) continue
-    if (!questContributesToStreakOn(definition, dayReference)) continue
-
-    const { deadline } = evaluateQuestTimingForDay(
-      definition.timing,
-      dateKey,
-      dayReference,
-    )
-    if (!latestDeadline || deadline.getTime() > latestDeadline.getTime()) {
-      latestDeadline = deadline
-    }
-  }
-
-  if (latestDeadline) return latestDeadline
-
-  const midnightNextDay = parseDateKey(dateKey)
-  midnightNextDay.setHours(0, 0, 0, 0)
-  midnightNextDay.setDate(midnightNextDay.getDate() + 1)
-  return midnightNextDay
+  return getHeroDayEnd(heroDayKey)
 }
 
+/** @deprecated Use `addHeroDays`. */
 export function addDaysToDateKey(dateKey: string, days: number): string {
-  const date = parseDateKey(dateKey)
-  date.setDate(date.getDate() + days)
-  return formatDateKey(date)
+  return addHeroDays(dateKey, days)
 }
 
 /**
- * The quest-day key that is currently "in play".
- *
- * Rolls forward only after the previous calendar day's streak-end deadline
- * (Sleep grace on weekdays — 00:15 next morning; otherwise midnight). This
- * keeps 00:00–00:15 attached to the night that just ended so Sleep can still
- * be completed (or marked missed) before daily reset fires.
+ * The Hero Day key currently in play (rolls at 5:00 AM boundary).
+ * All daily quests, streaks, history, and analytics consume this key.
  */
 export function getActiveQuestDayKey(
-  definitions: QuestDefinition[],
+  _definitions: QuestDefinition[],
   now: Date = getCurrentGameTime(),
 ): string {
-  const calendarToday = formatDateKey(now)
-  const calendarYesterday = addDaysToDateKey(calendarToday, -1)
-  const yesterdayEnd = getStreakDayEndDeadline(calendarYesterday, definitions)
-
-  if (now.getTime() < yesterdayEnd.getTime()) {
-    return calendarYesterday
-  }
-
-  return calendarToday
+  void _definitions
+  return getActiveHeroDayKey(now)
 }
+
+/** @deprecated Alias — prefer `getHeroDayEndDeadline`. */
+export function getStreakDayEndDeadline(
+  dateKey: string,
+  _definitions: QuestDefinition[],
+): Date {
+  void _definitions
+  return getHeroDayEndDeadline(dateKey)
+}
+
+export { parseCalendarDateKey as parseDateKeyForQuestDay } from '@/lib/timeService'

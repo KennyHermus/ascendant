@@ -24,17 +24,23 @@ interface BaseGameEvent {
  * `eventLogic.ts`'s formatters; nothing else needs to change.
  */
 export type GameEvent =
-  | (BaseGameEvent & { type: 'QUEST_COMPLETED'; questId: string; questName: string })
+  | (BaseGameEvent & {
+      type: 'QUEST_COMPLETED'
+      questId: string
+      questName: string
+      /** Hero Day key this completion belongs to. */
+      heroDayKey: string
+      completedAt: string
+      grade: 'perfect' | 'onTime' | 'completed'
+      minutesOffset: number
+    })
   | (BaseGameEvent & {
       type: 'QUEST_FAILED'
       questId: string
       questName: string
-      /**
-       * Quest-day key the miss belongs to (e.g. Sleep missed at 00:20 Fri
-       * still carries Thursday's key). Used to dedupe re-entries into the
-       * same missed window after a simulated-time rewind — never to decide
-       * current availability.
-       */
+      /** Hero Day key the miss belongs to. */
+      heroDayKey?: string
+      /** @deprecated Use `heroDayKey`. Kept for older saves / event buffer. */
       periodKey?: string
     })
   | (BaseGameEvent & { type: 'LEVEL_UP'; level: number })

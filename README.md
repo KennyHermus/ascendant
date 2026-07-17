@@ -106,8 +106,12 @@ A playable daily RPG foundation with:
 - **History Foundation** — append-only daily snapshots ([docs/HISTORY.md](docs/HISTORY.md))
 - **Analytics Engine + Dashboard + Charts** — stats, metric registry, Recharts ([docs/ANALYTICS.md](docs/ANALYTICS.md))
 - **Hero History** — timeline, contribution calendar, daily browser ([docs/HISTORY.md](docs/HISTORY.md))
+- **Insights Engine** — behavioral pattern cards from Analytics / History ([docs/INSIGHTS.md](docs/INSIGHTS.md))
+- **Quest Explorer** — per-quest history, stats, and charts ([docs/QUEST_EXPLORER.md](docs/QUEST_EXPLORER.md))
+- **Hero Day & Time Service** — 5:00 AM boundary ([docs/TIME.md](docs/TIME.md))
+- **Completion grades & timestamps** — timed quest punctuality, reward multipliers
 - Quest progress aggregation utilities
-- Developer time simulation + quest/achievement/history/analytics testing tools
+- Developer time simulation + quest/achievement/history/analytics/insights testing tools
 
 **Dashboard order**
 
@@ -120,10 +124,12 @@ A playable daily RPG foundation with:
 7. Recent Progress
 8. Achievements
 9. Analytics
-10. Hero History
-11. Attributes
+10. Quest Explorer
+11. Insights
+12. Hero History
+13. Attributes
 
-**Current version:** v0.0.3 (History, Analytics, Charts, Hero History complete)
+**Current version:** v0.0.3 complete (save version 0.0.4 for quest history migration)
 
 ---
 
@@ -174,6 +180,8 @@ Ascendant should prioritize:
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/HISTORY.md](docs/HISTORY.md)
 - [docs/ANALYTICS.md](docs/ANALYTICS.md)
+- [docs/QUEST_EXPLORER.md](docs/QUEST_EXPLORER.md)
+- [docs/TIME.md](docs/TIME.md)
 - [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md)
 - [docs/UI_UX.md](docs/UI_UX.md)
 - [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)

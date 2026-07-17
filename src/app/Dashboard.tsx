@@ -11,6 +11,8 @@ import { ActiveObjectives } from '@/features/dashboard/ActiveObjectives'
 import { getActiveObjectives } from '@/features/dashboard/activeObjectivesLogic'
 import { getNextObjective } from '@/features/dashboard/nextObjectiveLogic'
 import { AnalyticsDashboard } from '@/features/analytics/AnalyticsDashboard'
+import { InsightsDashboard } from '@/features/insights/InsightsDashboard'
+import { QuestExplorerPanel } from '@/features/questExplorer/QuestExplorerPanel'
 import { getRecentEvents } from '@/features/events/eventLogic'
 import { RecentProgress } from '@/features/events/RecentProgress'
 import { findAchievementUnlockDay } from '@/features/history/historyDaily'
@@ -176,6 +178,8 @@ export function Dashboard() {
           onNavigateToUnlockDay={handleAchievementUnlockDay}
         />
         <AnalyticsDashboard onDaySelect={historyNav.openDay} />
+        <QuestExplorerPanel onDaySelect={historyNav.openDay} />
+        <InsightsDashboard />
         <HeroHistoryPanel />
         <StatsPanel stats={hero.stats} />
 

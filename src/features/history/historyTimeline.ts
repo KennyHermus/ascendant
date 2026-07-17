@@ -1,3 +1,5 @@
+import { QUEST_DEFINITIONS } from '@/data/quests'
+import { isPlayerVisibleQuestFailedEvent } from '@/features/quests/questMissPolicy'
 import { completionRate } from '@/features/analytics/analyticsHelpers'
 import { formatChartDateLabel } from '@/features/analytics/chartPresentation'
 import {
@@ -42,6 +44,7 @@ function filterEvents(
 ): GameEvent[] {
   return events.filter(
     (event) =>
+      isPlayerVisibleQuestFailedEvent(event, QUEST_DEFINITIONS) &&
       eventMatchesTimelineCategory(event, filter) &&
       eventMatchesSearch(event, searchQuery),
   )

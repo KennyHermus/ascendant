@@ -59,8 +59,9 @@ Section order:
 7. Recent Progress
 8. Achievements
 9. Analytics
-10. Hero History
-11. Attributes
+10. Insights
+11. Hero History
+12. Attributes
 
 ---
 
@@ -96,6 +97,20 @@ Contains:
 - **Daily History Browser** — modal with level, stats, quests, achievements, unlocks, summary
 
 Cross-navigation from Analytics charts, calendar, timeline, and unlocked achievements.
+
+---
+
+## Insights (implemented)
+
+Purpose: surface behavioral patterns interpreted from Analytics and History.
+
+Contains:
+
+- Period filter (shared Analytics periods)
+- Quest / Routine / Behavior Trend Insight Cards
+- Confidence and severity badges — **no coaching or recommendations**
+
+See [INSIGHTS.md](INSIGHTS.md).
 
 # UX Principles
 

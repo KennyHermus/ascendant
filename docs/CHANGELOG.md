@@ -44,7 +44,23 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - History DevTools: generate sample history, inspect snapshot JSON, jump to date
 - Docs: [HISTORY.md](HISTORY.md)
 
-**v0.0.3 complete** (History → Engine → Dashboard → Charts → Hero History).
+### Insights Engine
+
+- **Behavior Analytics / Insights** — interprets Analytics + History into Insight Cards
+- Quest, Routine, and Behavior Trend patterns (no coaching / recommendations)
+- Insights DevTools: sample data, refresh, raw object viewer
+- Docs: [INSIGHTS.md](INSIGHTS.md)
+
+### Time, History & Quest Analytics (final v0.0.3 milestone)
+
+- **Hero Day** — 5:00 AM day boundary via centralized Time Service ([TIME.md](TIME.md))
+- **Completion timestamps** — `completedAt` on all quests; timed grading (Perfect / On Time / Completed / Missed) with reward multipliers (1.15× / 1.05× / 1.00×)
+- **Quest History** — append-only `GameState.questHistory` for long-term per-quest records (save `0.0.4`)
+- **Quest Explorer** — search, per-quest stats, and charts ([QUEST_EXPLORER.md](QUEST_EXPLORER.md))
+- **Punctuality analytics** — perfect/on-time rates, avg early/late, completion time trends
+- **Punctuality insights** — most frequently late, improving/declining punctuality, consistently early / in grace
+
+**v0.0.3 complete** (History → Analytics → Charts → Hero History → Insights → Time & Quest Analytics).
 
 ---
 

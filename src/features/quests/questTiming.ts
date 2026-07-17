@@ -1,6 +1,7 @@
 import { isQuestActiveOn } from '@/features/quests/questSchedule'
+import { questSupportsPlayerMiss } from '@/features/quests/questMissPolicy'
 import { getCurrentGameTime } from '@/lib/gameTime'
-import { formatDateKey, parseDateKey } from '@/lib/storage'
+import { parseCalendarDateKey, formatCalendarDateKey } from '@/lib/timeService'
 import type { QuestDefinition, QuestState, QuestStatus, QuestTiming } from '@/types/quest'
 
 export const TIMING_PHASES = ['onTime', 'inGracePeriod', 'expired'] as const
@@ -82,7 +83,7 @@ export function evaluateQuestTimingForDay(
   dayKey: string,
   now: Date = getCurrentGameTime(),
 ): TimingEvaluation {
-  const target = buildTargetOnDay(timing, parseDateKey(dayKey))
+  const target = buildTargetOnDay(timing, parseCalendarDateKey(dayKey))
   return buildTimingEvaluation(target, timing.graceMinutes, now)
 }
 
@@ -138,102 +139,74 @@ function questsEqual(a: QuestState[], b: QuestState[]): boolean {
 }
 
 /**
- * Current timed-quest availability — derived only from:
- *   - completion state (`completed` is sticky / persisted)
- *   - quest timing definition
- *   - current application time (and the active quest-day key)
+ * Current timed-quest availability.
  *
- * Never consults `GameEvent` history. Persisted `missed` is not authoritative;
- * if the clock says the deadline has not passed, the quest is available even
- * when a historical QUEST_FAILED event exists for an earlier pass through
- * that window (e.g. after rewinding simulated time).
+ * After the grace window, timed quests remain completable (late / `completed`
+ * grade) until Hero Day ends — they are not auto-marked `missed` mid-day.
+ * Misses are finalized at Hero Day advance only.
  */
 export function getEffectiveQuestStatus(
   persisted: QuestStatus,
   definition: QuestDefinition | undefined,
-  now: Date,
-  dayKey: string,
+  _now: Date,
+  _dayKey: string,
 ): QuestStatus {
-  if (persisted === 'completed') return 'completed'
-  if (!definition?.timing) {
-    return persisted === 'missed' ? 'available' : persisted
+  if (persisted === 'missed' && definition && !questSupportsPlayerMiss(definition)) {
+    return 'available'
   }
-
-  const { phase } = evaluateQuestTimingForDay(definition.timing, dayKey, now)
-  return phase === 'expired' ? 'missed' : 'available'
+  if (persisted === 'completed') return 'completed'
+  if (persisted === 'missed') return 'missed'
+  return 'available'
 }
 
 /**
- * Reconciles persisted `available`/`missed` against the current clock so
- * streak/summary/store stay aligned. Events are never consulted — only
- * definition + time + completion. Bidirectional: expired → missed, and
- * (on simulated-time rewind) missed → available again.
+ * During live play, do not auto-mark timed quests missed when grace expires.
+ * Only clears erroneous `missed` on rewind. Day-end sweep handles misses.
  */
 export function reconcileTimedQuestStatuses(
   quests: QuestState[],
   definitions: QuestDefinition[],
-  now: Date = getCurrentGameTime(),
-  dayKey?: string,
+  _now: Date = getCurrentGameTime(),
+  _dayKey?: string,
 ): QuestState[] {
-  return reconcileTimedQuestStatusesWithEvaluator(
-    quests,
-    definitions,
-    (timing) =>
-      dayKey
-        ? evaluateQuestTimingForDay(timing, dayKey, now)
-        : evaluateQuestTiming(timing, now),
-  )
+  void definitions
+  void _now
+  void _dayKey
+
+  const reconciled = quests.map((quest) => {
+    if (quest.status === 'missed') {
+      return { ...quest, status: 'available' as const }
+    }
+    return quest
+  })
+
+  return questsEqual(reconciled, quests) ? quests : reconciled
 }
 
 /**
- * Like `reconcileTimedQuestStatuses`, but anchors every timed quest to a
- * specific quest-day key. Used when a daily reset is about to fire so the
- * ending day's Sleep/Wake Up are marked `missed` even if the live clock has
- * already rolled into the next calendar morning.
+ * At Hero Day advance: mark still-`available` **required Non-Negotiable** quests
+ * that were active on `dayKey` as `missed`. Bonus / weekly quests reset without
+ * a visible miss state.
  */
 export function reconcileTimedQuestStatusesForDay(
   quests: QuestState[],
   definitions: QuestDefinition[],
   dayKey: string,
-  now: Date = getCurrentGameTime(),
+  _now: Date = getCurrentGameTime(),
 ): QuestState[] {
-  return reconcileTimedQuestStatusesWithEvaluator(
-    quests,
-    definitions,
-    (timing) => evaluateQuestTimingForDay(timing, dayKey, now),
-  )
-}
-
-function reconcileTimedQuestStatusesWithEvaluator(
-  quests: QuestState[],
-  definitions: QuestDefinition[],
-  evaluate: (timing: QuestTiming) => TimingEvaluation,
-): QuestState[] {
+  const dayReference = parseCalendarDateKey(dayKey)
   const definitionMap = new Map(definitions.map((d) => [d.id, d]))
 
   const reconciled = quests.map((quest) => {
-    if (quest.status === 'completed') return quest
-
+    if (quest.status !== 'available') return quest
     const definition = definitionMap.get(quest.id)
-    if (!definition?.timing) {
-      // Untimed: a stuck `missed` (shouldn't happen) is not authoritative.
-      if (quest.status === 'missed') {
-        return { ...quest, status: 'available' as const }
-      }
+    if (!definition || !isQuestActiveOn(definition, dayReference)) {
       return quest
     }
-
-    const timing = evaluate(definition.timing)
-    const shouldBeMissed = timing.phase === 'expired'
-
-    if (shouldBeMissed && quest.status !== 'missed') {
-      return { ...quest, status: 'missed' as const }
+    if (!questSupportsPlayerMiss(definition)) {
+      return quest
     }
-    if (!shouldBeMissed && quest.status === 'missed') {
-      return { ...quest, status: 'available' as const }
-    }
-
-    return quest
+    return { ...quest, status: 'missed' as const }
   })
 
   return questsEqual(reconciled, quests) ? quests : reconciled
@@ -258,7 +231,7 @@ export function findNextTimedQuest(
   /** Calendar day used for weekday/weekend schedule checks. Defaults to `now`. */
   scheduleDate: Date = now,
   /** Active quest-day key for timing evaluation. Defaults to `scheduleDate`'s key. */
-  dayKey: string = formatDateKey(scheduleDate),
+  dayKey: string = formatCalendarDateKey(scheduleDate),
 ): NextTimedQuest | undefined {
   const questStatus = new Map(quests.map((q) => [q.id, q.status]))
 
@@ -273,7 +246,6 @@ export function findNextTimedQuest(
       definition,
       timing: evaluateQuestTimingForDay(definition.timing!, dayKey, now),
     }))
-    .filter(({ timing }) => timing.phase !== 'expired')
     .sort((a, b) => a.timing.deadline.getTime() - b.timing.deadline.getTime())[0]
 }
 

@@ -44,6 +44,7 @@ export interface AnalyticsDashboardModel {
 const SECTION_ORDER: MetricSectionId[] = [
   'hero',
   'questPerformance',
+  'punctuality',
   'categories',
   'subcategories',
   'achievements',

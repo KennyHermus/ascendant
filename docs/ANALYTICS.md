@@ -136,3 +136,38 @@ Implemented in v0.0.3 — separate Dashboard section, shares History data with A
 # Out of Scope
 
 - Workout / nutrition / combat analytics UI
+
+---
+
+# Punctuality Analytics (v0.0.4)
+
+Derived from `GameState.questHistory` completion records for timed quests.
+
+| Metric | Description |
+|--------|-------------|
+| Perfect Rate | Share of timed completions graded `perfect` |
+| On-Time Rate | Share graded `onTime` |
+| Punctual Rate | Perfect + On Time |
+| Avg Minutes Late | Mean positive `minutesOffset` |
+| Avg Minutes Early | Mean early offset (absolute) |
+| Avg Completion Time | Mean clock time of completions |
+
+Engine: `getPunctualityAnalytics()` in `analyticsLogic.ts`.  
+Dashboard section: **Punctuality** via metric registry.
+
+Per-quest punctuality detail lives in **Quest Explorer** — see [QUEST_EXPLORER.md](QUEST_EXPLORER.md).
+
+Hero Day boundaries for period filters: [TIME.md](TIME.md).
+
+---
+
+# Quest Explorer (see [QUEST_EXPLORER.md](QUEST_EXPLORER.md))
+
+Per-quest stats and charts — separate Dashboard section, same period filter as Analytics.
+
+---
+
+# Insights Engine (see [INSIGHTS.md](INSIGHTS.md))
+
+Implemented in v0.0.3 — interprets Analytics / History into behavioral Insight Cards.
+Analytics remain objective statistics; Insights never coach or recommend.

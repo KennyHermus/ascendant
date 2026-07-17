@@ -23,11 +23,7 @@ export function AnalyticsCharts({ period, onDaySelect }: AnalyticsChartsProps) {
   const statSeries = bundle.statSeries(selectedStat)
 
   return (
-    <div className="mt-4 space-y-4 border-t border-stone-700/40 pt-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-violet-400/90">
-        Visualizations
-      </p>
-
+    <div className="space-y-4">
       <Accordion
         title="Hero Progress"
         defaultExpanded={false}

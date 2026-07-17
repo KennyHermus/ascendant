@@ -29,6 +29,7 @@ History is **written as gameplay occurs** (at day advance). It is **not** recons
 | **Lifetime stats** (`Hero.lifetimeStats`) | Running counters on the hero | Yes — incremental, not a time series |
 | **Analytics Engine** | Derived statistics (read-only) | No — computes from History / events / lifetime / hero |
 | **Analytics Dashboard** | Presentation of Engine metrics + Charts | No — renders DTOs only |
+| **Insights Engine** | Behavioral interpretations of Analytics / History | No — Insight Cards only; never coaches |
 | **Hero History UI** | Timeline, calendar, daily browser | No — reads History + events + optional Summary |
 
 ```
@@ -40,6 +41,7 @@ Gameplay (complete quest, miss, level up, …)
          → Daily Snapshot (immutable History record)
               → Analytics Engine (read-only stats)
                    → Analytics Dashboard + Charts
+                   → Insights Engine → Insight Cards
               → Hero History (Timeline / Calendar / Daily Browser)
 ```
 

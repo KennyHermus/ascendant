@@ -26,6 +26,7 @@ export const ANALYTICS_PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
 export type MetricSectionId =
   | 'hero'
   | 'questPerformance'
+  | 'punctuality'
   | 'categories'
   | 'subcategories'
   | 'achievements'
@@ -169,6 +170,56 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     resolve: (a) => ({ value: formatInteger(a.quests.perfectDays) }),
   },
 
+  // ── Punctuality (timed quests, from questHistory) ─────────────────
+  {
+    id: 'perfectRate',
+    title: 'Perfect Rate',
+    section: 'punctuality',
+    supportedPeriods: ALL_PERIODS,
+    resolve: (a) => ({
+      value: formatRatePercent(a.punctuality.perfectPercent),
+      hint:
+        a.punctuality.timedCompletions > 0
+          ? `${a.punctuality.timedCompletions} timed completions`
+          : undefined,
+    }),
+  },
+  {
+    id: 'onTimeRate',
+    title: 'On-Time Rate',
+    section: 'punctuality',
+    supportedPeriods: ALL_PERIODS,
+    resolve: (a) => ({ value: formatRatePercent(a.punctuality.onTimePercent) }),
+  },
+  {
+    id: 'punctualRate',
+    title: 'Punctual Rate',
+    section: 'punctuality',
+    supportedPeriods: ALL_PERIODS,
+    rationale: 'Perfect + On Time grades among timed completions.',
+    resolve: (a) => ({
+      value: formatRatePercent(a.punctuality.punctualPercent),
+    }),
+  },
+  {
+    id: 'avgLate',
+    title: 'Avg Minutes Late',
+    section: 'punctuality',
+    supportedPeriods: ALL_PERIODS,
+    resolve: (a) => ({
+      value: formatDecimal(a.punctuality.avgMinutesLate),
+    }),
+  },
+  {
+    id: 'avgEarly',
+    title: 'Avg Minutes Early',
+    section: 'punctuality',
+    supportedPeriods: ALL_PERIODS,
+    resolve: (a) => ({
+      value: formatDecimal(a.punctuality.avgMinutesEarly),
+    }),
+  },
+
   // ── Achievements (lifetime catalog — not period-scoped) ────────────
   {
     id: 'unlocked',
@@ -278,6 +329,7 @@ export const ANALYTICS_ATTEMPT_METRIC_REGISTRY: AttemptMetricDefinition[] = [
 export const METRIC_SECTION_LABELS: Record<MetricSectionId, string> = {
   hero: 'Hero Progress',
   questPerformance: 'Quest Performance',
+  punctuality: 'Punctuality',
   categories: 'Activity Breakdown',
   subcategories: 'Non-Negotiable Breakdown',
   achievements: 'Achievements',

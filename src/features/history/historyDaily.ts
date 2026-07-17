@@ -1,3 +1,5 @@
+import { QUEST_DEFINITIONS } from '@/data/quests'
+import { isPlayerVisibleQuestFailedEvent } from '@/features/quests/questMissPolicy'
 import { completionRate } from '@/features/analytics/analyticsHelpers'
 import { formatChartDateLabel } from '@/features/analytics/chartPresentation'
 import { getEventsForPeriod, getSnapshot } from '@/features/history/historyLogic'
@@ -39,7 +41,11 @@ export function buildDailyHistoryDetail(input: BuildDailyHistoryInput): DailyHis
     dayEvents.filter((e) => e.type === 'QUEST_COMPLETED'),
   )
   const missedQuests = uniqueQuestEntries(
-    dayEvents.filter((e) => e.type === 'QUEST_FAILED'),
+    dayEvents.filter(
+      (e) =>
+        e.type === 'QUEST_FAILED' &&
+        isPlayerVisibleQuestFailedEvent(e, QUEST_DEFINITIONS),
+    ),
   )
 
   const achievementMap = new Map(achievementDefinitions.map((d) => [d.id, d]))

@@ -24,6 +24,7 @@ export function AnalyticsTestingTools() {
   const quests = useGameStore((s) => s.quests)
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
+  const questHistory = useGameStore((s) => s.questHistory)
 
   const { snapshotCount, eventCount } = useAnalyticsDiagnostics()
   const [seriesPeriod, setSeriesPeriod] = useState<AnalyticsPeriod>('week')
@@ -48,6 +49,7 @@ export function AnalyticsTestingTools() {
         quests,
         achievements,
         dayStartHeroSnapshot,
+        questHistory,
       },
       getCurrentGameTime(),
     )
@@ -61,6 +63,7 @@ export function AnalyticsTestingTools() {
     quests,
     achievements,
     dayStartHeroSnapshot,
+    questHistory,
   ])
 
   return (

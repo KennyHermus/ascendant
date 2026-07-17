@@ -57,13 +57,14 @@ The game exists to encourage:
 
 # Current Version
 
-**Application version:** v0.0.3 (History + Analytics complete)
+**Application version:** v0.0.4 (v0.0.3 milestone complete)
 
 ## Implemented
 
 - Hero Dashboard 2.0 (Hero Banner, Today's Journey, Active Objectives, Recent Progress)
 - Quest system (Non-Negotiables + subcategories, Daily Bonus, Weekly, Weekly Bonus)
-- Timed quests + developer time simulation
+- Timed quests + completion grades (Perfect / On Time / Completed) + reward multipliers
+- Hero Day (5:00 AM boundary) via Time Service
 - Unlock system
 - Streaks (required Non-Negotiables)
 - Category / subcategory completion rewards
@@ -74,10 +75,13 @@ The game exists to encourage:
 - Achievements
 - **History Foundation + Hero History UI** — append-only daily snapshots, timeline, calendar, daily browser; see [HISTORY.md](HISTORY.md)
 - **Analytics Engine + Dashboard + Charts** — read-only stats, metric registry, Recharts visualizations; see [ANALYTICS.md](ANALYTICS.md)
+- **Insights Engine** — behavioral interpretations (Insight Cards); see [INSIGHTS.md](INSIGHTS.md)
+- **Quest Explorer** — per-quest history, stats, charts; see [QUEST_EXPLORER.md](QUEST_EXPLORER.md)
+- **Quest History + punctuality analytics** — see [TIME.md](TIME.md)
 
 ## Current Priority
 
-v0.0.3 is complete. Next: **v0.0.4** Workout and Nutrition Tracking.
+v0.0.3 milestone complete. Next: **v0.0.4** Workout and Nutrition Tracking (gameplay milestone — distinct from save version alignment).
 
 ---
 
@@ -101,4 +105,4 @@ Do not over-engineer early versions.
 
 A fun simple game is better than a complex unfinished game.
 
-Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. History + Analytics already exist — extend via [HISTORY.md](HISTORY.md) / [ANALYTICS.md](ANALYTICS.md), do not replace them.
+Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. History + Analytics + Insights already exist — extend via [HISTORY.md](HISTORY.md) / [ANALYTICS.md](ANALYTICS.md) / [INSIGHTS.md](INSIGHTS.md), do not replace them.

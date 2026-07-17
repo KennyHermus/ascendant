@@ -1,4 +1,11 @@
 import { getCurrentGameTime } from '@/lib/gameTime'
+import {
+  formatCalendarDateKey,
+  getActiveHeroDayKey,
+  getHeroWeekKey,
+  getHeroYesterdayKey,
+  parseCalendarDateKey,
+} from '@/lib/timeService'
 
 /**
  * Stable storage key. Do not embed a version in this string — the persisted
@@ -6,43 +13,26 @@ import { getCurrentGameTime } from '@/lib/gameTime'
  */
 export const STORAGE_KEY = 'ascendant-game'
 
+/** @deprecated Use `formatCalendarDateKey` from `@/lib/timeService`. */
 export function formatDateKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return formatCalendarDateKey(date)
 }
 
+/** Hero Day key for the current moment (5:00 AM boundary). */
 export function getTodayDateString(): string {
-  return formatDateKey(getCurrentGameTime())
+  return getActiveHeroDayKey()
 }
 
-/** ISO week key: YYYY-Www */
+/** ISO week key from Hero Day date. */
 export function getWeekKey(date: Date = getCurrentGameTime()): string {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-  const day = d.getUTCDay() || 7
-  d.setUTCDate(d.getUTCDate() + 4 - day)
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
+  return getHeroWeekKey(date)
 }
 
 export function getYesterdayDateString(): string {
-  const d = getCurrentGameTime()
-  d.setDate(d.getDate() - 1)
-  return formatDateKey(d)
+  return getHeroYesterdayKey()
 }
 
-/**
- * Inverse of `formatDateKey` — reconstructs a `Date` *within* the given
- * calendar day (noon local time, to stay clear of any DST boundary) rather
- * than the current moment. Needed wherever code must evaluate
- * weekday/weekend-aware logic (`isQuestActiveOn`, `getEffectiveCategory`)
- * for a day that has already ended — e.g. finalizing the Daily Summary at
- * the reset boundary, where the *real* current time may already be past
- * midnight into the next day.
- */
+/** @deprecated Use `parseCalendarDateKey` from `@/lib/timeService`. */
 export function parseDateKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split('-').map(Number)
-  return new Date(year, month - 1, day, 12, 0, 0)
+  return parseCalendarDateKey(dateKey)
 }
