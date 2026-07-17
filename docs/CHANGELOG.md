@@ -29,9 +29,15 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - Stabilization: grantXp unlocks achievements; Unlock All uses reward/event pipeline; DevTools analytics panels show inline JSON
 - Docs: [ANALYTICS.md](ANALYTICS.md)
 
-**Not yet in v0.0.3:** Charts, graphs, timeline, heatmaps, calendar, workout tracking.
+### Charts & Visualizations
 
-**Next within v0.0.3:** Charts & Visualizations (consume series builders).
+- Recharts charts (Hero / Quest / Attribute Growth) via `ChartSeries` + period filter
+- DevTools period-scoped series viewer
+- Docs: [ANALYTICS.md](ANALYTICS.md)
+
+**Not yet in v0.0.3:** Hero Timeline, contribution calendar, heatmaps, workout tracking.
+
+**v0.0.3 Analytics milestone complete** (History → Engine → Dashboard → Charts).
 
 ---
 

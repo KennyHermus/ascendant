@@ -139,17 +139,13 @@ First milestone of History & Analytics. **Backend/foundation only** — no chart
 
 Read-only statistics layer — `src/types/analytics.ts`, `src/features/analytics/`. Consumes History snapshots, lifetime stats, hero state, quest definitions, achievements, and the recent event buffer. Period filters: today / week / month / lifetime.
 
-### Analytics Dashboard (also v0.0.3)
+### Analytics Dashboard & Charts (also v0.0.3)
 
-Presentation UI on the Hero Dashboard — `AnalyticsDashboard.tsx`. Consumes `useAnalyticsDashboardModel` only (Engine → presentation DTO). Chart series builders (`analyticsSeries.ts`) prepare data for a future Charts milestone; **no chart library yet**. Full detail: [ANALYTICS.md](ANALYTICS.md).
-
-Next within v0.0.3: **Charts & Visualizations** should call series builders + Engine APIs — never reimplement period math in components.
+Presentation metrics + Recharts visualizations on the Hero Dashboard — `AnalyticsDashboard.tsx`, `AnalyticsCharts.tsx`. Metrics use Engine/registry; charts use `usePeriodChartBundle` → `ChartSeries` only. See [ANALYTICS.md](ANALYTICS.md).
 
 ---
 
 ## Non-Negotiables Restructure & Time Simulation (also v0.0.2)
-
-### Data-driven scheduling instead of hardcoded requirement lists
 
 `QuestDefinition` gained `subcategory` (`morningRoutine` | `nutrition` | `eveningRoutine`, only meaningful for `nonNegotiable`), `schedule` (`{ weekdaysOnly?, streakOnlyOnWeekdays? }`), `contributesToStreak`, and `optional`. There is deliberately no separate "required quests today" list anywhere — `src/features/quests/questSchedule.ts` derives it from the data:
 
@@ -457,7 +453,7 @@ features/
 ├── unlocks/
 ├── events/
 ├── history/          # DailySnapshot persistence
-├── analytics/        # Engine, series builders, Analytics Dashboard (no charts yet)
+├── analytics/        # Engine, series builders, Dashboard, Charts (Recharts)
 ├── dashboard/
 ├── summary/
 └── achievements/
@@ -511,7 +507,7 @@ Design docs for those domains: `docs/COMBAT.md`, `docs/STORY.md`, `docs/ECONOMY.
 
 - **Metric registry** — each dashboard metric declares `supportedPeriods`; UI renders filtered sections only ([ANALYTICS.md](ANALYTICS.md))
 - Read-only derived statistics + presentation Dashboard (`features/analytics/`)
-- Series builders prepare chart-ready data; chart rendering is a later milestone
+- Recharts visualizations via `ChartSeries` + period bundle — see [ANALYTICS.md](ANALYTICS.md)
 
 ## Dashboard
 

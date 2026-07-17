@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Accordion } from '@/components/Accordion'
+import { AnalyticsCharts } from '@/features/analytics/AnalyticsCharts'
 import { AnalyticsPeriodFilter } from '@/features/analytics/AnalyticsPeriodFilter'
 import { useAnalyticsDashboardModel } from '@/features/analytics/analyticsSelectors'
 import { CompletionBar } from '@/features/analytics/components/CompletionBar'
@@ -82,6 +83,8 @@ export function AnalyticsDashboard() {
           </Accordion>
         ))}
       </div>
+
+      <AnalyticsCharts period={period} />
     </SectionPanel>
   )
 }

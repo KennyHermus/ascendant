@@ -104,7 +104,7 @@ A playable daily RPG foundation with:
 - Daily Summary (end-of-day recap)
 - Achievements (data-driven, rarity, Achievement Points)
 - **History Foundation** — append-only daily snapshots ([docs/HISTORY.md](docs/HISTORY.md))
-- **Analytics Engine + Dashboard** — read-only stats + presentation UI ([docs/ANALYTICS.md](docs/ANALYTICS.md))
+- **Analytics Engine + Dashboard + Charts** — stats, metric registry, Recharts ([docs/ANALYTICS.md](docs/ANALYTICS.md))
 - Quest progress aggregation utilities
 - Developer time simulation + quest/achievement/history/analytics testing tools
 
@@ -121,7 +121,7 @@ A playable daily RPG foundation with:
 9. Analytics
 10. Attributes
 
-**Next within v0.0.3:** Charts & Visualizations (consume series builders — not shipped yet)
+**Current version:** v0.0.3 (History, Analytics Engine, Dashboard, Charts complete)
 
 ---
 

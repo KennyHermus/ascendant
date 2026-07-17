@@ -17,6 +17,11 @@ import {
   buildAnalyticsDashboardModel,
   type AnalyticsDashboardModel,
 } from '@/features/analytics/analyticsPresentation'
+import {
+  buildPeriodChartBundle,
+  flattenPeriodChartBundle,
+  type PeriodChartBundle,
+} from '@/features/analytics/analyticsChartSelectors'
 import { buildAllChartSeries } from '@/features/analytics/analyticsSeries'
 import { getSnapshotCount } from '@/features/history/historyLogic'
 import {
@@ -168,7 +173,7 @@ export function useAnalyticsDashboardModel(
   return useMemo(() => buildAnalyticsDashboardModel(analytics), [analytics])
 }
 
-/** Chart-ready series from History snapshots (for DevTools / future Charts). */
+/** Chart-ready series from History snapshots (lifetime, unfiltered — DevTools legacy). */
 export function useChartSeries(): ChartSeries[] {
   const history = useGameStore((s) => s.history)
   return useMemo(
@@ -176,6 +181,46 @@ export function useChartSeries(): ChartSeries[] {
     [history],
   )
 }
+
+/** Period-filtered ChartSeries bundle for charts and DevTools. */
+export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle {
+  const now = useAnalyticsClock()
+  const hero = useGameStore((s) => s.hero)
+  const currentStreak = useGameStore((s) => s.currentStreak)
+  const history = useGameStore((s) => s.history)
+  const events = useGameStore((s) => s.events)
+  const quests = useGameStore((s) => s.quests)
+  const achievements = useGameStore((s) => s.achievements)
+  const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
+
+  return useMemo(() => {
+    const input = selectAnalyticsInput(
+      {
+        hero,
+        currentStreak,
+        history,
+        events,
+        quests,
+        achievements,
+        dayStartHeroSnapshot,
+      },
+      now,
+    )
+    return buildPeriodChartBundle(input, period)
+  }, [
+    period,
+    now,
+    hero,
+    currentStreak,
+    history,
+    events,
+    quests,
+    achievements,
+    dayStartHeroSnapshot,
+  ])
+}
+
+export { buildPeriodChartBundle, flattenPeriodChartBundle }
 
 /** Lightweight counts for DevTools / diagnostics without full recompute. */
 export function useAnalyticsDiagnostics() {

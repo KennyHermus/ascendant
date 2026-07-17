@@ -94,16 +94,17 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ Stabilization: achievement eval on XP grant; Unlock All pipeline; DevTools panels
 ✓ Docs: [ANALYTICS.md](ANALYTICS.md)
 
-**Not in Dashboard:** charts, graphs, timeline, heatmaps, calendar, workout analytics.
+**Not in Dashboard:** timeline, heatmaps, calendar, workout analytics.
 
-## Next: Charts & Visualizations
+## Completed: Charts & Visualizations
 
-Includes:
+✓ Recharts-based charts consuming `ChartSeries` only
+✓ Hero / Quest / Attribute Growth visualizations
+✓ Period-filtered `buildPeriodChartBundle` + `usePeriodChartBundle`
+✓ DevTools period-scoped series inspector
+✓ Docs: [ANALYTICS.md](ANALYTICS.md)
 
-- Progress graphs / trends using `analyticsSeries` builders
-- Stat growth, consistency heatmaps, timeline (as designed)
-
-Should **consume** series builders + Engine APIs — not invent parallel tracking or compute stats in chart components.
+**Not in Charts:** Hero Timeline, contribution calendar, heatmaps, workout/nutrition/combat charts.
 
 ---
 

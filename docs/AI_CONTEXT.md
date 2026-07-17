@@ -57,7 +57,7 @@ The game exists to encourage:
 
 # Current Version
 
-**Application version:** v0.0.3 (History + Analytics Engine + Analytics Dashboard; Charts not yet)
+**Application version:** v0.0.3 (History + Analytics complete)
 
 ## Implemented
 
@@ -73,13 +73,11 @@ The game exists to encourage:
 - Daily Summary
 - Achievements
 - **History Foundation** — append-only daily snapshots (`GameState.history`); see [HISTORY.md](HISTORY.md)
-- **Analytics Engine + Dashboard** — read-only stats + presentation UI; see [ANALYTICS.md](ANALYTICS.md)
+- **Analytics Engine + Dashboard + Charts** — read-only stats, metric registry, Recharts visualizations; see [ANALYTICS.md](ANALYTICS.md)
 
 ## Current Priority
 
-Prefer consuming Analytics Dashboard / series builders over inventing chart-local math.
-
-**Next planned work:** v0.0.3 Charts & Visualizations. Do **not** compute analytics inside chart components.
+v0.0.3 Analytics is complete. Next: **v0.0.4** Workout and Nutrition Tracking.
 
 ---
 
@@ -87,7 +85,6 @@ Prefer consuming Analytics Dashboard / series builders over inventing chart-loca
 
 Future systems (not implemented):
 
-- Charts & Visualizations (**remainder of v0.0.3**)
 - Workout and Nutrition Tracking (**v0.0.4**)
 - Polish (**v0.0.5**)
 - Combat, bosses, abilities, transformations, equipment, inventory, story/world, skills (**v0.1.x only**)
@@ -104,4 +101,4 @@ Do not over-engineer early versions.
 
 A fun simple game is better than a complex unfinished game.
 
-Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. Do not invent chart libraries until the Charts milestone asks for them. History + Analytics Engine + Dashboard already exist — extend via [HISTORY.md](HISTORY.md) / [ANALYTICS.md](ANALYTICS.md), do not replace them.
+Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. History + Analytics already exist — extend via [HISTORY.md](HISTORY.md) / [ANALYTICS.md](ANALYTICS.md), do not replace them.
