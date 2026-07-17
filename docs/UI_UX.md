@@ -42,7 +42,7 @@ Inspirations:
 
 # Main Screens
 
-**Current app (v0.0.2):** a single **Dashboard** — no router. Separate Quest / Progress / Inventory screens below are design targets for later, not separate routes today.
+**Current app (v0.0.3):** a single **Dashboard** — no router. Separate Quest / Progress / Inventory screens below are design targets for later, not separate routes today.
 
 ## Hero Dashboard (implemented)
 
@@ -58,7 +58,8 @@ Section order:
 6. Quests
 7. Recent Progress
 8. Achievements
-9. Attributes
+9. Analytics
+10. Attributes
 
 ---
 
@@ -70,16 +71,15 @@ Today this content lives in the Quests accordion on the Dashboard.
 
 ---
 
-## Progress Screen (future)
+## Progress Screen (Analytics Dashboard — implemented)
 
-Purpose: show improvement (History & Analytics — planned for v0.0.3).
+Purpose: show improvement from History via the Analytics Engine.
 
-Contains (planned):
+Contains:
 
-- Stat growth over time
-- Achievements (already on Dashboard)
-- Milestones / graphs
-
+- Period filters (Today / This Week / This Month / Lifetime)
+- Hero / quest / category / subcategory / achievement / history metrics
+- Chart series builders ready for a future Charts milestone (no graphs yet)
 ---
 
 # UX Principles

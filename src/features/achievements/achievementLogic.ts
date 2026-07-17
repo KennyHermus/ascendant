@@ -221,6 +221,41 @@ export function evaluateAchievements(
   return { states: changed ? nextStates : states, newlyUnlocked }
 }
 
+/**
+ * Marks every still-locked achievement as unlocked (DevTools "Unlock All").
+ * Does not check conditions — callers must still run `applyAchievementRewards`
+ * and emit `ACHIEVEMENT_UNLOCKED` events so the side-effects match a real unlock.
+ */
+export function forceUnlockAchievements(
+  definitions: AchievementDefinition[],
+  states: AchievementState[],
+  now: Date = getCurrentGameTime(),
+): AchievementEvaluationResult {
+  const stateMap = new Map(states.map((s) => [s.id, s]))
+  const newlyUnlocked: AchievementDefinition[] = []
+  const unlockedAt = now.toISOString()
+
+  const nextStates = definitions.map((definition) => {
+    const existing =
+      stateMap.get(definition.id) ?? {
+        id: definition.id,
+        unlocked: false,
+        unlockedAt: null,
+      }
+
+    if (existing.unlocked) return existing
+
+    newlyUnlocked.push(definition)
+    return { id: definition.id, unlocked: true, unlockedAt }
+  })
+
+  if (newlyUnlocked.length === 0) {
+    return { states, newlyUnlocked }
+  }
+
+  return { states: nextStates, newlyUnlocked }
+}
+
 /** "+25 XP, +5 Gold" — only formats the reward kinds that are actually implemented. */
 export function formatAchievementRewards(rewards: AchievementReward[]): string {
   return rewards

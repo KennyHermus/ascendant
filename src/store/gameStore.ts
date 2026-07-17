@@ -8,6 +8,7 @@ import {
   applyAchievementRewards,
   createInitialAchievementStates,
   evaluateAchievements,
+  forceUnlockAchievements,
   mergeAchievementStates,
 } from '@/features/achievements/achievementLogic'
 import {
@@ -19,10 +20,19 @@ import {
   recordLevelUp,
   recordQuestCompleted,
 } from '@/features/events/eventLogic'
+import {
+  buildDailySnapshot,
+  createEmptyHistory,
+  deleteLatestSnapshot,
+  mergeHistory,
+  recordDailySnapshot,
+  resetHistory,
+} from '@/features/history/historyLogic'
 import { captureDayStartSnapshot, generateDailySummary, isDailySummaryAvailable } from '@/features/summary/dailySummaryLogic'
 import { applyStatRewards, createInitialHero } from '@/features/hero/heroLogic'
 import {
   createInitialLifetimeStats,
+  recordBonusEarnings,
   recordQuestCompletionStats,
   recordStreakForLifetimeStats,
 } from '@/features/hero/lifetimeStats'
@@ -68,6 +78,7 @@ import type {
   QuestCategory,
   QuestState,
 } from '@/types/quest'
+import type { HeroHistory } from '@/types/history'
 import type { DayStartHeroSnapshot, SummarySnapshot } from '@/types/summary'
 import type { UnlockState } from '@/types/unlock'
 
@@ -117,11 +128,19 @@ interface GameState {
   /**
    * Persisted per-achievement unlock record, one entry per
    * `ACHIEVEMENT_DEFINITIONS` id. Never re-locked once unlocked — see
-   * `evaluateAchievements`. Re-evaluated inline inside `completeQuest`
+   * `evaluateAchievements`. Re-evaluated after quest completion and after
+   * any path that can change achievement-relevant hero state (e.g. `grantXp`
+   * level-ups, `syncAchievements` on load).
    * (the moment any achievement-relevant stat can change) and once more
    * on rehydrate as a backfill safety net (`syncAchievements`).
    */
   achievements: AchievementState[]
+  /**
+   * Long-term History Foundation (v0.0.3) — append-only daily snapshots for
+   * future Analytics. Distinct from the recent `events` buffer and from the
+   * UI-facing `dailySummary`. See `docs/HISTORY.md`.
+   */
+  history: HeroHistory
 }
 
 interface GameActions {
@@ -181,6 +200,15 @@ interface GameActions {
   devUnlockAllAchievements: () => void
   /** Dev-only: force-relocks every achievement, discarding progress. No-ops outside DEV. */
   devResetAchievements: () => void
+  /**
+   * Dev-only: finalize a daily history snapshot for the active quest day from
+   * current state. No-ops if that date already has a snapshot. No-ops outside DEV.
+   */
+  devRecordTodaySnapshot: () => boolean
+  /** Dev-only: removes the chronologically latest daily snapshot. No-ops outside DEV. */
+  devDeleteLatestSnapshot: () => void
+  /** Dev-only: clears all history snapshots; does not touch quests/hero/events. No-ops outside DEV. */
+  devResetHistory: () => void
 }
 
 type GameStore = GameState & GameActions
@@ -207,6 +235,7 @@ function createInitialState(): GameState {
     dailySummaryViewed: false,
     dayStartHeroSnapshot: captureDayStartSnapshot(hero),
     achievements: createInitialAchievementStates(ACHIEVEMENT_DEFINITIONS),
+    history: createEmptyHistory(),
   }
 }
 
@@ -388,17 +417,38 @@ export const useGameStore = create<GameStore>()(
           questsForReset = swept
         }
 
+        const eventsWithMisses = appendEvents(state.events, missedEvents)
         const stateForReset: GameState = {
           ...state,
           quests: questsForReset,
+          events: eventsWithMisses,
         }
 
-        // Finalize the ending day's summary only when advancing (not when
-        // rewinding simulated time back into a prior quest day).
-        const dailySummaryPatch =
-          advancingDaily && lastDailyResetDate
-            ? finalizeDailySummaryForEndingDay(stateForReset, lastDailyResetDate)
-            : {}
+        // Finalize ending-day Daily Summary + History snapshot only when
+        // advancing (not when rewinding simulated time).
+        let dailySummaryPatch: Partial<GameState> = {}
+        let history = state.history
+        if (advancingDaily && lastDailyResetDate) {
+          dailySummaryPatch = finalizeDailySummaryForEndingDay(
+            stateForReset,
+            lastDailyResetDate,
+          )
+          // Build the history rollup from pre-reset state (and pre-roll
+          // dayStartHeroSnapshot) so xp/gold deltas stay accurate.
+          history = recordDailySnapshot(
+            state.history,
+            buildDailySnapshot({
+              date: lastDailyResetDate,
+              hero: state.hero,
+              quests: questsForReset,
+              questDefinitions: QUEST_DEFINITIONS,
+              events: eventsWithMisses,
+              streak: state.currentStreak,
+              dayStartSnapshot: state.dayStartHeroSnapshot,
+              now,
+            }),
+          )
+        }
 
         const streakBefore = getStreakSnapshot(state)
         const resetPatch = computeResetPatch(
@@ -410,8 +460,7 @@ export const useGameStore = create<GameStore>()(
           currentStreak: resetPatch.currentStreak,
           lastNonNegotiableCompleteDate: resetPatch.lastNonNegotiableCompleteDate,
         }
-        const events = appendEvents(state.events, [
-          ...missedEvents,
+        const events = appendEvents(eventsWithMisses, [
           ...deriveStreakEvents(streakBefore, streakAfter, now),
         ])
 
@@ -419,6 +468,7 @@ export const useGameStore = create<GameStore>()(
           ...resetPatch,
           ...dailySummaryPatch,
           events,
+          history,
           lastDailyResetDate: resetDaily ? today : lastDailyResetDate,
           lastWeeklyResetWeek: resetWeekly ? week : lastWeeklyResetWeek,
         })
@@ -495,6 +545,7 @@ export const useGameStore = create<GameStore>()(
 
       syncAchievements: () => {
         const state = get()
+        const now = getCurrentGameTime()
         const { states, newlyUnlocked } = evaluateAchievements(
           ACHIEVEMENT_DEFINITIONS,
           state.achievements,
@@ -503,7 +554,7 @@ export const useGameStore = create<GameStore>()(
             quests: state.quests,
             questDefinitions: QUEST_DEFINITIONS,
             currentStreak: state.currentStreak,
-            now: getCurrentGameTime(),
+            now,
           },
         )
 
@@ -514,13 +565,22 @@ export const useGameStore = create<GameStore>()(
           return
         }
 
-        const { hero } = applyAchievementRewards(state.hero, newlyUnlocked)
-        const events = appendEvents(
-          state.events,
-          newlyUnlocked.map((achievement) => recordAchievementUnlocked(achievement)),
+        const { hero, levelsGained } = applyAchievementRewards(
+          state.hero,
+          newlyUnlocked,
         )
+        const newEvents: GameEvent[] = newlyUnlocked.map((achievement) =>
+          recordAchievementUnlocked(achievement, now),
+        )
+        if (levelsGained > 0) {
+          newEvents.push(recordLevelUp(hero.level, now))
+        }
 
-        set({ achievements: states, hero, events })
+        set({
+          achievements: states,
+          hero,
+          events: appendEvents(state.events, newEvents),
+        })
       },
 
       evaluateUnlocks: () => {
@@ -608,13 +668,34 @@ export const useGameStore = create<GameStore>()(
 
       devUnlockAllAchievements: () => {
         if (!import.meta.env.DEV) return
-        const now = getCurrentGameTime().toISOString()
+
+        const state = get()
+        const now = getCurrentGameTime()
+        const { states, newlyUnlocked } = forceUnlockAchievements(
+          ACHIEVEMENT_DEFINITIONS,
+          state.achievements,
+          now,
+        )
+
+        if (newlyUnlocked.length === 0) return
+
+        // Same reward + event pipeline as a legitimate evaluate/unlock —
+        // only the condition check is bypassed (that's the point of Unlock All).
+        const { hero, levelsGained } = applyAchievementRewards(
+          state.hero,
+          newlyUnlocked,
+        )
+        const newEvents: GameEvent[] = newlyUnlocked.map((achievement) =>
+          recordAchievementUnlocked(achievement, now),
+        )
+        if (levelsGained > 0) {
+          newEvents.push(recordLevelUp(hero.level, now))
+        }
+
         set({
-          achievements: ACHIEVEMENT_DEFINITIONS.map((definition) => ({
-            id: definition.id,
-            unlocked: true,
-            unlockedAt: now,
-          })),
+          achievements: states,
+          hero,
+          events: appendEvents(state.events, newEvents),
         })
       },
 
@@ -759,12 +840,10 @@ export const useGameStore = create<GameStore>()(
           QUEST_DEFINITIONS,
         )
 
-        // Achievements are evaluated right here rather than in a separate
-        // pass — this is the one place every achievement-relevant stat
-        // (level, streak, lifetime counts, today's category completion)
-        // can actually change, satisfying "event-driven, don't scan every
-        // achievement every render" without needing a dedicated event
-        // subscription mechanism.
+        // Achievements are evaluated after quest completion (and also after
+        // `grantXp` / `syncAchievements` when hero state changes without a
+        // quest). Conditions that depend on today's quest state still land
+        // here as the primary path.
         const achievementEvaluationTime = getCurrentGameTime()
         const { states: achievements, newlyUnlocked } = evaluateAchievements(
           ACHIEVEMENT_DEFINITIONS,
@@ -827,14 +906,90 @@ export const useGameStore = create<GameStore>()(
       grantXp: (amount: number) => {
         if (!import.meta.env.DEV || amount <= 0) return
 
-        const { hero } = get()
-        const { hero: leveledHero } = addXp(hero, amount)
+        const state = get()
+        const now = getCurrentGameTime()
+        const { hero: leveledHero, levelsGained } = addXp(state.hero, amount)
+        const heroWithLifetime: Hero = {
+          ...leveledHero,
+          lifetimeStats: recordBonusEarnings(leveledHero.lifetimeStats, {
+            xpEarned: amount,
+            goldEarned: 0,
+          }),
+        }
 
-        set({ hero: leveledHero })
+        // Level (and other hero-state) achievements must unlock here too —
+        // not only inside `completeQuest`.
+        const { states: achievements, newlyUnlocked } = evaluateAchievements(
+          ACHIEVEMENT_DEFINITIONS,
+          state.achievements,
+          {
+            hero: heroWithLifetime,
+            quests: state.quests,
+            questDefinitions: QUEST_DEFINITIONS,
+            currentStreak: state.currentStreak,
+            now,
+          },
+        )
+        const { hero, levelsGained: bonusLevelsGained } = applyAchievementRewards(
+          heroWithLifetime,
+          newlyUnlocked,
+        )
+
+        const newEvents: GameEvent[] = newlyUnlocked.map((achievement) =>
+          recordAchievementUnlocked(achievement, now),
+        )
+        if (levelsGained > 0) {
+          newEvents.push(recordLevelUp(leveledHero.level, now))
+        }
+        if (bonusLevelsGained > 0) {
+          newEvents.push(recordLevelUp(hero.level, now))
+        }
+
+        set({
+          hero,
+          achievements,
+          events: appendEvents(state.events, newEvents),
+        })
       },
 
       resetProgress: () => {
         set(createInitialState())
+      },
+
+      devRecordTodaySnapshot: () => {
+        if (!import.meta.env.DEV) return false
+
+        const state = get()
+        const now = getCurrentGameTime()
+        const date = getActiveQuestDayKey(QUEST_DEFINITIONS, now)
+        const before = state.history
+        const next = recordDailySnapshot(
+          before,
+          buildDailySnapshot({
+            date,
+            hero: state.hero,
+            quests: state.quests,
+            questDefinitions: QUEST_DEFINITIONS,
+            events: state.events,
+            streak: state.currentStreak,
+            dayStartSnapshot: state.dayStartHeroSnapshot,
+            now,
+          }),
+        )
+
+        if (next === before) return false
+        set({ history: next })
+        return true
+      },
+
+      devDeleteLatestSnapshot: () => {
+        if (!import.meta.env.DEV) return
+        set({ history: deleteLatestSnapshot(get().history) })
+      },
+
+      devResetHistory: () => {
+        if (!import.meta.env.DEV) return
+        set({ history: resetHistory() })
       },
     }),
     {
@@ -924,6 +1079,9 @@ export const useGameStore = create<GameStore>()(
           // mergeAchievementStates defaults it safely (all locked), and
           // syncAchievements() below backfills anything already earned.
           achievements: mergeAchievementStates(saved.achievements, ACHIEVEMENT_DEFINITIONS),
+          // Missing on any save from before v0.0.3 — empty history is safe;
+          // the 0.0.2 → 0.0.3 migration also writes this field.
+          history: mergeHistory(saved.history),
         }
       },
       onRehydrateStorage: () => (state) => {

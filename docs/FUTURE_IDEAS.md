@@ -6,7 +6,7 @@ Version: 0.1
 
 This document contains possible expansions.
 
-Nothing here is required for the current version (v0.0.2) or for v0.0.3–v0.0.5 unless promoted into `IMPLEMENTATION_PLAN.md`.
+Nothing here is required for the current version (v0.0.3 History Foundation) or for remaining v0.0.3–v0.0.5 work unless promoted into `IMPLEMENTATION_PLAN.md`.
 
 ---
 

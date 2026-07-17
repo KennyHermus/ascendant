@@ -63,18 +63,47 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 
 ---
 
-# Next: v0.0.3 — History and Analytics
+# In Progress: v0.0.3 — History and Analytics
+
+## Completed: History Foundation
+
+✓ Persistent `HeroHistory` with append-only `DailySnapshot` records
+✓ Written on quest-day advance (application / simulated time)
+✓ Save migration `0.0.2 → 0.0.3`
+✓ History DevTools (generate / delete latest / reset history / count)
+✓ Docs: [HISTORY.md](HISTORY.md)
+
+**Not in Foundation:** charts, graphs, History page, Analytics page, calendar, workout tracking.
+
+## Completed: Analytics Engine
+
+✓ Read-only Analytics feature (`features/analytics/`)
+✓ Period filters: today / week / month / lifetime
+✓ Hero, quest, timed quest, progress, history, achievement stats
+✓ Memoized selectors + DevTools inspector
+✓ Docs: [ANALYTICS.md](ANALYTICS.md)
+
+**Not in Engine:** charts, graphs, History page, Analytics page, calendar, workout analytics.
+
+## Completed: Analytics Dashboard
+
+✓ Presentation Analytics Dashboard with period filters
+✓ Reusable metric / progress UI components
+✓ Chart series builders (no chart rendering)
+✓ Metric registry (period-aware display rules outside React)
+✓ Stabilization: achievement eval on XP grant; Unlock All pipeline; DevTools panels
+✓ Docs: [ANALYTICS.md](ANALYTICS.md)
+
+**Not in Dashboard:** charts, graphs, timeline, heatmaps, calendar, workout analytics.
+
+## Next: Charts & Visualizations
 
 Includes:
 
-- Historical quest data
-- Progress graphs
-- Stat trends
-- Completion trends
+- Progress graphs / trends using `analyticsSeries` builders
+- Stat growth, consistency heatmaps, timeline (as designed)
 
-Should **consume** existing foundations — `GameState.events`, `lifetimeStats`, quest progress utilities, and summary snapshots — not invent parallel tracking or reconstruct history by scanning current quest state.
-
-**Event retention:** v0.0.2 keeps a recent-event buffer (~50). v0.0.3 should introduce long-term historical storage; do not change that until this milestone.
+Should **consume** series builders + Engine APIs — not invent parallel tracking or compute stats in chart components.
 
 ---
 

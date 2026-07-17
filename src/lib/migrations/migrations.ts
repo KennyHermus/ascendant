@@ -4,7 +4,7 @@ import type { SaveMigration } from '@/lib/migrations/types'
  * Semantic save version, kept aligned with the app/git version.
  * Bump this whenever the persisted shape changes, and add a migration below.
  */
-export const CURRENT_SAVE_VERSION = '0.0.2'
+export const CURRENT_SAVE_VERSION = '0.0.3'
 
 /**
  * Saves written before `saveVersion` existed have no version field at all.
@@ -15,7 +15,7 @@ export const LEGACY_SAVE_VERSION = '0.0.1'
 
 /**
  * Ordered upgrade steps. To add a future migration, append a new entry
- * (e.g. `{ fromVersion: '0.0.2', toVersion: '0.0.3', migrate: ... }`) and
+ * (e.g. `{ fromVersion: '0.0.3', toVersion: '0.0.4', migrate: ... }`) and
  * bump `CURRENT_SAVE_VERSION`. No other file needs to change.
  */
 const MIGRATIONS: SaveMigration[] = [
@@ -69,6 +69,20 @@ const MIGRATIONS: SaveMigration[] = [
         },
       }
     },
+  },
+  {
+    fromVersion: '0.0.2',
+    toVersion: '0.0.3',
+    // v0.0.3 History Foundation: long-term `HeroHistory` with append-only
+    // daily snapshots. Empty history is a safe default for prior saves.
+    migrate: (state) => ({
+      ...state,
+      saveVersion: '0.0.3',
+      history: state.history ?? {
+        schemaVersion: 1,
+        dailySnapshots: [],
+      },
+    }),
   },
 ]
 

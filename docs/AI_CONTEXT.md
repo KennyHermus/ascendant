@@ -57,7 +57,7 @@ The game exists to encourage:
 
 # Current Version
 
-**Application version:** v0.0.2
+**Application version:** v0.0.3 (History + Analytics Engine + Analytics Dashboard; Charts not yet)
 
 ## Implemented
 
@@ -67,17 +67,19 @@ The game exists to encourage:
 - Unlock system
 - Streaks (required Non-Negotiables)
 - Category / subcategory completion rewards
-- Internal GameEvent tracking (foundation)
+- Internal GameEvent tracking (recent buffer)
 - Quest progress aggregation utilities
 - Lifetime statistics
 - Daily Summary
 - Achievements
+- **History Foundation** — append-only daily snapshots (`GameState.history`); see [HISTORY.md](HISTORY.md)
+- **Analytics Engine + Dashboard** — read-only stats + presentation UI; see [ANALYTICS.md](ANALYTICS.md)
 
 ## Current Priority
 
-Maintain a clean, extensible foundation. Prefer consuming existing systems (events, progress utilities, lifetime stats) over inventing parallel ones.
+Prefer consuming Analytics Dashboard / series builders over inventing chart-local math.
 
-**Next planned milestone:** v0.0.3 — History & Analytics (historical quest data, progress graphs, stat/completion trends). Do not mark History or Analytics as complete.
+**Next planned work:** v0.0.3 Charts & Visualizations. Do **not** compute analytics inside chart components.
 
 ---
 
@@ -85,7 +87,7 @@ Maintain a clean, extensible foundation. Prefer consuming existing systems (even
 
 Future systems (not implemented):
 
-- History & Analytics (**v0.0.3**)
+- Charts & Visualizations (**remainder of v0.0.3**)
 - Workout and Nutrition Tracking (**v0.0.4**)
 - Polish (**v0.0.5**)
 - Combat, bosses, abilities, transformations, equipment, inventory, story/world, skills (**v0.1.x only**)
@@ -102,4 +104,4 @@ Do not over-engineer early versions.
 
 A fun simple game is better than a complex unfinished game.
 
-Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. Do not invent History/Analytics storage until **v0.0.3**.
+Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. Do not invent chart libraries until the Charts milestone asks for them. History + Analytics Engine + Dashboard already exist — extend via [HISTORY.md](HISTORY.md) / [ANALYTICS.md](ANALYTICS.md), do not replace them.

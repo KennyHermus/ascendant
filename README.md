@@ -67,9 +67,9 @@ Complete quests
 
 # Current Version
 
-## v0.0.2
+## v0.0.3
 
-Current application version: **0.0.2**
+Current application version: **0.0.3**
 
 A playable daily RPG foundation with:
 
@@ -103,8 +103,10 @@ A playable daily RPG foundation with:
 - Internal GameEvent log (Recent Progress foundation)
 - Daily Summary (end-of-day recap)
 - Achievements (data-driven, rarity, Achievement Points)
+- **History Foundation** — append-only daily snapshots ([docs/HISTORY.md](docs/HISTORY.md))
+- **Analytics Engine + Dashboard** — read-only stats + presentation UI ([docs/ANALYTICS.md](docs/ANALYTICS.md))
 - Quest progress aggregation utilities
-- Developer time simulation + quest/achievement testing tools
+- Developer time simulation + quest/achievement/history/analytics testing tools
 
 **Dashboard order**
 
@@ -116,9 +118,10 @@ A playable daily RPG foundation with:
 6. Quests
 7. Recent Progress
 8. Achievements
-9. Attributes
+9. Analytics
+10. Attributes
 
-**Next milestone:** v0.0.3 — History & Analytics
+**Next within v0.0.3:** Charts & Visualizations (consume series builders — not shipped yet)
 
 ---
 
@@ -167,6 +170,8 @@ Ascendant should prioritize:
 ## Technical Design
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/HISTORY.md](docs/HISTORY.md)
+- [docs/ANALYTICS.md](docs/ANALYTICS.md)
 - [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md)
 - [docs/UI_UX.md](docs/UI_UX.md)
 - [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)

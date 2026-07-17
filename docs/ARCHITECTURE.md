@@ -1,6 +1,6 @@
 # Ascendant Technical Architecture
 
-Version: 0.2 (aligned with Ascendant v0.0.2)
+Version: 0.3 (aligned with Ascendant v0.0.3)
 
 ---
 
@@ -112,7 +112,7 @@ Missed quests grant no rewards and no penalties, and cannot be completed — `co
 
 ### Save Versioning & Migrations
 
-Persisted state carries a top-level `saveVersion` field (`GameState.saveVersion`), aligned with the app's semantic version (e.g. `"0.0.2"` for git `v0.0.2`).
+Persisted state carries a top-level `saveVersion` field (`GameState.saveVersion`), aligned with the app's semantic version (e.g. `"0.0.3"` for git `v0.0.3`).
 
 Migrations are centralized in `src/lib/migrations/`:
 
@@ -122,6 +122,28 @@ Migrations are centralized in `src/lib/migrations/`:
 The Zustand store only wires in `storage: createMigratingStorage()` — it contains no migration rules itself. Adding a future migration means appending one entry to `MIGRATIONS` and bumping `CURRENT_SAVE_VERSION`; no other file changes.
 
 **Why `normalizeShape()` exists**: v0.0.2's two features both wrote `saveVersion: "0.0.2"`, but the quest restructure changed the shape again *after* that version number was already in use during development. A save tagged `"0.0.2"` could therefore be in either shape. Since version-matching alone can't disambiguate two shapes sharing one version string, `migrateSaveData()` always runs a normalization pass after the version loop — it detects and fixes the older shape's field names regardless of the version string, and is a no-op on already-current data. This is a one-off consequence of not bumping the version mid-feature; future shape changes should get their own version bump and migration step instead of relying on this pass.
+
+---
+
+## v0.0.3 Implementation Notes — History Foundation
+
+First milestone of History & Analytics. **Backend/foundation only** — no charts, History page, or Analytics UI.
+
+- **`HeroHistory` / `DailySnapshot`** — `src/types/history.ts`, pure helpers in `src/features/history/historyLogic.ts`.
+- **Persistence** — `GameState.history`; save version `0.0.3`; migration `0.0.2 → 0.0.3` seeds empty history.
+- **Write path** — when the quest day **advances** in `applyPeriodResets`, build a snapshot from pre-reset state and `recordDailySnapshot` (idempotent per date). Uses application/simulated time via `getCurrentGameTime()` and the same quest-day key as daily reset.
+- **Relationship** — Events = fine-grained recent moments; Daily Snapshot = long-term day rollup; Daily Summary = player-facing report. Full detail: [HISTORY.md](HISTORY.md).
+- **DevTools** — `HistoryTestingTools.tsx`: generate today's snapshot, delete latest, reset history only, show count.
+
+### Analytics Engine (also v0.0.3)
+
+Read-only statistics layer — `src/types/analytics.ts`, `src/features/analytics/`. Consumes History snapshots, lifetime stats, hero state, quest definitions, achievements, and the recent event buffer. Period filters: today / week / month / lifetime.
+
+### Analytics Dashboard (also v0.0.3)
+
+Presentation UI on the Hero Dashboard — `AnalyticsDashboard.tsx`. Consumes `useAnalyticsDashboardModel` only (Engine → presentation DTO). Chart series builders (`analyticsSeries.ts`) prepare data for a future Charts milestone; **no chart library yet**. Full detail: [ANALYTICS.md](ANALYTICS.md).
+
+Next within v0.0.3: **Charts & Visualizations** should call series builders + Engine APIs — never reimplement period math in components.
 
 ---
 
@@ -356,6 +378,8 @@ src/
 │   ├── dashboard/       # Active Objectives, Next Objective (cross-cutting)
 │   ├── events/          # GameEvent constructors/formatters, Recent Progress
 │   ├── hero/            # Hero Banner, stats panel, titles, lifetime stats
+│   ├── history/         # Long-term DailySnapshot History (no UI yet)
+│   ├── analytics/       # Engine + series builders + Analytics Dashboard
 │   ├── progression/     # XP / level-up pure logic
 │   ├── quests/          # Quest list/cards, timing, schedule, progress aggregation
 │   ├── summary/         # Daily Summary logic + UI
@@ -363,7 +387,7 @@ src/
 ├── lib/                 # gameTime, storage, save migrations
 ├── store/               # Zustand gameStore (single persisted store)
 ├── types/               # Shared TypeScript models
-├── dev/                 # Dev-only tools (time sim, bulk complete, achievements)
+├── dev/                 # Dev-only tools (time sim, quests, achievements, history, analytics)
 └── assets/              # Static assets
 ```
 
@@ -379,26 +403,28 @@ These principles apply to every new feature. They are the source of truth for ho
 
 - **UI must not contain game logic** — components render results of pure functions and store actions.
 - **Definitions are data-driven** — quests, unlocks, and achievements live in data/definition files, not hardcoded in components.
-- **Shared calculations belong in logic modules** — e.g. `questProgress.ts`, `eventLogic.ts`, `lifetimeStats.ts`, `dailySummaryLogic.ts`.
+- **Shared calculations belong in logic modules** — e.g. `questProgress.ts`, `eventLogic.ts`, `lifetimeStats.ts`, `dailySummaryLogic.ts`, `historyLogic.ts`, `analyticsLogic.ts`.
 
 ## Consume existing foundations
 
-Future systems (especially **v0.0.3 History & Analytics**, and later combat/world features) must **consume** these foundations rather than reinventing them:
+Future systems (especially **v0.0.3 Analytics UI**, and later combat/world features) must **consume** these foundations rather than reinventing them:
 
 | Foundation | Location | Purpose |
 |------------|----------|---------|
-| **`GameState.events`** | `types/event.ts`, `features/events/` | Meaningful gameplay moments already recorded chronologically |
-| **`lifetimeStats`** | `Hero.lifetimeStats` | Incremental long-term counters (never recomputed by scanning history) |
+| **`GameState.events`** | `types/event.ts`, `features/events/` | Fine-grained recent moments (capped buffer for UI) |
+| **`GameState.history`** | `types/history.ts`, `features/history/` | Append-only daily snapshots for long-term trends |
+| **Analytics Engine** | `types/analytics.ts`, `features/analytics/` | Read-only derived stats over History / lifetime / events |
+| **`lifetimeStats`** | `Hero.lifetimeStats` | Incremental long-term counters (not a time series) |
 | **Quest progress** | `features/quests/questProgress.ts` | Completed / total / percent for any category or subcategory slice |
-| **Summary snapshots** | `types/summary.ts` `SummarySnapshot` | Period-generic recap shape (daily today; weekly/monthly later) |
+| **Daily Summary** | `types/summary.ts` `SummarySnapshot` | Player-facing period recap (not an Analytics input) |
 
-**Do not** reconstruct history by scanning current quest state (quest statuses reset daily/weekly and cannot answer "what happened last week"). Prefer events, lifetime stats, and frozen summary snapshots.
+**Do not** reconstruct history by scanning current quest state (quest statuses reset daily/weekly and cannot answer "what happened last week"). Prefer `HeroHistory` daily snapshots for multi-day series; use the Analytics Engine for derived metrics. Full detail: [HISTORY.md](HISTORY.md), [ANALYTICS.md](ANALYTICS.md).
 
 ## Event retention strategy
 
-**Current (v0.0.2):** `GameState.events` is a **recent-event** buffer. `appendEvents()` keeps only the most recent **50** entries. That is enough for the Dashboard's Recent Progress section and for Daily Summary's "Major Events" slice for the current (or just-ended) day. It is **not** long-term historical storage.
+**Recent events:** `GameState.events` remains a **recent-event** buffer. `appendEvents()` keeps only the most recent **50** entries for Recent Progress and Daily Summary's "Major Events" slice. It is **not** long-term historical storage.
 
-**Future (v0.0.3 — History & Analytics):** introduce dedicated long-term historical storage (separate from or layered on top of the recent buffer) so graphs and trends can span weeks/months. Do **not** implement that storage change until the v0.0.3 milestone. Until then, keep emitting into the recent buffer so History can later consume the same event types.
+**Long-term History + Analytics (v0.0.3):** `GameState.history` stores append-only `DailySnapshot` records. The Analytics Engine reads those snapshots (plus lifetime stats / limited events). Future charts should call Analytics APIs — not scan the event buffer as a complete archive. See [HISTORY.md](HISTORY.md) and [ANALYTICS.md](ANALYTICS.md).
 
 ---
 
@@ -421,7 +447,7 @@ features/
 
 # Core Features
 
-## Implemented (v0.0.2)
+## Implemented (through v0.0.3 History Foundation)
 
 ```
 features/
@@ -430,6 +456,8 @@ features/
 ├── progression/
 ├── unlocks/
 ├── events/
+├── history/          # DailySnapshot persistence
+├── analytics/        # Engine, series builders, Analytics Dashboard (no charts yet)
 ├── dashboard/
 ├── summary/
 └── achievements/
@@ -472,7 +500,18 @@ Design docs for those domains: `docs/COMBAT.md`, `docs/STORY.md`, `docs/ECONOMY.
 
 ## Events
 
-- GameEvent construction, formatting, Recent Progress
+- GameEvent construction, formatting, Recent Progress (capped recent buffer)
+
+## History
+
+- Append-only daily snapshots for long-term progression (`features/history/`)
+- See [HISTORY.md](HISTORY.md)
+
+## Analytics
+
+- **Metric registry** — each dashboard metric declares `supportedPeriods`; UI renders filtered sections only ([ANALYTICS.md](ANALYTICS.md))
+- Read-only derived statistics + presentation Dashboard (`features/analytics/`)
+- Series builders prepare chart-ready data; chart rendering is a later milestone
 
 ## Dashboard
 
@@ -480,7 +519,7 @@ Design docs for those domains: `docs/COMBAT.md`, `docs/STORY.md`, `docs/ECONOMY.
 
 ## Summary
 
-- Daily Summary generation and UI (period-generic snapshot shape)
+- Daily Summary generation and UI (period-generic snapshot shape; presentation, not Analytics DB)
 
 ## Achievements
 

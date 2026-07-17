@@ -10,6 +10,7 @@ import { useAchievementUnlockPopups } from '@/features/achievements/useAchieveme
 import { ActiveObjectives } from '@/features/dashboard/ActiveObjectives'
 import { getActiveObjectives } from '@/features/dashboard/activeObjectivesLogic'
 import { getNextObjective } from '@/features/dashboard/nextObjectiveLogic'
+import { AnalyticsDashboard } from '@/features/analytics/AnalyticsDashboard'
 import { getRecentEvents } from '@/features/events/eventLogic'
 import { RecentProgress } from '@/features/events/RecentProgress'
 import { HeroBanner } from '@/features/hero/HeroBanner'
@@ -148,6 +149,7 @@ export function Dashboard() {
         <QuestList quests={quests} onComplete={completeQuest} />
         <RecentProgress events={recentEvents} />
         <AchievementPanel states={achievements} context={achievementContext} />
+        <AnalyticsDashboard />
         <StatsPanel stats={hero.stats} />
 
         {import.meta.env.DEV && <DevToolsLazy />}

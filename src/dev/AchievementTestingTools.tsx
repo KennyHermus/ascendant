@@ -7,11 +7,10 @@ const resetButtonClass =
   'rounded-md border border-red-700/50 bg-red-900/30 px-2.5 py-1 text-xs text-red-200 transition hover:bg-red-900/50'
 
 /**
- * Developer-only achievement testing controls. "Evaluate Achievements"
- * routes through the same `syncAchievements` action production uses on
- * rehydrate (real conditions, real rewards) — only "Unlock All" bypasses
- * conditions entirely, and deliberately grants no rewards while doing so,
- * so it can't be used to farm XP/Gold.
+ * Developer-only achievement testing controls.
+ * "Evaluate Achievements" and "Unlock All" both apply rewards, events, and
+ * persistence through the same pipeline as production unlocks. Unlock All
+ * only skips condition checks.
  */
 export function AchievementTestingTools() {
   const syncAchievements = useGameStore((s) => s.syncAchievements)

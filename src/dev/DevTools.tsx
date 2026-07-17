@@ -3,7 +3,9 @@ import { useState, useSyncExternalStore } from 'react'
 import { UNLOCK_DEFINITIONS } from '@/data/unlocks'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { AchievementTestingTools } from '@/dev/AchievementTestingTools'
+import { AnalyticsTestingTools } from '@/dev/AnalyticsTestingTools'
 import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
+import { HistoryTestingTools } from '@/dev/HistoryTestingTools'
 import { QuestTestingTools } from '@/dev/QuestTestingTools'
 import { generateDailySummary } from '@/features/summary/dailySummaryLogic'
 import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
@@ -237,6 +239,8 @@ export function DevTools() {
       <TimeSimulationTools />
       <QuestTestingTools />
       <AchievementTestingTools />
+      <HistoryTestingTools />
+      <AnalyticsTestingTools />
 
       {previewSummary && (
         <DailySummaryModal summary={previewSummary} onClose={() => setPreviewSummary(null)} />
