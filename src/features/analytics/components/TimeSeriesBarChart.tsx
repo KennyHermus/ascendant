@@ -26,6 +26,7 @@ interface TimeSeriesBarChartProps {
   series: ChartSeries
   color?: ChartColorKey
   valueMode?: 'integer' | 'percent'
+  onDaySelect?: (date: string) => void
 }
 
 function ChartTooltip({
@@ -65,6 +66,7 @@ export function TimeSeriesBarChart({
   series,
   color = 'sky',
   valueMode = 'integer',
+  onDaySelect,
 }: TimeSeriesBarChartProps) {
   const data = seriesToChartData(series)
   const fill = CHART_THEME.colors[color]
@@ -98,7 +100,17 @@ export function TimeSeriesBarChart({
                 )
               }}
             />
-            <Bar dataKey="value" fill={fill} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar
+              dataKey="value"
+              fill={fill}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={false}
+              cursor={onDaySelect ? 'pointer' : undefined}
+              onClick={(entry: unknown) => {
+                const row = (entry as { payload?: ChartDataPoint }).payload
+                if (row?.date) onDaySelect?.(row.date)
+              }}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

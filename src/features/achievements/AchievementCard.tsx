@@ -11,6 +11,7 @@ interface AchievementCardProps {
   definition: AchievementDefinition
   state: AchievementState
   progress: AchievementProgress | null
+  onNavigateToUnlockDay?: (achievementId: string) => void
 }
 
 /**
@@ -20,7 +21,12 @@ interface AchievementCardProps {
  * badge, layout) still shows, since knowing "a hidden Epic achievement
  * exists in Special" isn't itself a spoiler.
  */
-export function AchievementCard({ definition, state, progress }: AchievementCardProps) {
+export function AchievementCard({
+  definition,
+  state,
+  progress,
+  onNavigateToUnlockDay,
+}: AchievementCardProps) {
   const locked = !state.unlocked
   const hiddenLocked = locked && definition.hidden === true
   const style = ACHIEVEMENT_RARITY_STYLES[definition.rarity]
@@ -32,11 +38,30 @@ export function AchievementCard({ definition, state, progress }: AchievementCard
   const icon = hiddenLocked ? '❔' : definition.icon
   const rewardLabel = formatAchievementRewards(definition.reward)
 
+  const canNavigate = !locked && onNavigateToUnlockDay !== undefined
+
   return (
     <article
+      role={canNavigate ? 'button' : undefined}
+      tabIndex={canNavigate ? 0 : undefined}
+      onClick={
+        canNavigate
+          ? () => onNavigateToUnlockDay(definition.id)
+          : undefined
+      }
+      onKeyDown={
+        canNavigate
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onNavigateToUnlockDay(definition.id)
+              }
+            }
+          : undefined
+      }
       className={`rounded-lg border p-4 transition-colors ${
         locked ? 'border-stone-700/50 bg-stone-950/40' : `${style.border} bg-stone-900/40`
-      }`}
+      } ${canNavigate ? 'cursor-pointer hover:bg-stone-900/70' : ''}`}
     >
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className="text-lg leading-none">
@@ -78,6 +103,7 @@ export function AchievementCard({ definition, state, progress }: AchievementCard
       {!locked && state.unlockedAt && (
         <p className="mt-2 text-[11px] text-stone-500">
           Unlocked {new Date(state.unlockedAt).toLocaleDateString()}
+          {canNavigate && ' · View in History'}
         </p>
       )}
     </article>

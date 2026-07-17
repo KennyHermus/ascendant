@@ -1,18 +1,19 @@
 # Ascendant History Foundation
 
-Version: aligned with Ascendant v0.0.3 (History Foundation milestone)
+Version: aligned with Ascendant v0.0.3 (Hero History complete)
 
-> This document describes the **persistent History layer**. The read-only **Analytics Engine** that consumes it is documented in [ANALYTICS.md](ANALYTICS.md). Charts / Analytics UI are still not implemented.
+> Persistent History layer + **Hero History UI** (Timeline, Calendar, Daily Browser). The read-only **Analytics Engine** is documented in [ANALYTICS.md](ANALYTICS.md).
 
 ---
 
 # Purpose
 
-History is permanent. It records the hero's progression over time so future Analytics can answer questions like:
+History is permanent. It records the hero's progression over time so Analytics and Hero History can answer questions like:
 
 - How did XP / level / stats change across weeks?
 - What was quest completion rate?
 - How consistent was the streak?
+- What happened on a specific past day?
 
 History is **written as gameplay occurs** (at day advance). It is **not** reconstructed by scanning current quest state (quests reset daily and cannot answer "what happened last Tuesday").
 
@@ -27,9 +28,8 @@ History is **written as gameplay occurs** (at day advance). It is **not** recons
 | **Daily Summary** (`GameState.dailySummary`) | Player-facing recap UI for the just-ended day | Yes — presentation / report, not analytics DB |
 | **Lifetime stats** (`Hero.lifetimeStats`) | Running counters on the hero | Yes — incremental, not a time series |
 | **Analytics Engine** | Derived statistics (read-only) | No — computes from History / events / lifetime / hero |
-| **Analytics Dashboard** | Presentation of Engine metrics | No — renders DTOs only |
-| **Series builders** | Chart-ready points from snapshots | No — data only; Charts milestone renders |
-| **Analytics Charts** (future) | Graphs / heatmaps | Will call series builders + Engine |
+| **Analytics Dashboard** | Presentation of Engine metrics + Charts | No — renders DTOs only |
+| **Hero History UI** | Timeline, calendar, daily browser | No — reads History + events + optional Summary |
 
 ```
 Gameplay (complete quest, miss, level up, …)
@@ -39,14 +39,14 @@ Gameplay (complete quest, miss, level up, …)
          → Daily Summary (UI recap — not Analytics input)
          → Daily Snapshot (immutable History record)
               → Analytics Engine (read-only stats)
-                   → Analytics Dashboard (presentation)
-                   → Series builders → Charts (future)
+                   → Analytics Dashboard + Charts
+              → Hero History (Timeline / Calendar / Daily Browser)
 ```
 
 **Daily Summary vs Daily Snapshot**
 
-- Summary = presentation for the player (modal/banner). Rich copy, major events list, tomorrow preview.
-- Snapshot = database row for graphs. Small, stable schema, chronological series.
+- Summary = presentation for the player (modal/banner). Rich copy, major events list, tomorrow preview. Only one slot persisted; full recap available when `periodKey` still matches.
+- Snapshot = database row for graphs and daily browser rollups. Small, stable schema, chronological series.
 
 Do not treat Summary as the Analytics source of truth. Do not regenerate History by replaying the capped event buffer alone.
 
@@ -55,13 +55,81 @@ Do not treat Summary as the Analytics source of truth. Do not regenerate History
 # Architecture
 
 ```
-src/types/history.ts              # DailySnapshot, HeroHistory, HISTORY_SCHEMA_VERSION
-src/features/history/historyLogic.ts  # pure build / record / query helpers (no UI)
+src/types/history.ts              # DailySnapshot, HeroHistory
+src/types/historyUi.ts            # Timeline / calendar / daily browser DTOs
+src/features/history/
+  historyLogic.ts                 # build / record / query snapshots
+  historyTimeline.ts              # reverse-chronological feed + filters
+  historyCalendar.ts              # contribution heatmap grid
+  historyDaily.ts                 # daily detail builder + achievement day lookup
+  historyPresentation.ts          # filter labels, heat colors
+  historySample.ts                # DEV sample snapshot generator
+  heroHistoryNavigation.tsx       # shared selected-day state (cross-nav)
+  HeroHistoryPanel.tsx            # Dashboard section
+  components/                     # Calendar, Timeline, DailyHistoryView, filters
 src/store/gameStore.ts            # persists GameState.history; writes on day advance
-src/dev/HistoryTestingTools.tsx   # DEV-only: generate / delete / reset / count
+src/dev/HistoryTestingTools.tsx   # DEV: generate / inspect / jump / reset
 ```
 
-Logic stays UI-free. The store is the only write path in production (plus DEV helpers that only mutate `history`).
+Logic stays UI-free except presentation helpers. React components **never** read `history.dailySnapshots` directly for analytics math — they call pure builders in `features/history/`.
+
+---
+
+# Hero History UI
+
+## Contribution Calendar
+
+- GitHub-style heatmap: **26 trailing weeks**, columns = weeks (Sun–Sat), rows = weekdays.
+- **Color intensity** from daily completion rate (`questsCompleted / (completed + missed)`) on finalized snapshots.
+- **Empty days** (no snapshot) remain visible with neutral styling.
+- **Future dates** are disabled (not clickable).
+- Clicking a day opens the **Daily History Browser**.
+
+## Hero Timeline
+
+- **Reverse chronological** feed grouped by quest-day.
+- Each group shows events from the recent buffer (icons + labels via `eventLogic.ts`).
+- Snapshot-only days appear under filter **All** with a placeholder when no events remain in the buffer.
+- **Filters:** All, Progress, Quests, Achievements, Unlocks.
+- **Search:** event title / quest name / achievement / unlock name.
+- Clicking a day header or event opens the Daily History Browser.
+
+### Supported event types
+
+| Type | Filter | Icon |
+|------|--------|------|
+| `QUEST_COMPLETED` | Quests | ✅ |
+| `QUEST_FAILED` | Quests | ❌ |
+| `LEVEL_UP` | Progress | ⭐ |
+| `STREAK_INCREASED` | Progress | 🔥 |
+| `STREAK_BROKEN` | Progress | 💔 |
+| `ACHIEVEMENT_UNLOCKED` | Achievements | 🏆 |
+| `UNLOCK_EARNED` | Unlocks | 🔓 |
+
+## Daily History Browser
+
+Modal opened when a day is selected. Built by `buildDailyHistoryDetail()` from:
+
+- **Snapshot** (when finalized): level, XP, gold, stats, streak, day deltas, achievement/unlock ids, quest counts.
+- **Events** (recent buffer): named completed/missed quests, chronological event list.
+- **Daily Summary** (when `dailySummary.periodKey === date`): embedded recap block.
+
+Quest names for older days may be unavailable if events aged out of the 50-entry buffer — counts from snapshots still display.
+
+---
+
+# Cross-Navigation
+
+Shared state: `HeroHistoryNavigationProvider` on the Dashboard (`selectedDate`, `openDay`, `closeDay`).
+
+| Source | Action |
+|--------|--------|
+| Analytics chart point/bar | `onDaySelect(date)` → Daily History |
+| Contribution calendar cell | `openDay(date)` |
+| Timeline day header / event | `openDay(date)` |
+| Unlocked achievement card | `findAchievementUnlockDay()` → `openDay(date)` |
+
+Charts and Analytics Dashboard do not own navigation state — the Dashboard passes `onDaySelect` down.
 
 ---
 
@@ -82,34 +150,18 @@ Deliberately lean. Schema version is on each snapshot and on the parent `HeroHis
 | `achievementIds`, `unlockIds` | Ids unlocked that day (from that day's events) |
 | `totalQuestsCompleted`, `totalXpEarned`, `totalGoldEarned` | Lifetime totals at end of day (absolute series) |
 
-Not stored (on purpose): full event payloads, per-quest checklists, Daily Summary copy, raw `GameEvent` arrays. Future entry types (`LevelHistoryEntry`, etc.) can be added later without rewriting this day rollup.
+Not stored (on purpose): full event payloads, per-quest checklists, Daily Summary copy, raw `GameEvent` arrays.
 
 ---
 
 # Snapshot Lifecycle
 
 1. **During the day** — events and lifetime stats update as usual. No snapshot yet for "today."
-2. **When the quest day advances** — `applyPeriodResets` (advancing only, not simulated rewind):
-   - Sweeps ending-day timed misses into events.
-   - Finalizes Daily Summary for the ending day.
-   - Builds a `DailySnapshot` from **pre-reset** hero/quests + `dayStartHeroSnapshot`.
-   - Calls `recordDailySnapshot` — **idempotent**: if a snapshot for that `date` already exists, skip.
+2. **When the quest day advances** — `applyPeriodResets` builds and records a snapshot (idempotent per date).
 3. **Immutability** — once recorded for a date, production code never overwrites it.
-4. **Simulated time** — uses `getCurrentGameTime()` / the same quest-day key as resets. Advancing the clock through a day boundary writes History the same way real time does. Rewinding does **not** delete or rewrite snapshots.
+4. **Simulated time** — advancing through a day boundary writes History the same way real time does. Rewinding does **not** delete snapshots.
 
-DEV tools can force-generate today's snapshot, delete the latest, or reset History only — for testing, not player UX.
-
----
-
-# Persistence
-
-- Field: `GameState.history: HeroHistory`
-- `dailySnapshots` kept sorted by `date` ascending
-- Survives refresh via Zustand `persist` + `localStorage`
-- Save version: **`0.0.3`**
-- Migration `0.0.2 → 0.0.3` adds empty `{ schemaVersion: 1, dailySnapshots: [] }` when missing
-- `merge()` also defaults via `mergeHistory()` for safety
-- `resetProgress()` clears History with the rest of the save; DEV "Reset History Only" clears only `history`
+DEV tools can force-generate today's snapshot, generate sample history, delete the latest, inspect JSON, jump to a day in the UI, or reset History only.
 
 ---
 
@@ -119,31 +171,35 @@ DEV tools can force-generate today's snapshot, delete the latest, or reset Histo
 |----------|----------|
 | `createEmptyHistory()` | Empty document |
 | `mergeHistory(persisted?)` | Safe default + chronological sort |
-| `buildDailySnapshot(input)` | Pure builder (does not read/write History) |
-| `recordDailySnapshot(history, snapshot)` | Append if date absent; else return same reference |
-| `getHistory` / `getSnapshot(date)` / `getLatestSnapshot` / `getSnapshotCount` | Queries |
+| `buildDailySnapshot(input)` | Pure builder |
+| `recordDailySnapshot(history, snapshot)` | Append if date absent |
+| `getSnapshot(date)` / `getLatestSnapshot` / `getSnapshotCount` | Queries |
+| `getEventsForPeriod(events, date)` | Quest-day event slice (exported for UI) |
 | `deleteLatestSnapshot` / `resetHistory` | DEV / repair helpers |
+
+Additional builders: `buildTimelineGroups`, `buildContributionCalendar`, `buildDailyHistoryDetail`, `findAchievementUnlockDay`, `generateSampleHistory` (DEV).
+
+---
+
+# Extension Points (future systems)
+
+When adding workout, nutrition, combat, or economy history:
+
+1. Add fields to `DailySnapshot` (or new History entry types) at day finalize.
+2. Extend `buildDailyHistoryDetail()` to surface them in the Daily Browser.
+3. Optionally add timeline filter categories and calendar intensity rules.
+4. Add Analytics series + charts — do not duplicate snapshot reads in React.
+
+Do not expand the event buffer into unbounded storage; day rollups remain the long-term source of truth.
 
 ---
 
 # Relationship to Analytics
 
-The Analytics Engine ([ANALYTICS.md](ANALYTICS.md)) already:
+The Analytics Engine reads snapshots via pure helpers. Hero History and Analytics share the same History document but serve different UX goals (exploration vs aggregates). Neither rewrites past snapshots.
 
-1. Reads `GameState.history.dailySnapshots` via pure helpers.
-2. Derives period stats from snapshot fields (`xpEarned`, `level`, completion counts, streak, …).
-3. Optionally enriches the in-progress day with live state / recent events — not Daily Summary.
+Analytics should **not**:
 
-Analytics (and future UI) should **not**:
-
-- Scan current `QuestState[]` for historical answers (live day only).
+- Scan current `QuestState[]` for historical answers.
 - Treat the 50-event buffer as complete long-term history.
-- Rewrite or re-finalize past snapshots as part of chart rendering.
-
----
-
-# Out of Scope (this milestone)
-
-- Charts, graphs, heatmaps, calendar, History page, Analytics page
-- Workout / nutrition tracking
-- Expanding the recent-event buffer into unbounded storage (snapshots cover long-term day rollups)
+- Use Daily Summary as an analytics input.

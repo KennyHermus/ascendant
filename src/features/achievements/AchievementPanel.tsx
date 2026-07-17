@@ -17,6 +17,8 @@ import {
 interface AchievementPanelProps {
   states: AchievementState[]
   context: AchievementEvaluationContext
+  /** Opens Hero History on the day this achievement was unlocked. */
+  onNavigateToUnlockDay?: (achievementId: string) => void
 }
 
 function CategoryGroups({
@@ -24,12 +26,14 @@ function CategoryGroups({
   stateMap,
   context,
   persistPrefix,
+  onNavigateToUnlockDay,
 }: {
   definitions: AchievementDefinition[]
   stateMap: Map<string, AchievementState>
   context: AchievementEvaluationContext
   /** Distinguishes Unlocked vs Locked accordion keys so they don't share state. */
   persistPrefix: string
+  onNavigateToUnlockDay?: (achievementId: string) => void
 }) {
   return (
     <div className="space-y-3 border-l border-stone-800/60 pl-3">
@@ -59,6 +63,11 @@ function CategoryGroups({
                     }
                   }
                   progress={getAchievementProgress(definition.condition, context)}
+                  onNavigateToUnlockDay={
+                    stateMap.get(definition.id)?.unlocked
+                      ? onNavigateToUnlockDay
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -76,7 +85,11 @@ function CategoryGroups({
  * compact as the catalog grows. `context` is supplied by the caller
  * rather than read from the store, so this stays presentational.
  */
-export function AchievementPanel({ states, context }: AchievementPanelProps) {
+export function AchievementPanel({
+  states,
+  context,
+  onNavigateToUnlockDay,
+}: AchievementPanelProps) {
   const stateMap = new Map(states.map((s) => [s.id, s]))
   const summary = getAchievementSummary(ACHIEVEMENT_DEFINITIONS, states)
 
@@ -105,6 +118,7 @@ export function AchievementPanel({ states, context }: AchievementPanelProps) {
               stateMap={stateMap}
               context={context}
               persistPrefix="achievements:unlocked"
+              onNavigateToUnlockDay={onNavigateToUnlockDay}
             />
           </Accordion>
         )}

@@ -104,7 +104,18 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ DevTools period-scoped series inspector
 ✓ Docs: [ANALYTICS.md](ANALYTICS.md)
 
-**Not in Charts:** Hero Timeline, contribution calendar, heatmaps, workout/nutrition/combat charts.
+**Not in Charts:** workout/nutrition/combat charts.
+
+## Completed: Hero History
+
+✓ Hero Timeline (reverse-chronological, grouped by day, filters + search)
+✓ Contribution Calendar (GitHub-style heatmap, completion intensity)
+✓ Daily History Browser (snapshot + events + optional Daily Summary)
+✓ Cross-navigation (charts, calendar, timeline, achievements)
+✓ History DevTools (sample history, inspect snapshot, jump to date)
+✓ Docs: [HISTORY.md](HISTORY.md)
+
+**v0.0.3 complete** (History → Analytics → Dashboard → Charts → Hero History).
 
 ---
 
@@ -160,7 +171,7 @@ See also `docs/FUTURE_IDEAS.md`, `docs/COMBAT.md`, `docs/STORY.md`.
 Do not implement early:
 
 - Combat / inventory / story / skills folders
-- History & Analytics UI (wait for v0.0.3)
+- History & Analytics UI (v0.0.3 — **complete**)
 - OS-level app blocking for unlocks
 - AI-generated quests / story
 

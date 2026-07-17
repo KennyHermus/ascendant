@@ -125,15 +125,15 @@ The Zustand store only wires in `storage: createMigratingStorage()` — it conta
 
 ---
 
-## v0.0.3 Implementation Notes — History Foundation
-
-First milestone of History & Analytics. **Backend/foundation only** — no charts, History page, or Analytics UI.
+## v0.0.3 Implementation Notes — History & Hero History
 
 - **`HeroHistory` / `DailySnapshot`** — `src/types/history.ts`, pure helpers in `src/features/history/historyLogic.ts`.
+- **Hero History UI** — `HeroHistoryPanel`, Timeline, Contribution Calendar, Daily History Browser; builders in `historyTimeline.ts`, `historyCalendar.ts`, `historyDaily.ts`.
+- **Cross-navigation** — `heroHistoryNavigation.tsx` + chart `onDaySelect` + achievement unlock day lookup.
 - **Persistence** — `GameState.history`; save version `0.0.3`; migration `0.0.2 → 0.0.3` seeds empty history.
 - **Write path** — when the quest day **advances** in `applyPeriodResets`, build a snapshot from pre-reset state and `recordDailySnapshot` (idempotent per date). Uses application/simulated time via `getCurrentGameTime()` and the same quest-day key as daily reset.
 - **Relationship** — Events = fine-grained recent moments; Daily Snapshot = long-term day rollup; Daily Summary = player-facing report. Full detail: [HISTORY.md](HISTORY.md).
-- **DevTools** — `HistoryTestingTools.tsx`: generate today's snapshot, delete latest, reset history only, show count.
+- **DevTools** — `HistoryTestingTools.tsx`: generate today / sample history, inspect snapshot, jump to date, delete latest, reset history only.
 
 ### Analytics Engine (also v0.0.3)
 
@@ -374,7 +374,7 @@ src/
 │   ├── dashboard/       # Active Objectives, Next Objective (cross-cutting)
 │   ├── events/          # GameEvent constructors/formatters, Recent Progress
 │   ├── hero/            # Hero Banner, stats panel, titles, lifetime stats
-│   ├── history/         # Long-term DailySnapshot History (no UI yet)
+│   ├── history/         # DailySnapshot persistence + Hero History UI
 │   ├── analytics/       # Engine + series builders + Analytics Dashboard
 │   ├── progression/     # XP / level-up pure logic
 │   ├── quests/          # Quest list/cards, timing, schedule, progress aggregation

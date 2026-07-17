@@ -72,12 +72,12 @@ The game exists to encourage:
 - Lifetime statistics
 - Daily Summary
 - Achievements
-- **History Foundation** — append-only daily snapshots (`GameState.history`); see [HISTORY.md](HISTORY.md)
+- **History Foundation + Hero History UI** — append-only daily snapshots, timeline, calendar, daily browser; see [HISTORY.md](HISTORY.md)
 - **Analytics Engine + Dashboard + Charts** — read-only stats, metric registry, Recharts visualizations; see [ANALYTICS.md](ANALYTICS.md)
 
 ## Current Priority
 
-v0.0.3 Analytics is complete. Next: **v0.0.4** Workout and Nutrition Tracking.
+v0.0.3 is complete. Next: **v0.0.4** Workout and Nutrition Tracking.
 
 ---
 

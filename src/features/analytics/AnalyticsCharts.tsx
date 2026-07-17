@@ -10,13 +10,14 @@ import { STAT_KEYS, type StatKey } from '@/types/hero'
 
 interface AnalyticsChartsProps {
   period: AnalyticsPeriod
+  onDaySelect?: (date: string) => void
 }
 
 /**
  * Visualizations — consumes period-filtered ChartSeries only.
  * No snapshot reads or analytics math in this file.
  */
-export function AnalyticsCharts({ period }: AnalyticsChartsProps) {
+export function AnalyticsCharts({ period, onDaySelect }: AnalyticsChartsProps) {
   const bundle = usePeriodChartBundle(period)
   const [selectedStat, setSelectedStat] = useState<StatKey>('strength')
   const statSeries = bundle.statSeries(selectedStat)
@@ -38,9 +39,20 @@ export function AnalyticsCharts({ period }: AnalyticsChartsProps) {
             title="Level Over Time"
             series={bundle.level}
             color="amber"
+            onDaySelect={onDaySelect}
           />
-          <TimeSeriesBarChart title="XP Earned per Day" series={bundle.xp} color="amber" />
-          <TimeSeriesBarChart title="Gold Earned per Day" series={bundle.gold} color="violet" />
+          <TimeSeriesBarChart
+            title="XP Earned per Day"
+            series={bundle.xp}
+            color="amber"
+            onDaySelect={onDaySelect}
+          />
+          <TimeSeriesBarChart
+            title="Gold Earned per Day"
+            series={bundle.gold}
+            color="violet"
+            onDaySelect={onDaySelect}
+          />
         </div>
       </Accordion>
 
@@ -57,16 +69,19 @@ export function AnalyticsCharts({ period }: AnalyticsChartsProps) {
             color="emerald"
             valueMode="percent"
             yDomain={[0, 100]}
+            onDaySelect={onDaySelect}
           />
           <TimeSeriesBarChart
             title="Quests Completed per Day"
             series={bundle.questsCompleted}
             color="emerald"
+            onDaySelect={onDaySelect}
           />
           <TimeSeriesBarChart
             title="Quests Missed per Day"
             series={bundle.questsMissed}
             color="rose"
+            onDaySelect={onDaySelect}
           />
         </div>
       </Accordion>
@@ -101,6 +116,7 @@ export function AnalyticsCharts({ period }: AnalyticsChartsProps) {
           title={`${STAT_LABELS[selectedStat]} Over Time`}
           series={statSeries}
           color="sky"
+          onDaySelect={onDaySelect}
         />
       </Accordion>
     </div>

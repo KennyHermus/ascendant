@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { UNLOCK_DEFINITIONS } from '@/data/unlocks'
 import { QUEST_DEFINITIONS } from '@/data/quests'
@@ -13,6 +13,12 @@ import { getNextObjective } from '@/features/dashboard/nextObjectiveLogic'
 import { AnalyticsDashboard } from '@/features/analytics/AnalyticsDashboard'
 import { getRecentEvents } from '@/features/events/eventLogic'
 import { RecentProgress } from '@/features/events/RecentProgress'
+import { findAchievementUnlockDay } from '@/features/history/historyDaily'
+import { HeroHistoryPanel } from '@/features/history/HeroHistoryPanel'
+import {
+  HeroHistoryNavigationProvider,
+  useHeroHistoryNavigationState,
+} from '@/features/history/heroHistoryNavigation'
 import { HeroBanner } from '@/features/hero/HeroBanner'
 import { getHeroStatus } from '@/features/hero/heroPresentation'
 import { StatsPanel } from '@/features/hero/StatsPanel'
@@ -32,6 +38,7 @@ export function Dashboard() {
   const hero = useGameStore((s) => s.hero)
   const quests = useGameStore((s) => s.quests)
   const events = useGameStore((s) => s.events)
+  const history = useGameStore((s) => s.history)
   const currentStreak = useGameStore((s) => s.currentStreak)
   const achievements = useGameStore((s) => s.achievements)
   const dailySummary = useGameStore((s) => s.dailySummary)
@@ -44,6 +51,7 @@ export function Dashboard() {
   const viewDailySummary = useGameStore((s) => s.viewDailySummary)
 
   const [isSummaryOpen, setSummaryOpen] = useState(false)
+  const historyNav = useHeroHistoryNavigationState()
   const now = useGameTime()
   const activeQuestDayKey = getActiveQuestDayKey(QUEST_DEFINITIONS, now)
 
@@ -120,8 +128,22 @@ export function Dashboard() {
     viewDailySummary()
   }
 
+  const handleAchievementUnlockDay = useCallback(
+    (achievementId: string) => {
+      const state = achievements.find((entry) => entry.id === achievementId)
+      const day = findAchievementUnlockDay(
+        history,
+        achievementId,
+        state?.unlockedAt ?? null,
+      )
+      if (day) historyNav.openDay(day)
+    },
+    [achievements, history, historyNav],
+  )
+
   return (
-    <main className="mx-auto min-h-svh max-w-2xl px-4 py-6">
+    <HeroHistoryNavigationProvider value={historyNav}>
+      <main className="mx-auto min-h-svh max-w-2xl px-4 py-6">
       <header className="mb-6 text-center">
         <p className="text-xs uppercase tracking-[0.3em] text-amber-500/70">
           Ascendant
@@ -148,8 +170,13 @@ export function Dashboard() {
         <ActiveObjectives objectives={objectives} />
         <QuestList quests={quests} onComplete={completeQuest} />
         <RecentProgress events={recentEvents} />
-        <AchievementPanel states={achievements} context={achievementContext} />
-        <AnalyticsDashboard />
+        <AchievementPanel
+          states={achievements}
+          context={achievementContext}
+          onNavigateToUnlockDay={handleAchievementUnlockDay}
+        />
+        <AnalyticsDashboard onDaySelect={historyNav.openDay} />
+        <HeroHistoryPanel />
         <StatsPanel stats={hero.stats} />
 
         {import.meta.env.DEV && <DevToolsLazy />}
@@ -162,6 +189,7 @@ export function Dashboard() {
       {achievementPopup && (
         <AchievementUnlockedPopup achievement={achievementPopup} onDismiss={dismissAchievementPopup} />
       )}
-    </main>
+      </main>
+    </HeroHistoryNavigationProvider>
   )
 }

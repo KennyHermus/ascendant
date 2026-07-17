@@ -59,7 +59,8 @@ Section order:
 7. Recent Progress
 8. Achievements
 9. Analytics
-10. Attributes
+10. Hero History
+11. Attributes
 
 ---
 
@@ -79,8 +80,22 @@ Contains:
 
 - Period filters (Today / This Week / This Month / Lifetime)
 - Hero / quest / category / subcategory / achievement / history metrics
-- Chart series builders ready for a future Charts milestone (no graphs yet)
+- Recharts visualizations (level, XP, gold, completion, stats)
+- Chart point click → Daily History for that day
+
 ---
+
+## Hero History (implemented)
+
+Purpose: explore past progression as a unified adventure log.
+
+Contains:
+
+- **Contribution Calendar** — GitHub-style heatmap (completion intensity)
+- **Hero Timeline** — reverse-chronological events with filters and search
+- **Daily History Browser** — modal with level, stats, quests, achievements, unlocks, summary
+
+Cross-navigation from Analytics charts, calendar, timeline, and unlocked achievements.
 
 # UX Principles
 

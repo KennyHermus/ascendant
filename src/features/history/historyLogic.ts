@@ -180,13 +180,18 @@ export function buildDailySnapshot(input: BuildDailySnapshotInput): DailySnapsho
  * (Sleep grace can timestamp on the next calendar morning); other types
  * match by the event timestamp's local date key.
  */
-function eventsForPeriod(events: GameEvent[], periodKey: string): GameEvent[] {
+/** Events belonging to a quest-day (exported for Timeline / Daily History). */
+export function getEventsForPeriod(events: GameEvent[], periodKey: string): GameEvent[] {
   return events.filter((event) => {
     if (event.type === 'QUEST_FAILED' && event.periodKey) {
       return event.periodKey === periodKey
     }
     return formatDateKey(new Date(event.timestamp)) === periodKey
   })
+}
+
+function eventsForPeriod(events: GameEvent[], periodKey: string): GameEvent[] {
+  return getEventsForPeriod(events, periodKey)
 }
 
 function uniqueIds(ids: string[]): string[] {

@@ -28,6 +28,7 @@ import {
   recordDailySnapshot,
   resetHistory,
 } from '@/features/history/historyLogic'
+import { generateSampleHistory } from '@/features/history/historySample'
 import { captureDayStartSnapshot, generateDailySummary, isDailySummaryAvailable } from '@/features/summary/dailySummaryLogic'
 import { applyStatRewards, createInitialHero } from '@/features/hero/heroLogic'
 import {
@@ -209,6 +210,8 @@ interface GameActions {
   devDeleteLatestSnapshot: () => void
   /** Dev-only: clears all history snapshots; does not touch quests/hero/events. No-ops outside DEV. */
   devResetHistory: () => void
+  /** Dev-only: backfills synthetic daily snapshots for Hero History testing. No-ops outside DEV. */
+  devGenerateSampleHistory: (days?: number) => number
 }
 
 type GameStore = GameState & GameActions
@@ -990,6 +993,25 @@ export const useGameStore = create<GameStore>()(
       devResetHistory: () => {
         if (!import.meta.env.DEV) return
         set({ history: resetHistory() })
+      },
+
+      devGenerateSampleHistory: (days = 90) => {
+        if (!import.meta.env.DEV) return 0
+
+        const state = get()
+        const now = getCurrentGameTime()
+        const todayKey = getActiveQuestDayKey(QUEST_DEFINITIONS, now)
+        const beforeCount = state.history.dailySnapshots.length
+        const next = generateSampleHistory({
+          history: state.history,
+          hero: state.hero,
+          days,
+          todayKey,
+          now,
+        })
+
+        set({ history: next })
+        return next.dailySnapshots.length - beforeCount
       },
     }),
     {

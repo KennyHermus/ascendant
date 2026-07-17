@@ -105,6 +105,7 @@ A playable daily RPG foundation with:
 - Achievements (data-driven, rarity, Achievement Points)
 - **History Foundation** — append-only daily snapshots ([docs/HISTORY.md](docs/HISTORY.md))
 - **Analytics Engine + Dashboard + Charts** — stats, metric registry, Recharts ([docs/ANALYTICS.md](docs/ANALYTICS.md))
+- **Hero History** — timeline, contribution calendar, daily browser ([docs/HISTORY.md](docs/HISTORY.md))
 - Quest progress aggregation utilities
 - Developer time simulation + quest/achievement/history/analytics testing tools
 
@@ -119,9 +120,10 @@ A playable daily RPG foundation with:
 7. Recent Progress
 8. Achievements
 9. Analytics
-10. Attributes
+10. Hero History
+11. Attributes
 
-**Current version:** v0.0.3 (History, Analytics Engine, Dashboard, Charts complete)
+**Current version:** v0.0.3 (History, Analytics, Charts, Hero History complete)
 
 ---
 

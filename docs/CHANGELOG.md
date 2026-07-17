@@ -35,9 +35,16 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - DevTools period-scoped series viewer
 - Docs: [ANALYTICS.md](ANALYTICS.md)
 
-**Not yet in v0.0.3:** Hero Timeline, contribution calendar, heatmaps, workout tracking.
+### Hero History
 
-**v0.0.3 Analytics milestone complete** (History → Engine → Dashboard → Charts).
+- **Hero Timeline** — reverse-chronological event feed, day groups, filters (All / Progress / Quests / Achievements / Unlocks), search
+- **Contribution Calendar** — GitHub-style heatmap (26 weeks), completion intensity, future dates disabled
+- **Daily History Browser** — level, stats, XP/gold, quests, achievements, unlocks, Daily Summary when available
+- **Cross-navigation** — chart points, calendar, timeline, unlocked achievements → daily view
+- History DevTools: generate sample history, inspect snapshot JSON, jump to date
+- Docs: [HISTORY.md](HISTORY.md)
+
+**v0.0.3 complete** (History → Engine → Dashboard → Charts → Hero History).
 
 ---
 

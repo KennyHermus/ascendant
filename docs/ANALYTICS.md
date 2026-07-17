@@ -34,6 +34,8 @@ Events → Daily Snapshots → Analytics Engine → Selectors / Registry → Das
 
 Uses **Recharts**. Shares the Dashboard period filter (Today / Week / Month / Lifetime).
 
+**Cross-navigation:** optional `onDaySelect(date)` on line/bar charts — clicking a point opens Hero History Daily Browser for that quest-day (wired from Dashboard).
+
 ### Hero Progress
 - Level over time (line)
 - XP earned per day (bar)
@@ -116,10 +118,21 @@ Unchanged — charts do not modify Engine output.
 - View Chart Series with **period filter** (full point data)
 - Refresh with confirmation + point counts
 
+Hero History DevTools (see [HISTORY.md](HISTORY.md)): generate sample history, inspect snapshot JSON, jump to date.
+
+---
+
+# Hero History (see [HISTORY.md](HISTORY.md))
+
+Implemented in v0.0.3 — separate Dashboard section, shares History data with Analytics:
+
+- Contribution calendar (completion heatmap)
+- Hero Timeline (filtered event feed)
+- Daily History Browser (modal)
+- Chart / calendar / timeline / achievement cross-navigation
+
 ---
 
 # Out of Scope
 
-- Hero Timeline
-- Contribution calendar / heatmaps
 - Workout / nutrition / combat analytics UI

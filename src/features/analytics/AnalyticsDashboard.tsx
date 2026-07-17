@@ -11,12 +11,16 @@ import { SectionPanel } from '@/features/analytics/components/SectionPanel'
 import { StatisticCard } from '@/features/analytics/components/StatisticCard'
 import type { AnalyticsPeriod } from '@/types/analytics'
 
+interface AnalyticsDashboardProps {
+  onDaySelect?: (date: string) => void
+}
+
 /**
  * Presentation-only Analytics Dashboard.
  * Section membership and period visibility come from the metric registry
  * via `useAnalyticsDashboardModel` — components only render the model.
  */
-export function AnalyticsDashboard() {
+export function AnalyticsDashboard({ onDaySelect }: AnalyticsDashboardProps = {}) {
   const [period, setPeriod] = useState<AnalyticsPeriod>('week')
   const model = useAnalyticsDashboardModel(period)
 
@@ -84,7 +88,7 @@ export function AnalyticsDashboard() {
         ))}
       </div>
 
-      <AnalyticsCharts period={period} />
+      <AnalyticsCharts period={period} onDaySelect={onDaySelect} />
     </SectionPanel>
   )
 }

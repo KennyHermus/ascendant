@@ -27,6 +27,7 @@ interface TimeSeriesLineChartProps {
   /** Raw 0–1 values; axis shows 0–100%. */
   valueMode?: 'integer' | 'percent'
   yDomain?: [number, number]
+  onDaySelect?: (date: string) => void
 }
 
 function ChartTooltip({
@@ -67,6 +68,7 @@ export function TimeSeriesLineChart({
   color = 'amber',
   valueMode = 'integer',
   yDomain,
+  onDaySelect,
 }: TimeSeriesLineChartProps) {
   const rawData = seriesToChartData(series)
   const data =
@@ -115,9 +117,13 @@ export function TimeSeriesLineChart({
               dataKey="value"
               stroke={stroke}
               strokeWidth={2}
-              dot={{ r: 2, fill: stroke }}
-              activeDot={{ r: 4 }}
+              dot={{ r: 2, fill: stroke, cursor: onDaySelect ? 'pointer' : undefined }}
+              activeDot={{ r: 4, cursor: onDaySelect ? 'pointer' : undefined }}
               isAnimationActive={false}
+              onClick={(entry: unknown) => {
+                const row = (entry as { payload?: ChartDataPoint }).payload
+                if (row?.date) onDaySelect?.(row.date)
+              }}
             />
           </LineChart>
         </ResponsiveContainer>
