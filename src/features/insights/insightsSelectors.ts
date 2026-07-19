@@ -45,6 +45,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
+  const workout = useGameStore((s) => s.workout)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -57,6 +58,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
         achievements,
         dayStartHeroSnapshot,
         questHistory,
+        workout,
       },
       now,
     )
@@ -72,6 +74,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
     achievements,
     dayStartHeroSnapshot,
     questHistory,
+    workout,
   ])
 }
 
@@ -85,6 +88,7 @@ export function useFullInsights() {
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
+  const workout = useGameStore((s) => s.workout)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -97,6 +101,7 @@ export function useFullInsights() {
         achievements,
         dayStartHeroSnapshot,
         questHistory,
+        workout,
       },
       now,
     )
@@ -111,6 +116,7 @@ export function useFullInsights() {
     achievements,
     dayStartHeroSnapshot,
     questHistory,
+    workout,
   ])
 }
 
@@ -132,6 +138,7 @@ export function selectInsightsBundle(
     achievements: AnalyticsInput['achievements']
     dayStartHeroSnapshot: AnalyticsInput['dayStartHeroSnapshot']
     questHistory: AnalyticsInput['questHistory']
+    workout: { activities: import('@/types/workout').WorkoutActivity[] }
   },
   period: AnalyticsPeriod,
   now: Date = getCurrentGameTime(),

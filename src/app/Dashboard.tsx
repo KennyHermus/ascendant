@@ -27,11 +27,13 @@ import { StatsPanel } from '@/features/hero/StatsPanel'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
 import { getNonNegotiableStatusBreakdown } from '@/features/quests/questLogic'
 import { getTodaysJourneyProgress } from '@/features/quests/questProgress'
+import { getWorkoutJourneyProgressList } from '@/features/workout/workoutProgress'
 import { QuestList } from '@/features/quests/QuestList'
 import { TodaysJourney } from '@/features/quests/TodaysJourney'
 import { DailySummaryBanner } from '@/features/summary/DailySummaryBanner'
 import { isDailySummaryDisplayable } from '@/features/summary/dailySummaryLogic'
 import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
+import { WorkoutPanel } from '@/features/workout/WorkoutPanel'
 import { UnlockList } from '@/features/unlocks/UnlockList'
 import { useGameTime } from '@/lib/useGameTime'
 import { useGameStore } from '@/store/gameStore'
@@ -41,6 +43,7 @@ export function Dashboard() {
   const quests = useGameStore((s) => s.quests)
   const events = useGameStore((s) => s.events)
   const history = useGameStore((s) => s.history)
+  const workout = useGameStore((s) => s.workout)
   const currentStreak = useGameStore((s) => s.currentStreak)
   const achievements = useGameStore((s) => s.achievements)
   const dailySummary = useGameStore((s) => s.dailySummary)
@@ -60,6 +63,11 @@ export function Dashboard() {
   const progress = useMemo(
     () => getTodaysJourneyProgress(quests, QUEST_DEFINITIONS, now),
     [quests, now],
+  )
+
+  const workoutProgressList = useMemo(
+    () => getWorkoutJourneyProgressList(workout, activeQuestDayKey),
+    [workout, activeQuestDayKey],
   )
 
   const heroStatus = useMemo(() => {
@@ -167,10 +175,11 @@ export function Dashboard() {
           status={heroStatus}
           nextObjective={nextObjective}
         />
-        <TodaysJourney progress={progress} />
+        <TodaysJourney progress={progress} workoutProgressList={workoutProgressList} />
         <UnlockList quests={quests} />
         <ActiveObjectives objectives={objectives} />
         <QuestList quests={quests} onComplete={completeQuest} />
+        <WorkoutPanel />
         <RecentProgress events={recentEvents} />
         <AchievementPanel
           states={achievements}

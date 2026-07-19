@@ -73,6 +73,11 @@ export interface QuestDefinition {
   contributesToStreak: boolean
   /** Completable for its own reward, but excluded from streak/subcategory completion (e.g. Breakfast). */
   optional?: boolean
+  /**
+   * Workout template ids that satisfy this quest when a matching
+   * WorkoutActivity is completed. Activity-driven fitness quests only.
+   */
+  acceptedWorkoutTemplates?: string[]
 }
 
 export interface QuestState {

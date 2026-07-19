@@ -23,7 +23,7 @@ import {
   flattenPeriodChartBundle,
   type PeriodChartBundle,
 } from '@/features/analytics/analyticsChartSelectors'
-import { buildAllChartSeries } from '@/features/analytics/analyticsSeries'
+import { buildAllChartSeries, type ChartSeries } from '@/features/analytics/analyticsSeries'
 import { getSnapshotCount } from '@/features/history/historyLogic'
 import {
   getCurrentGameTime,
@@ -32,7 +32,7 @@ import {
 } from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
 import type { AnalyticsPeriod, PeriodAnalytics } from '@/types/analytics'
-import type { ChartSeries } from '@/features/analytics/analyticsSeries'
+import type { WorkoutActivity } from '@/types/workout'
 
 /** Keeps period bounds aligned with simulated / real application time. */
 function useAnalyticsClock(): Date {
@@ -58,6 +58,7 @@ export function selectAnalyticsInput(
     achievements: AnalyticsInput['achievements']
     dayStartHeroSnapshot: AnalyticsInput['dayStartHeroSnapshot']
     questHistory: AnalyticsInput['questHistory']
+    workout: { activities: WorkoutActivity[] }
   },
   now: Date = getCurrentGameTime(),
 ): AnalyticsInput {
@@ -72,6 +73,7 @@ export function selectAnalyticsInput(
     achievements: state.achievements,
     dayStartHeroSnapshot: state.dayStartHeroSnapshot,
     questHistory: state.questHistory,
+    workoutActivities: state.workout.activities,
     now,
   }
 }
@@ -103,6 +105,7 @@ export function useFullAnalytics() {
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
+  const workout = useGameStore((s) => s.workout)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -115,6 +118,7 @@ export function useFullAnalytics() {
         achievements,
         dayStartHeroSnapshot,
         questHistory,
+        workout,
       },
       now,
     )
@@ -129,6 +133,7 @@ export function useFullAnalytics() {
     achievements,
     dayStartHeroSnapshot,
     questHistory,
+    workout,
   ])
 }
 
@@ -142,6 +147,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
+  const workout = useGameStore((s) => s.workout)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -154,6 +160,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
         achievements,
         dayStartHeroSnapshot,
         questHistory,
+        workout,
       },
       now,
     )
@@ -169,6 +176,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
     achievements,
     dayStartHeroSnapshot,
     questHistory,
+    workout,
   ])
 }
 
@@ -203,6 +211,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
   const achievements = useGameStore((s) => s.achievements)
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
+  const workout = useGameStore((s) => s.workout)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -215,6 +224,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
         achievements,
         dayStartHeroSnapshot,
         questHistory,
+        workout,
       },
       now,
     )
@@ -230,6 +240,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
     achievements,
     dayStartHeroSnapshot,
     questHistory,
+    workout,
   ])
 }
 

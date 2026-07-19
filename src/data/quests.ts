@@ -36,6 +36,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     currencyReward: 0,
     statRewards: { strength: 1, willpower: 1 },
     contributesToStreak: true,
+    acceptedWorkoutTemplates: ['core'],
   },
   {
     id: 'workout',
@@ -47,6 +48,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     currencyReward: 0,
     statRewards: { strength: 1, stamina: 1 },
     contributesToStreak: true,
+    acceptedWorkoutTemplates: ['upper-body', 'lower-body'],
   },
   {
     id: 'rehab',
@@ -58,6 +60,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     currencyReward: 0,
     statRewards: { hp: 1, defense: 1 },
     contributesToStreak: true,
+    acceptedWorkoutTemplates: ['rehabilitation'],
   },
 
   // ── Non-Negotiables · Nutrition ────────────────────────────────────

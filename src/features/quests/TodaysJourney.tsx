@@ -4,8 +4,11 @@ import { ProgressBar } from '@/components/ProgressBar'
 import { QUEST_CATEGORY_LABELS, SUBCATEGORY_LABELS } from '@/data/questLabels'
 import type { TodaysJourneyProgress } from '@/features/quests/questProgress'
 
+import type { WorkoutJourneyProgress } from '@/features/workout/workoutProgress'
+
 interface TodaysJourneyProps {
   progress: TodaysJourneyProgress
+  workoutProgressList?: WorkoutJourneyProgress[]
 }
 
 function ProgressRow({
@@ -34,6 +37,47 @@ function ProgressRow({
   )
 }
 
+function WorkoutJourneyRow({ workoutProgress }: { workoutProgress: WorkoutJourneyProgress }) {
+  const isDurationOnly = workoutProgress.setsTotal === 0 && workoutProgress.exercisesTotal === 0
+
+  if (workoutProgress.isComplete && isDurationOnly) {
+    return (
+      <p className="text-sm text-stone-300">
+        {workoutProgress.label}
+        <span className="text-stone-500"> · complete</span>
+      </p>
+    )
+  }
+
+  if (workoutProgress.isComplete) {
+    return (
+      <div>
+        <p className="text-sm font-medium text-stone-200">
+          {workoutProgress.label}
+          <span className="font-normal text-stone-500"> · complete</span>
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-lg border border-stone-700/40 bg-stone-950/30 p-3">
+      <ProgressRow
+        label={`Workout · ${workoutProgress.label}`}
+        completed={workoutProgress.setsCompleted}
+        total={Math.max(workoutProgress.setsTotal, 1)}
+      />
+      {!isDurationOnly && (
+        <p className="mt-2 text-xs text-stone-500">
+          {workoutProgress.exercisesCompleted} / {workoutProgress.exercisesTotal} exercises
+          {' · '}
+          {workoutProgress.percent}% complete
+        </p>
+      )}
+    </div>
+  )
+}
+
 /**
  * Glanceable summary of today's progress, mirroring the real quest
  * hierarchy (category/subcategory) instead of a fixed set of placeholder
@@ -43,13 +87,30 @@ function ProgressRow({
  * progress rows — expand to see Morning Routine / Nutrition / Evening
  * Routine detail. Any row with nothing to show (0 total) is simply omitted.
  */
-export function TodaysJourney({ progress }: TodaysJourneyProps) {
+export function TodaysJourney({ progress, workoutProgressList = [] }: TodaysJourneyProps) {
   const { nonNegotiable, dailyBonus, weekly, weeklyBonus, special } = progress
   const visibleSubcategories = nonNegotiable.subcategories.filter((sub) => sub.total > 0)
 
   return (
     <Panel title="Today's Journey">
       <div className="space-y-4">
+        {workoutProgressList.length > 0 && (
+          <Accordion
+            title="Workouts"
+            meta={`${workoutProgressList.length}`}
+            defaultExpanded
+            persistKey="todays-journey:workouts"
+          >
+            <div className="space-y-3">
+              {workoutProgressList.map((workoutProgress) => (
+                <WorkoutJourneyRow
+                  key={`${workoutProgress.label}-${workoutProgress.isComplete ? workoutProgress.activityId : 'active'}`}
+                  workoutProgress={workoutProgress}
+                />
+              ))}
+            </div>
+          </Accordion>
+        )}
         {nonNegotiable.total > 0 && (
           <Accordion
             title={QUEST_CATEGORY_LABELS.nonNegotiable}

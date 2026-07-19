@@ -64,6 +64,31 @@ Release notes for shipped application versions. Design docs for unreleased syste
 
 ---
 
+## v0.0.4 (in progress)
+
+### Fitness Foundation
+
+- **Activity architecture** — Quest vs Activity separation; only WorkoutActivity implemented ([ACTIVITIES.md](ACTIVITIES.md))
+- **Workout data model** — exercises, templates, sessions, activities ([WORKOUT.md](WORKOUT.md))
+- **Workout completion pipeline** — `completeWorkout()` reuses `completeQuest('workout')` + `WORKOUT_COMPLETED` event
+- **Analytics** — `PeriodAnalytics.workouts` from `WorkoutActivity` records
+- **Insights** — `workoutVolume` insight type
+- **UI** — Workout panel (start, log sets, complete)
+- **DevTools** — workout testing helpers
+- Save version **0.0.5**
+
+### Workout Logging & Sessions
+
+- Full session lifecycle (draft, start, pause, resume, review, complete)
+- Set logging with `completed` status, weight, reps — extensible fields bag
+- `workoutStatistics.ts` — reps, volume, frequency rollups
+- Today's Journey workout progress row
+- Timeline rich summaries + WorkoutDetailModal
+- Daily Summary reflection for logged workouts
+- DevTools: generate/complete sample workout, generate/clear history
+
+---
+
 ## v0.0.2
 
 Completed features:

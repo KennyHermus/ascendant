@@ -2,6 +2,7 @@ import type { QuestDefinition, QuestStatus } from '@/types/quest'
 import type { StatKey } from '@/types/hero'
 import { STAT_LABELS } from '@/features/hero/heroLogic'
 import { QUEST_DEFINITIONS } from '@/data/quests'
+import { isActivityDrivenQuest } from '@/features/activities/activityRegistry'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
 import {
   evaluateQuestTimingForDay,
@@ -93,7 +94,8 @@ export function QuestCard({ quest, status, onComplete }: QuestCardProps) {
   const statRewardText = formatStatRewards(quest.statRewards)
   const completed = effectiveStatus === 'completed'
   const missed = effectiveStatus === 'missed'
-  const disabled = completed || missed
+  const activityDriven = isActivityDrivenQuest(quest.id)
+  const disabled = completed || missed || activityDriven
 
   return (
     <article
@@ -139,21 +141,27 @@ export function QuestCard({ quest, status, onComplete }: QuestCardProps) {
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onComplete(quest.id)}
-          className="shrink-0 rounded-md border border-amber-700/50 bg-amber-900/40 px-3 py-1.5 text-sm font-medium text-amber-100 transition hover:bg-amber-800/50 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800/50 disabled:text-stone-500"
-          aria-label={
-            completed
-              ? `${quest.name} completed`
-              : missed
-                ? `${quest.name} missed`
-                : `Complete ${quest.name}`
-          }
-        >
-          {completed ? 'Done' : missed ? 'Missed' : 'Complete'}
-        </button>
+        {activityDriven && !completed && !missed ? (
+          <span className="shrink-0 rounded-md border border-stone-700/50 bg-stone-900/40 px-3 py-1.5 text-xs text-stone-400">
+            Use Workout panel
+          </span>
+        ) : (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onComplete(quest.id)}
+            className="shrink-0 rounded-md border border-amber-700/50 bg-amber-900/40 px-3 py-1.5 text-sm font-medium text-amber-100 transition hover:bg-amber-800/50 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800/50 disabled:text-stone-500"
+            aria-label={
+              completed
+                ? `${quest.name} completed`
+                : missed
+                  ? `${quest.name} missed`
+                  : `Complete ${quest.name}`
+            }
+          >
+            {completed ? 'Done' : missed ? 'Missed' : 'Complete'}
+          </button>
+        )}
       </div>
     </article>
   )

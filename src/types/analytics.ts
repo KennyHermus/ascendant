@@ -87,6 +87,18 @@ export interface AchievementAnalytics {
   unlockPercentage: number
 }
 
+/** Workout activity rollups for a period — sourced from `WorkoutActivity` records. */
+export interface WorkoutAnalytics {
+  workoutsCompleted: number
+  totalExercises: number
+  totalSets: number
+  totalReps: number
+  totalVolume: number
+  totalDurationMinutes: number
+  averageDurationMinutes: number | null
+  workoutFrequencyPerWeek: number | null
+}
+
 /**
  * Full read-only analytics bundle for one resolved period.
  * Hero identity fields (level, streaks) and achievements are lifetime;
@@ -102,4 +114,5 @@ export interface PeriodAnalytics {
   progress: ProgressAnalytics
   history: HistoryAnalytics
   achievements: AchievementAnalytics
+  workouts: WorkoutAnalytics
 }

@@ -31,8 +31,10 @@ import type { GameEvent } from '@/types/event'
 import type { Hero } from '@/types/hero'
 import type { DailySnapshot, HeroHistory } from '@/types/history'
 import type { QuestDefinition, QuestState } from '@/types/quest'
-import type { DayStartHeroSnapshot } from '@/types/summary'
 import type { QuestHistory } from '@/types/questHistory'
+import type { DayStartHeroSnapshot } from '@/types/summary'
+import type { WorkoutActivity } from '@/types/workout'
+import { getWorkoutAnalytics } from '@/features/workout/workoutAnalyticsLogic'
 
 /**
  * Read-only inputs the Analytics Engine needs. Callers assemble this from
@@ -49,6 +51,7 @@ export interface AnalyticsInput {
   achievements: AchievementState[]
   dayStartHeroSnapshot: DayStartHeroSnapshot
   questHistory: QuestHistory
+  workoutActivities: WorkoutActivity[]
   /** Application / simulated clock. */
   now: Date
 }
@@ -506,6 +509,7 @@ export function getAnalyticsForPeriod(
     progress: getProgressAnalytics(input, period),
     history: getHistoryAnalytics(input, period),
     achievements: getAchievementAnalytics(input),
+    workouts: getWorkoutAnalytics(input, period),
   }
 }
 

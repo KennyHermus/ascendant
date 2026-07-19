@@ -12,6 +12,8 @@ import {
 import { buildDailyHistoryDetail } from '@/features/history/historyDaily'
 import { buildTimelineGroups } from '@/features/history/historyTimeline'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
+import { getWorkoutActivityById } from '@/features/workout/workoutLogic'
+import { WorkoutDetailModal } from '@/features/workout/WorkoutDetailModal'
 import { useGameTime } from '@/lib/useGameTime'
 import { useGameStore } from '@/store/gameStore'
 import type { TimelineFilterCategory } from '@/types/historyUi'
@@ -25,6 +27,7 @@ import { useHeroHistoryNavigation } from './heroHistoryNavigation'
 export function HeroHistoryPanel() {
   const history = useGameStore((s) => s.history)
   const events = useGameStore((s) => s.events)
+  const workout = useGameStore((s) => s.workout)
   const dailySummary = useGameStore((s) => s.dailySummary)
   const navigation = useHeroHistoryNavigation()
   const now = useGameTime()
@@ -59,6 +62,11 @@ export function HeroHistoryPanel() {
       unlockDefinitions: UNLOCK_DEFINITIONS,
     })
   }, [navigation?.selectedDate, todayKey, history, events, dailySummary])
+
+  const selectedWorkoutActivity = useMemo(() => {
+    if (!navigation?.selectedWorkoutActivityId) return null
+    return getWorkoutActivityById(workout, navigation.selectedWorkoutActivityId) ?? null
+  }, [navigation?.selectedWorkoutActivityId, workout])
 
   function handleSelectDay(date: string) {
     navigation?.openDay(date)
@@ -109,6 +117,7 @@ export function HeroHistoryPanel() {
               groups={timelineGroups}
               todayKey={todayKey}
               onOpenDayOverview={handleSelectDay}
+              onOpenWorkoutDetail={navigation?.openWorkoutDetail}
             />
           </div>
         </Accordion>
@@ -116,6 +125,13 @@ export function HeroHistoryPanel() {
 
       {selectedDetail && navigation && (
         <DailyHistoryView detail={selectedDetail} onClose={navigation.closeDay} />
+      )}
+
+      {selectedWorkoutActivity && navigation && (
+        <WorkoutDetailModal
+          activity={selectedWorkoutActivity}
+          onClose={navigation.closeWorkoutDetail}
+        />
       )}
     </>
   )

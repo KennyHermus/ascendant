@@ -127,14 +127,33 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 
 ---
 
-# v0.0.4 — Workout and Nutrition Tracking
+# v0.0.4 — Fitness System (in progress)
 
-Includes:
+## Foundation (shipped)
 
-- Workout history
-- PR tracking
-- Stat adjustments based on performance
-- Workout recommendations
+✓ Activity architecture (`Quest → Activity → …`) — [ACTIVITIES.md](ACTIVITIES.md)  
+✓ Workout data model — exercises, templates, sessions, activities — [WORKOUT.md](WORKOUT.md)  
+✓ Workout completion pipeline via existing `completeQuest('workout')`  
+✓ `WORKOUT_COMPLETED` events + timeline integration  
+✓ Analytics `WorkoutAnalytics` + insights  
+✓ Workout panel UI + DevTools  
+✓ Save version **0.0.5** (workout persistence)
+
+## Logging & sessions (shipped)
+
+✓ Draft → start → log → review → complete lifecycle  
+✓ Set completion status, pause/resume, elapsed duration (Time Service)  
+✓ Session progress + Today's Journey integration  
+✓ Statistics utilities (`workoutStatistics.ts`)  
+✓ Workout detail modal from timeline  
+✓ Sample workout history DevTools  
+
+## Remaining v0.0.4
+
+- Nutrition activity migration
+- Workout timeline drill-down UI
+- Analytics dashboard workout section
+- PR tracking, recommendations, progression (later tasks)
 - Nutrition tracking
 
 ---

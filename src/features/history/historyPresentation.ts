@@ -14,7 +14,11 @@ const PROGRESS_TYPES = new Set<GameEventType>([
   'STREAK_INCREASED',
   'STREAK_BROKEN',
 ])
-const QUEST_TYPES = new Set<GameEventType>(['QUEST_COMPLETED', 'QUEST_FAILED'])
+const QUEST_TYPES = new Set<GameEventType>([
+  'QUEST_COMPLETED',
+  'QUEST_FAILED',
+  'WORKOUT_COMPLETED',
+])
 const ACHIEVEMENT_TYPES = new Set<GameEventType>(['ACHIEVEMENT_UNLOCKED'])
 const UNLOCK_TYPES = new Set<GameEventType>(['UNLOCK_EARNED'])
 
@@ -48,6 +52,11 @@ export function eventMatchesSearch(event: GameEvent, query: string): boolean {
       return 'streak'.includes(normalized)
     case 'STREAK_BROKEN':
       return 'streak broken'.includes(normalized)
+    case 'WORKOUT_COMPLETED':
+      return (
+        event.templateName.toLowerCase().includes(normalized) ||
+        'workout'.includes(normalized)
+      )
   }
 }
 

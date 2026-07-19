@@ -79,6 +79,7 @@ export function isDailySummaryDisplayable(
 interface ReflectionInputs {
   nonNegotiablesAllComplete: boolean
   questsCompletedToday: number
+  workoutCompletedToday: boolean
   leveledUpToday: boolean
   streakIncreasedToday: boolean
   streakBrokenToday: boolean
@@ -93,6 +94,7 @@ export function generateHeroReflection(input: ReflectionInputs): string {
   const {
     nonNegotiablesAllComplete,
     questsCompletedToday,
+    workoutCompletedToday,
     leveledUpToday,
     streakIncreasedToday,
     streakBrokenToday,
@@ -100,6 +102,15 @@ export function generateHeroReflection(input: ReflectionInputs): string {
 
   if (leveledUpToday) {
     return 'You grew stronger today — a new level reached. Your dedication is paying off.'
+  }
+  if (workoutCompletedToday && nonNegotiablesAllComplete && streakIncreasedToday) {
+    return 'A disciplined day — workout logged and your streak grew. Your consistency is becoming your greatest strength.'
+  }
+  if (workoutCompletedToday && nonNegotiablesAllComplete) {
+    return 'You maintained your streak, trained hard, and grew stronger.'
+  }
+  if (workoutCompletedToday) {
+    return 'You put in the work today. Every logged set moved you forward.'
   }
   if (nonNegotiablesAllComplete && streakIncreasedToday) {
     return 'A disciplined day. Your consistency is becoming your greatest strength.'
@@ -123,6 +134,7 @@ function deriveReflectionInputs(
   return {
     nonNegotiablesAllComplete,
     questsCompletedToday: todaysEvents.filter((e) => e.type === 'QUEST_COMPLETED').length,
+    workoutCompletedToday: todaysEvents.some((e) => e.type === 'WORKOUT_COMPLETED'),
     leveledUpToday: todaysEvents.some((e) => e.type === 'LEVEL_UP'),
     streakIncreasedToday: todaysEvents.some((e) => e.type === 'STREAK_INCREASED'),
     streakBrokenToday: todaysEvents.some((e) => e.type === 'STREAK_BROKEN'),

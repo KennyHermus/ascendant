@@ -11,6 +11,7 @@ interface HeroTimelineProps {
   /** Active Hero Day key — this day defaults expanded on first visit. */
   todayKey: string
   onOpenDayOverview: (date: string) => void
+  onOpenWorkoutDetail?: (activityId: string) => void
 }
 
 function eventCountLabel(count: number): string {
@@ -21,6 +22,7 @@ export function HeroTimeline({
   groups,
   todayKey,
   onOpenDayOverview,
+  onOpenWorkoutDetail,
 }: HeroTimelineProps) {
   if (groups.length === 0) {
     return (
@@ -65,7 +67,16 @@ export function HeroTimeline({
                   <li key={event.id}>
                     <button
                       type="button"
-                      onClick={() => onOpenDayOverview(group.date)}
+                      onClick={() => {
+                        if (
+                          event.type === 'WORKOUT_COMPLETED' &&
+                          onOpenWorkoutDetail
+                        ) {
+                          onOpenWorkoutDetail(event.activityId)
+                          return
+                        }
+                        onOpenDayOverview(group.date)
+                      }}
                       className="flex w-full items-center justify-between gap-3 rounded-lg border border-stone-700/40 bg-stone-950/40 px-3 py-2 text-left text-sm transition hover:border-stone-600/60 hover:bg-stone-900/60"
                     >
                       <span className="flex items-center gap-2 text-stone-200">

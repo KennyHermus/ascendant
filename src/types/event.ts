@@ -1,6 +1,7 @@
 export const GAME_EVENT_TYPES = [
   'QUEST_COMPLETED',
   'QUEST_FAILED',
+  'WORKOUT_COMPLETED',
   'LEVEL_UP',
   'STREAK_INCREASED',
   'STREAK_BROKEN',
@@ -51,4 +52,20 @@ export type GameEvent =
       type: 'ACHIEVEMENT_UNLOCKED'
       achievementId: string
       achievementName: string
+    })
+  | (BaseGameEvent & {
+      type: 'WORKOUT_COMPLETED'
+      /** Quest rewarded by this workout, if any. */
+      questId: string | null
+      activityId: string
+      templateId: string
+      templateName: string
+      heroDayKey: string
+      completedAt: string
+      durationMinutes: number | null
+      exerciseCount: number
+      setCount: number
+      completedSetCount?: number
+      totalReps?: number
+      totalVolume?: number
     })

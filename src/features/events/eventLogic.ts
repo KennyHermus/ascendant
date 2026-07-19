@@ -8,6 +8,7 @@ import type { CompletionGrade } from '@/types/completion'
 import type { GameEvent } from '@/types/event'
 import type { QuestDefinition, QuestState } from '@/types/quest'
 import type { UnlockDefinition, UnlockState } from '@/types/unlock'
+import type { WorkoutActivity } from '@/types/workout'
 
 /** Keeps persisted history bounded — this is a lightweight foundation, not a full log. */
 const MAX_STORED_EVENTS = 50
@@ -124,6 +125,33 @@ export function recordAchievementUnlocked(
   }
 }
 
+export interface WorkoutCompletedEventInput {
+  activity: WorkoutActivity
+  now?: Date
+}
+
+export function recordWorkoutCompleted(
+  input: WorkoutCompletedEventInput,
+): GameEvent {
+  const now = input.now ?? getCurrentGameTime()
+  return {
+    ...makeEventBase(now),
+    type: 'WORKOUT_COMPLETED',
+    questId: input.activity.questId,
+    activityId: input.activity.id,
+    templateId: input.activity.templateId,
+    templateName: input.activity.templateName,
+    heroDayKey: input.activity.heroDayKey,
+    completedAt: input.activity.completedAt,
+    durationMinutes: input.activity.durationMinutes,
+    exerciseCount: input.activity.exerciseCount,
+    setCount: input.activity.setCount,
+    completedSetCount: input.activity.completedSetCount,
+    totalReps: input.activity.totalReps,
+    totalVolume: input.activity.totalVolume,
+  }
+}
+
 /**
  * Diffs quest status before/after a reconcile pass and returns one
  * `QUEST_FAILED` event per quest that just transitioned into `missed`.
@@ -183,6 +211,9 @@ export function getEventHeroDayKey(event: GameEvent): string | null {
     return event.heroDayKey ?? event.periodKey ?? null
   }
   if (event.type === 'QUEST_COMPLETED') {
+    return event.heroDayKey
+  }
+  if (event.type === 'WORKOUT_COMPLETED') {
     return event.heroDayKey
   }
   return null
@@ -277,6 +308,8 @@ export function getEventIcon(event: GameEvent): string {
       return '🔓'
     case 'ACHIEVEMENT_UNLOCKED':
       return '🏆'
+    case 'WORKOUT_COMPLETED':
+      return '🏋️'
   }
 }
 
@@ -296,6 +329,12 @@ export function formatEventLabel(event: GameEvent): string {
       return `Unlocked ${event.unlockName}`
     case 'ACHIEVEMENT_UNLOCKED':
       return `Achievement unlocked: "${event.achievementName}"`
+    case 'WORKOUT_COMPLETED': {
+      const duration =
+        event.durationMinutes != null ? `${event.durationMinutes} min` : '—'
+      const sets = event.completedSetCount ?? event.setCount
+      return `${event.templateName} Workout · ${duration} · ${event.exerciseCount} exercises · ${sets} sets`
+    }
   }
 }
 

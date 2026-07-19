@@ -21,6 +21,7 @@ export const INSIGHT_TYPES = [
   'decliningPunctuality',
   'consistentlyEarly',
   'consistentlyInGrace',
+  'workoutVolume',
   // Routine
   'strongestRoutine',
   'weakestRoutine',

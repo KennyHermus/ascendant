@@ -19,6 +19,7 @@ import {
   recordAchievementUnlocked,
   recordLevelUp,
   recordQuestCompleted,
+  recordWorkoutCompleted,
 } from '@/features/events/eventLogic'
 import {
   buildDailySnapshot,
@@ -71,12 +72,18 @@ import { resetAllQuestsForTesting } from '@/dev/devQuestActions'
 import {
   advanceSimulatedGameTime,
   clearSimulatedGameTime,
+  freezeSimulatedGameTime,
   getCurrentGameTime,
+  getHeroTimePersistedConfig,
   getSimulatedTimeOverride,
+  restoreHeroTimeConfig,
+  resumeSimulatedGameTimeProgression,
   setSimulatedGameTime,
 } from '@/lib/gameTime'
+import type { HeroTimePersistedConfig } from '@/lib/gameTime'
 import { CURRENT_SAVE_VERSION } from '@/lib/migrations/migrations'
 import { createMigratingStorage } from '@/lib/migrations/migratingStorage'
+import { getActiveHeroDayKey } from '@/lib/timeService'
 import { getTodayDateString, getWeekKey, parseDateKey, STORAGE_KEY } from '@/lib/storage'
 import type { AchievementState } from '@/types/achievement'
 import type { GameEvent } from '@/types/event'
@@ -89,6 +96,59 @@ import type {
 import type { HeroHistory } from '@/types/history'
 import type { DayStartHeroSnapshot, SummarySnapshot } from '@/types/summary'
 import type { UnlockState } from '@/types/unlock'
+import type { WorkoutState } from '@/types/workout'
+import {
+  buildWorkoutActivityFromSession,
+  createEmptyWorkoutState,
+  createSetLog,
+  getActiveSession,
+  createSessionFromTemplate,
+  getTemplateById,
+  mergeWorkoutState,
+} from '@/features/workout/workoutLogic'
+import type { DurationActivityType } from '@/data/durationActivities'
+import { canEnterWorkoutReview, canPerformSessionAction } from '@/features/workout/workoutSessionState'
+import {
+  buildDurationWorkoutActivityFromSession,
+  createDurationSession,
+  isDurationSession,
+} from '@/features/workout/durationActivityLogic'
+import {
+  evaluateDurationActivityGrade,
+  evaluateWorkoutActivityGrade,
+  resolveDurationActivityQuests,
+  resolveWorkoutQuests,
+} from '@/features/workout/workoutQuestResolution'
+import {
+  cancelSessionState,
+  computeExerciseTimerElapsedMs,
+  createDefaultSessionTiming,
+  enterSessionReview,
+  finalizeSessionTimer,
+  finalizeUntimedSetLog,
+  markExerciseTimerTargetReached as markExerciseTimerTargetReachedState,
+  pauseExerciseTimerState,
+  pauseRestTimerState,
+  pauseSessionTimer,
+  resumeExerciseTimerState,
+  resumeRestTimerState,
+  resumeSessionFromReview,
+  resumeSessionTimer,
+  skipRestTimerState,
+  startExerciseTimerState,
+  startSessionTimer,
+  stopExerciseTimerState,
+  stopRestTimerState,
+} from '@/features/workout/workoutTimingLogic'
+import {
+  addSetToExercise,
+  cancelStaleSessions,
+  removeSetFromExercise,
+  toggleSetComplete,
+  updateSessionInState,
+  updateSetOnExercise,
+} from '@/features/workout/workoutSessionLogic'
+import { generateSampleWorkoutHistory } from '@/features/workout/workoutSample'
 
 interface GameState {
   /** Aligned with the app/git version (e.g. "0.0.2"). Drives save migrations. */
@@ -112,6 +172,8 @@ interface GameState {
    * actions below. Always `null` outside DEV.
    */
   devSimulatedTime: string | null
+  /** Dev Hero Time mode + anchor — preferred persisted config (see `lib/gameTime.ts`). */
+  devHeroTime: HeroTimePersistedConfig | null
   /**
    * Lightweight internal history of meaningful gameplay moments (quest
    * completed/failed, level up, streak change, unlock earned). Foundation
@@ -154,6 +216,11 @@ interface GameState {
    * punctuality analytics. Distinct from capped `events` and `history`.
    */
   questHistory: import('@/types/questHistory').QuestHistory
+  /**
+   * Fitness / Activity layer (v0.0.4) — templates, sessions, and completed
+   * workout activities. Distinct from quest state; see `docs/ACTIVITIES.md`.
+   */
+  workout: WorkoutState
 }
 
 interface GameActions {
@@ -185,10 +252,54 @@ interface GameActions {
    * actually change.
    */
   syncAchievements: () => void
+  createWorkoutSession: (templateId: string) => boolean
+  startDurationActivity: (activityType: DurationActivityType) => boolean
+  beginWorkout: () => boolean
+  pauseWorkout: () => boolean
+  resumeWorkout: () => boolean
+  startWorkout: (templateId: string) => boolean
+  cancelWorkout: () => void
+  logWorkoutSet: (
+    exerciseLogId: string,
+    setId: string,
+    weight?: number,
+    reps?: number,
+  ) => boolean
+  toggleWorkoutSetComplete: (exerciseLogId: string, setId: string) => boolean
+  addWorkoutSet: (
+    exerciseLogId: string,
+    weight?: number,
+    reps?: number,
+    rpe?: number,
+  ) => boolean
+  updateWorkoutSet: (
+    exerciseLogId: string,
+    setId: string,
+    fields: { weight?: number; reps?: number; rpe?: number; completed?: boolean },
+  ) => boolean
+  removeWorkoutSet: (exerciseLogId: string, setId: string) => boolean
+  completeWorkout: () => boolean
+  enterWorkoutReview: () => boolean
+  exitWorkoutReview: () => boolean
+  resumeWorkoutFromReview: () => boolean
+  startExerciseTimer: (exerciseLogId: string, setId: string) => boolean
+  pauseExerciseTimer: () => boolean
+  resumeExerciseTimer: () => boolean
+  stopExerciseTimer: () => boolean
+  markExerciseTimerTargetReached: () => boolean
+  startRestTimer: () => boolean
+  pauseRestTimer: () => boolean
+  resumeRestTimer: () => boolean
+  stopRestTimer: () => boolean
+  skipRestTimer: () => boolean
   /** Sets the developer time override and persists it. No-ops outside DEV. */
   devSetSimulatedTime: (date: Date) => void
   /** Advances the developer time override by `ms` and persists it. No-ops outside DEV. */
   devAdvanceSimulatedTime: (ms: number) => void
+  /** Freezes simulated Hero Time at the current instant. No-ops outside DEV. */
+  devFreezeHeroTime: () => void
+  /** Resumes simulated Hero Time progression from the frozen instant. No-ops outside DEV. */
+  devResumeHeroTimeProgression: () => void
   /** Clears the developer time override, returning to real time. No-ops outside DEV. */
   devClearSimulatedTime: () => void
   /**
@@ -232,6 +343,13 @@ interface GameActions {
     snapshotsAdded: number
     eventsAdded: number
   }
+  devCreateSampleWorkout: () => boolean
+  devStartWorkout: (templateId?: string) => boolean
+  devCompleteWorkout: () => boolean
+  devGenerateWorkoutHistory: (days?: number) => number
+  devClearWorkoutData: () => void
+  devClearWorkoutHistory: () => void
+  devDumpWorkoutState: () => WorkoutState
 }
 
 type GameStore = GameState & GameActions
@@ -253,6 +371,7 @@ function createInitialState(): GameState {
     // on first-ever load) so `resetProgress()` doesn't fight an active dev
     // time simulation — resetting player progress is orthogonal to it.
     devSimulatedTime: getSimulatedTimeOverride()?.toISOString() ?? null,
+    devHeroTime: getHeroTimePersistedConfig(),
     events: [],
     dailySummary: null,
     dailySummaryViewed: false,
@@ -260,6 +379,7 @@ function createInitialState(): GameState {
     achievements: createInitialAchievementStates(ACHIEVEMENT_DEFINITIONS),
     history: createEmptyHistory(),
     questHistory: createEmptyQuestHistory(),
+    workout: createEmptyWorkoutState(),
   }
 }
 
@@ -503,6 +623,7 @@ export const useGameStore = create<GameStore>()(
           events,
           history,
           questHistory,
+          workout: cancelStaleSessions(state.workout, today),
           lastDailyResetDate: resetDaily ? today : lastDailyResetDate,
           lastWeeklyResetWeek: resetWeekly ? week : lastWeeklyResetWeek,
         })
@@ -636,20 +757,43 @@ export const useGameStore = create<GameStore>()(
       devSetSimulatedTime: (date: Date) => {
         if (!import.meta.env.DEV) return
         setSimulatedGameTime(date)
-        set({ devSimulatedTime: date.toISOString() })
+        set({
+          devSimulatedTime: getSimulatedTimeOverride()?.toISOString() ?? null,
+          devHeroTime: getHeroTimePersistedConfig(),
+        })
       },
 
       devAdvanceSimulatedTime: (ms: number) => {
         if (!import.meta.env.DEV) return
         advanceSimulatedGameTime(ms)
-        const updated = getSimulatedTimeOverride()
-        set({ devSimulatedTime: updated ? updated.toISOString() : null })
+        set({
+          devSimulatedTime: getSimulatedTimeOverride()?.toISOString() ?? null,
+          devHeroTime: getHeroTimePersistedConfig(),
+        })
+      },
+
+      devFreezeHeroTime: () => {
+        if (!import.meta.env.DEV) return
+        freezeSimulatedGameTime()
+        set({
+          devSimulatedTime: getSimulatedTimeOverride()?.toISOString() ?? null,
+          devHeroTime: getHeroTimePersistedConfig(),
+        })
+      },
+
+      devResumeHeroTimeProgression: () => {
+        if (!import.meta.env.DEV) return
+        resumeSimulatedGameTimeProgression()
+        set({
+          devSimulatedTime: getSimulatedTimeOverride()?.toISOString() ?? null,
+          devHeroTime: getHeroTimePersistedConfig(),
+        })
       },
 
       devClearSimulatedTime: () => {
         if (!import.meta.env.DEV) return
         clearSimulatedGameTime()
-        set({ devSimulatedTime: null })
+        set({ devSimulatedTime: null, devHeroTime: getHeroTimePersistedConfig() })
       },
 
       devCompleteGroup: (category, subcategory) => {
@@ -952,6 +1096,465 @@ export const useGameStore = create<GameStore>()(
         return true
       },
 
+      createWorkoutSession: (templateId: string) => {
+        const state = get()
+        const now = getCurrentGameTime()
+        const heroDayKey = getActiveHeroDayKey(now)
+
+        if (getActiveSession(state.workout)) return false
+
+        const template = getTemplateById(state.workout, templateId)
+        if (!template) return false
+
+        const sessionId = crypto.randomUUID()
+        const { sections, exercises, circuitProgress } = createSessionFromTemplate(template)
+        const timing = createDefaultSessionTiming()
+        const session = {
+          id: sessionId,
+          templateId: template.id,
+          templateName: template.name,
+          activityStructure: 'exercise' as const,
+          activityType: template.id,
+          status: 'draft' as const,
+          heroDayKey,
+          questId: null,
+          startedAt: null,
+          endedAt: null,
+          ...timing,
+          sections,
+          exercises,
+          circuitProgress,
+          notes: undefined,
+          activityId: null,
+        }
+
+        set({
+          workout: {
+            ...state.workout,
+            sessions: [...state.workout.sessions, session],
+            activeSessionId: sessionId,
+          },
+        })
+        return true
+      },
+
+      startDurationActivity: (activityType: DurationActivityType) => {
+        const state = get()
+        if (getActiveSession(state.workout)) return false
+
+        const now = getCurrentGameTime()
+        const heroDayKey = getActiveHeroDayKey(now)
+        const sessionId = crypto.randomUUID()
+        const session = createDurationSession(activityType, heroDayKey, sessionId)
+
+        set({
+          workout: {
+            ...state.workout,
+            sessions: [...state.workout.sessions, session],
+            activeSessionId: sessionId,
+          },
+        })
+
+        return get().beginWorkout()
+      },
+
+      beginWorkout: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canPerformSessionAction(session.status, 'start')) return false
+
+        const now = getCurrentGameTime()
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            startSessionTimer(current, now.toISOString()),
+          ),
+        })
+        return true
+      },
+
+      pauseWorkout: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canPerformSessionAction(session.status, 'pause')) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            pauseSessionTimer(current),
+          ),
+        })
+        return true
+      },
+
+      resumeWorkout: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canPerformSessionAction(session.status, 'resume')) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            resumeSessionTimer(current),
+          ),
+        })
+        return true
+      },
+
+      enterWorkoutReview: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canEnterWorkoutReview(session)) {
+          return false
+        }
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            enterSessionReview(current),
+          ),
+        })
+        return true
+      },
+
+      exitWorkoutReview: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canPerformSessionAction(session.status, 'back')) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            resumeSessionFromReview(current),
+          ),
+        })
+        return true
+      },
+
+      resumeWorkoutFromReview: () => {
+        return get().exitWorkoutReview()
+      },
+
+      startWorkout: (templateId: string) => {
+        const created = get().createWorkoutSession(templateId)
+        if (!created) return false
+        return get().beginWorkout()
+      },
+
+      cancelWorkout: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canPerformSessionAction(session.status, 'cancel')) return
+
+        set({
+          workout: {
+            ...updateSessionInState(state.workout, session.id, (current) =>
+              cancelSessionState(current),
+            ),
+            activeSessionId: null,
+          },
+        })
+      },
+
+      logWorkoutSet: (exerciseLogId, setId, weight, reps) => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (
+          !session ||
+          !['in_progress', 'paused', 'ready_for_review'].includes(session.status)
+        ) {
+          return false
+        }
+
+        const template = getTemplateById(state.workout, session.templateId)
+        if (!template) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            finalizeUntimedSetLog(current, template, exerciseLogId, setId, {
+              ...(weight != null ? { weight } : {}),
+              ...(reps != null ? { reps } : {}),
+            }),
+          ),
+        })
+        return true
+      },
+
+      toggleWorkoutSetComplete: (exerciseLogId, setId) => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            toggleSetComplete(current, exerciseLogId, setId),
+          ),
+        })
+        return true
+      },
+
+      addWorkoutSet: (exerciseLogId, weight, reps, rpe) => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session) return false
+
+        const setLog = createSetLog(crypto.randomUUID(), {
+          weight,
+          reps,
+          rpe,
+          completed: false,
+        })
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            addSetToExercise(current, exerciseLogId, setLog),
+          ),
+        })
+        return true
+      },
+
+      updateWorkoutSet: (exerciseLogId, setId, fields) => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            updateSetOnExercise(current, exerciseLogId, setId, {
+              fields,
+              completed: fields.completed,
+            }),
+          ),
+        })
+        return true
+      },
+
+      removeWorkoutSet: (exerciseLogId, setId) => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            removeSetFromExercise(current, exerciseLogId, setId),
+          ),
+        })
+        return true
+      },
+
+      completeWorkout: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || !canPerformSessionAction(session.status, 'finish')) return false
+
+        const now = getCurrentGameTime()
+        const heroDayKey = getActiveHeroDayKey(now)
+        const completedAt = now.toISOString()
+        const durationBased = isDurationSession(session)
+
+        let completionGrade: Exclude<import('@/types/completion').CompletionGrade, 'missed'> =
+          'completed'
+        let resolution = { resolvedQuestIds: [] as string[], primaryResolvedQuestId: null as string | null }
+
+        if (durationBased) {
+          resolution = resolveDurationActivityQuests(
+            session.activityType,
+            now,
+            heroDayKey,
+            QUEST_DEFINITIONS,
+            (questId) => get().completeQuest(questId),
+          )
+          completionGrade = evaluateDurationActivityGrade(
+            resolution.resolvedQuestIds,
+            QUEST_DEFINITIONS,
+            now,
+            heroDayKey,
+          )
+        } else {
+          completionGrade = evaluateWorkoutActivityGrade(
+            session.templateId,
+            QUEST_DEFINITIONS,
+            now,
+            heroDayKey,
+          )
+          resolution = resolveWorkoutQuests(
+            session.templateId,
+            QUEST_DEFINITIONS,
+            (questId) => get().completeQuest(questId),
+          )
+        }
+
+        const activityId = crypto.randomUUID()
+        const endedSession = finalizeSessionTimer({
+          ...session,
+          status: 'completed' as const,
+          endedAt: completedAt,
+          activityId,
+        })
+        const activity = durationBased
+          ? buildDurationWorkoutActivityFromSession(
+              endedSession,
+              activityId,
+              completedAt,
+              completionGrade,
+              heroDayKey,
+              resolution.primaryResolvedQuestId,
+            )
+          : buildWorkoutActivityFromSession(
+              endedSession,
+              activityId,
+              completedAt,
+              completionGrade,
+              heroDayKey,
+              resolution.primaryResolvedQuestId,
+            )
+
+        const latest = get()
+        set({
+          workout: {
+            ...latest.workout,
+            sessions: latest.workout.sessions.map((entry) =>
+              entry.id === session.id ? endedSession : entry,
+            ),
+            activities: [...latest.workout.activities, activity],
+            activeSessionId: null,
+          },
+          events: appendEvents(latest.events, [
+            recordWorkoutCompleted({ activity, now }),
+          ]),
+        })
+
+        return true
+      },
+
+      startExerciseTimer: (exerciseLogId, setId) => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session || session.status !== 'in_progress') return false
+        const exercise = session.exercises.find((entry) => entry.id === exerciseLogId)
+        const setLog = exercise?.sets.find((entry) => entry.id === setId)
+        if (!exercise || !setLog) return false
+        const planned =
+          setLog.target?.plannedDurationSeconds ??
+          exercise.target?.plannedDurationSeconds ??
+          setLog.fields.durationSeconds
+        if (planned == null || planned <= 0) return false
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            startExerciseTimerState(current, exerciseLogId, setId, planned),
+          ),
+        })
+        return true
+      },
+
+      pauseExerciseTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeExerciseTimer) return false
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            pauseExerciseTimerState(current),
+          ),
+        })
+        return true
+      },
+
+      resumeExerciseTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeExerciseTimer) return false
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            resumeExerciseTimerState(current),
+          ),
+        })
+        return true
+      },
+
+      stopExerciseTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeExerciseTimer) return false
+
+        const template = getTemplateById(state.workout, session.templateId)
+        if (!template) return false
+
+        const actualSeconds = Math.max(
+          0,
+          Math.round(
+            computeExerciseTimerElapsedMs(session.activeExerciseTimer) / 1000,
+          ),
+        )
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            stopExerciseTimerState(current, template, actualSeconds),
+          ),
+        })
+        return true
+      },
+
+      markExerciseTimerTargetReached: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeExerciseTimer || session.activeExerciseTimer.targetReached) {
+          return false
+        }
+
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            markExerciseTimerTargetReachedState(current),
+          ),
+        })
+        return true
+      },
+
+      startRestTimer: () => false,
+
+      pauseRestTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeRestTimer) return false
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            pauseRestTimerState(current),
+          ),
+        })
+        return true
+      },
+
+      resumeRestTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeRestTimer) return false
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            resumeRestTimerState(current),
+          ),
+        })
+        return true
+      },
+
+      stopRestTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeRestTimer) return false
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            stopRestTimerState(current),
+          ),
+        })
+        return true
+      },
+
+      skipRestTimer: () => {
+        const state = get()
+        const session = getActiveSession(state.workout)
+        if (!session?.activeRestTimer) return false
+        set({
+          workout: updateSessionInState(state.workout, session.id, (current) =>
+            skipRestTimerState(current),
+          ),
+        })
+        return true
+      },
+
       grantXp: (amount: number) => {
         if (!import.meta.env.DEV || amount <= 0) return
 
@@ -1083,6 +1686,93 @@ export const useGameStore = create<GameStore>()(
           eventsAdded: result.eventsAdded,
         }
       },
+
+      devCreateSampleWorkout: () => {
+        if (!import.meta.env.DEV) return false
+        return get().devStartWorkout('upper-body')
+      },
+
+      devStartWorkout: (templateId = 'upper-body') => {
+        if (!import.meta.env.DEV) return false
+        return get().startWorkout(templateId)
+      },
+
+      devCompleteWorkout: () => {
+        if (!import.meta.env.DEV) return false
+        const state = get()
+        let session = getActiveSession(state.workout)
+        if (!session) {
+          if (!get().devStartWorkout('upper-body')) return false
+          session = getActiveSession(get().workout)
+        }
+        if (!session) return false
+
+        if (session.status === 'draft') {
+          get().beginWorkout()
+          session = getActiveSession(get().workout)
+          if (!session) return false
+        }
+
+        for (const exercise of session.exercises) {
+          for (const set of exercise.sets) {
+            if (!set.completed) {
+              get().logWorkoutSet(
+                exercise.id,
+                set.id,
+                set.fields.weight ?? 135,
+                set.fields.reps ?? 8,
+              )
+            }
+          }
+        }
+
+        return get().completeWorkout()
+      },
+
+      devGenerateWorkoutHistory: (days = 30) => {
+        if (!import.meta.env.DEV) return 0
+
+        const state = get()
+        const now = getCurrentGameTime()
+        const todayKey = getActiveHeroDayKey(now)
+        const before = state.workout.activities.length
+        const result = generateSampleWorkoutHistory({
+          workout: state.workout,
+          todayKey,
+          days,
+          now,
+        })
+
+        set({
+          workout: result.workout,
+          events: appendEvents(state.events, result.events),
+        })
+        return result.workout.activities.length - before
+      },
+
+      devClearWorkoutData: () => {
+        if (!import.meta.env.DEV) return
+        set({ workout: createEmptyWorkoutState() })
+      },
+
+      devClearWorkoutHistory: () => {
+        if (!import.meta.env.DEV) return
+        const state = get()
+        set({
+          workout: {
+            ...state.workout,
+            activities: [],
+            sessions: state.workout.sessions.filter(
+              (session) => session.status !== 'completed',
+            ),
+          },
+          events: state.events.filter((event) => event.type !== 'WORKOUT_COMPLETED'),
+        })
+      },
+
+      devDumpWorkoutState: () => {
+        return get().workout
+      },
     }),
     {
       name: STORAGE_KEY,
@@ -1095,10 +1785,16 @@ export const useGameStore = create<GameStore>()(
         // date-dependent streak resolution below (and everything
         // `onRehydrateStorage` runs afterward), so a refresh doesn't briefly
         // evaluate against real time before snapping back to simulated time.
-        if (saved.devSimulatedTime) {
+        if (saved.devHeroTime) {
+          restoreHeroTimeConfig(saved.devHeroTime)
+        } else if (saved.devSimulatedTime) {
           const restored = new Date(saved.devSimulatedTime)
           if (!Number.isNaN(restored.getTime())) {
-            setSimulatedGameTime(restored)
+            restoreHeroTimeConfig({
+              mode: 'simulated_running',
+              simTimeIso: saved.devSimulatedTime,
+              anchorWallMs: Date.now(),
+            })
           }
         }
 
@@ -1153,6 +1849,7 @@ export const useGameStore = create<GameStore>()(
           // Missing on any save from before this feature existed —
           // defaults to real time, same safe-default pattern as `unlocks`.
           devSimulatedTime: saved.devSimulatedTime ?? null,
+          devHeroTime: saved.devHeroTime ?? null,
           // Missing on any save from before this feature existed — an empty
           // history is a safe default, same pattern as `unlocks`.
           events: saved.events ?? [],
@@ -1175,6 +1872,7 @@ export const useGameStore = create<GameStore>()(
           // the 0.0.2 → 0.0.3 migration also writes this field.
           history: mergeHistory(saved.history),
           questHistory: mergeQuestHistory(saved.questHistory),
+          workout: mergeWorkoutState(saved.workout),
         }
       },
       onRehydrateStorage: () => (state) => {

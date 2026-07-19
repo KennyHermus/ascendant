@@ -98,6 +98,15 @@ Workout, Nutrition, Combat, Economy should:
 
 Do not read snapshots in React. Do not duplicate Engine calculations in chart components.
 
+### Workout analytics (v0.0.4 foundation)
+
+`AnalyticsInput.workoutActivities` feeds `getWorkoutAnalytics()`:
+
+- `workoutsCompleted`, `totalExercises`, `totalSets`
+- `totalDurationMinutes`, `averageDurationMinutes`
+
+Exposed on `PeriodAnalytics.workouts`. Source of truth is `GameState.workout.activities`, not quest state.
+
 ---
 
 # Metric Registry

@@ -163,6 +163,22 @@ See [TIME.md](TIME.md), [QUEST_EXPLORER.md](QUEST_EXPLORER.md).
 
 ---
 
+## v0.0.4 Implementation Notes — Activity & Workout Foundation
+
+Fitness foundation introduces the **Activity layer** beneath quests. Only `WorkoutActivity` is implemented; other quest types remain unchanged.
+
+- **Activity types** — `src/types/activity.ts`, `src/types/workout.ts`
+- **Static data** — `src/data/exercises.ts`, `src/data/workoutTemplates/` — see [WORKOUT_DATA.md](WORKOUT_DATA.md)
+- **Template hierarchy** — Workout Template → Section → Exercise → Set (`WORKOUT_SCHEMA_VERSION = 4`)
+- **Feature modules** — `src/features/workout/`, `src/features/activities/activityRegistry.ts`
+- **Persistence** — `GameState.workout`; save version **0.0.5**
+- **Events** — `WORKOUT_COMPLETED` with template, duration, exercise count
+- **Completion** — `completeWorkout()` → `completeQuest('workout')` + activity record
+
+See [ACTIVITIES.md](ACTIVITIES.md), [WORKOUT.md](WORKOUT.md).
+
+---
+
 ## Non-Negotiables Restructure & Time Simulation (also v0.0.2)
 
 `QuestDefinition` gained `subcategory` (`morningRoutine` | `nutrition` | `eveningRoutine`, only meaningful for `nonNegotiable`), `schedule` (`{ weekdaysOnly?, streakOnlyOnWeekdays? }`), `contributesToStreak`, and `optional`. There is deliberately no separate "required quests today" list anywhere — `src/features/quests/questSchedule.ts` derives it from the data:

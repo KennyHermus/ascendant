@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { UNLOCK_DEFINITIONS } from '@/data/unlocks'
 import { QUEST_DEFINITIONS } from '@/data/quests'
@@ -8,12 +8,13 @@ import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
 import { HistoryTestingTools } from '@/dev/HistoryTestingTools'
 import { InsightsTestingTools } from '@/dev/InsightsTestingTools'
 import { QuestTestingTools } from '@/dev/QuestTestingTools'
+import { WorkoutTestingTools } from '@/dev/WorkoutTestingTools'
 import { generateDailySummary } from '@/features/summary/dailySummaryLogic'
 import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
 import { getXpProgress } from '@/features/progression/progressionLogic'
 import {
   getGameTimeSnapshot,
-  isGameTimeSimulated,
+  getHeroTimeMode,
   subscribeToGameTimeChanges,
 } from '@/lib/gameTime'
 import { getTodayDateString } from '@/lib/storage'
@@ -43,15 +44,26 @@ function formatDisplayTime(date: Date): string {
   })
 }
 
+function heroTimeModeLabel(mode: ReturnType<typeof getHeroTimeMode>): string {
+  switch (mode) {
+    case 'live':
+      return 'Live'
+    case 'simulated_running':
+      return 'Simulated (running)'
+    case 'simulated_frozen':
+      return 'Simulated (frozen)'
+  }
+}
+
 /**
  * Developer-only time simulation controls. Every action re-runs the same
  * evaluation pipeline used for real load/resume events (period resets,
  * timed quest sweep, unlock recompute) so quest/unlock state reflects the
  * new time immediately — no background timers involved.
  *
- * Mutations go through the store's `dev*SimulatedTime` actions (not
+ * Mutations go through the store's `dev*` Hero Time actions (not
  * `lib/gameTime.ts`'s setters directly) so the override is persisted and
- * survives a refresh — see `GameState.devSimulatedTime`.
+ * survives a refresh — see `GameState.devHeroTime`.
  */
 function TimeSimulationTools() {
   const applyPeriodResets = useGameStore((s) => s.applyPeriodResets)
@@ -59,16 +71,26 @@ function TimeSimulationTools() {
   const evaluateUnlocks = useGameStore((s) => s.evaluateUnlocks)
   const devSetSimulatedTime = useGameStore((s) => s.devSetSimulatedTime)
   const devAdvanceSimulatedTime = useGameStore((s) => s.devAdvanceSimulatedTime)
+  const devFreezeHeroTime = useGameStore((s) => s.devFreezeHeroTime)
+  const devResumeHeroTimeProgression = useGameStore((s) => s.devResumeHeroTimeProgression)
   const devClearSimulatedTime = useGameStore((s) => s.devClearSimulatedTime)
 
+  const [tick, setTick] = useState(0)
+  const heroTimeMode = useSyncExternalStore(
+    subscribeToGameTimeChanges,
+    getHeroTimeMode,
+  )
   const now = useSyncExternalStore(
     subscribeToGameTimeChanges,
     getGameTimeSnapshot,
   )
-  const simulated = useSyncExternalStore(
-    subscribeToGameTimeChanges,
-    isGameTimeSimulated,
-  )
+
+  useEffect(() => {
+    if (heroTimeMode !== 'simulated_running') return
+    const id = window.setInterval(() => setTick((value) => value + 1), 1000)
+    return () => window.clearInterval(id)
+  }, [heroTimeMode])
+  void tick
 
   function reEvaluate() {
     applyPeriodResets()
@@ -87,12 +109,18 @@ function TimeSimulationTools() {
     reEvaluate()
   }
 
-  function handleToggle() {
-    if (simulated) {
-      devClearSimulatedTime()
-    } else {
-      devSetSimulatedTime(new Date())
-    }
+  function handleEnableSimulation() {
+    devSetSimulatedTime(new Date())
+    reEvaluate()
+  }
+
+  function handleFreeze() {
+    devFreezeHeroTime()
+    reEvaluate()
+  }
+
+  function handleResumeProgression() {
+    devResumeHeroTimeProgression()
     reEvaluate()
   }
 
@@ -101,23 +129,24 @@ function TimeSimulationTools() {
     reEvaluate()
   }
 
+  const modeBadgeClass =
+    heroTimeMode === 'live'
+      ? 'border-stone-700/50 bg-stone-900/40 text-stone-400'
+      : heroTimeMode === 'simulated_frozen'
+        ? 'border-sky-700/50 bg-sky-900/40 text-sky-200'
+        : 'border-amber-700/50 bg-amber-900/40 text-amber-200'
+
   return (
     <div className="mt-4 border-t border-red-800/30 pt-4">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-widest text-red-300/80">
-          Time Simulation
+          Hero Time
         </p>
-        <button
-          type="button"
-          onClick={handleToggle}
-          className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${
-            simulated
-              ? 'border-amber-700/50 bg-amber-900/40 text-amber-200'
-              : 'border-stone-700/50 bg-stone-900/40 text-stone-400'
-          }`}
+        <span
+          className={`rounded-full border px-2 py-0.5 text-xs font-medium ${modeBadgeClass}`}
         >
-          {simulated ? 'Simulated' : 'Real Time'}
-        </button>
+          {heroTimeModeLabel(heroTimeMode)}
+        </span>
       </div>
 
       <p className="mb-3 text-sm text-stone-300">{formatDisplayTime(now)}</p>
@@ -131,6 +160,43 @@ function TimeSimulationTools() {
         />
       </div>
 
+      <div className="mb-3 flex flex-wrap gap-2">
+        {heroTimeMode === 'live' && (
+          <button
+            type="button"
+            onClick={handleEnableSimulation}
+            className="rounded-md border border-amber-700/50 bg-amber-900/40 px-2.5 py-1 text-xs text-amber-200 transition hover:bg-amber-900/60"
+          >
+            Enable Simulation
+          </button>
+        )}
+        {heroTimeMode !== 'live' && heroTimeMode !== 'simulated_frozen' && (
+          <button
+            type="button"
+            onClick={handleFreeze}
+            className="rounded-md border border-sky-700/50 bg-sky-900/40 px-2.5 py-1 text-xs text-sky-200 transition hover:bg-sky-900/60"
+          >
+            Freeze Hero Time
+          </button>
+        )}
+        {heroTimeMode === 'simulated_frozen' && (
+          <button
+            type="button"
+            onClick={handleResumeProgression}
+            className="rounded-md border border-emerald-700/50 bg-emerald-900/40 px-2.5 py-1 text-xs text-emerald-200 transition hover:bg-emerald-900/60"
+          >
+            Resume Progression
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleResetToRealTime}
+          className="rounded-md border border-red-700/50 bg-red-900/30 px-2.5 py-1 text-xs text-red-200 transition hover:bg-red-900/50"
+        >
+          Reset to Live
+        </button>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         {QUICK_ADVANCE_OPTIONS.map((option) => (
           <button
@@ -142,13 +208,6 @@ function TimeSimulationTools() {
             {option.label}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={handleResetToRealTime}
-          className="rounded-md border border-red-700/50 bg-red-900/30 px-2.5 py-1 text-xs text-red-200 transition hover:bg-red-900/50"
-        >
-          Reset to Real Time
-        </button>
       </div>
     </div>
   )
@@ -239,6 +298,7 @@ export function DevTools() {
 
       <TimeSimulationTools />
       <QuestTestingTools />
+      <WorkoutTestingTools />
       <AchievementTestingTools />
       <HistoryTestingTools />
       <AnalyticsTestingTools />

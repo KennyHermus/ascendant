@@ -2,6 +2,7 @@ import type { AnalyticsInput } from '@/features/analytics/analyticsLogic'
 import { generateQuestInsights } from '@/features/insights/insightsQuest'
 import { generateRoutineInsights } from '@/features/insights/insightsRoutine'
 import { generateTrendInsights } from '@/features/insights/insightsTrends'
+import { generateWorkoutInsights } from '@/features/insights/insightsWorkout'
 import type { AnalyticsPeriod } from '@/types/analytics'
 import type { PeriodInsights } from '@/types/insights'
 
@@ -23,7 +24,10 @@ export function generateInsightsForPeriod(
   return {
     period,
     generatedAt: input.now.toISOString(),
-    quest: generateQuestInsights(input, period),
+    quest: [
+      ...generateQuestInsights(input, period),
+      ...generateWorkoutInsights(input, period),
+    ],
     routine: generateRoutineInsights(input, period),
     trends: generateTrendInsights(input, period),
   }

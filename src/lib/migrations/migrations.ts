@@ -4,7 +4,7 @@ import type { SaveMigration } from '@/lib/migrations/types'
  * Semantic save version, kept aligned with the app/git version.
  * Bump this whenever the persisted shape changes, and add a migration below.
  */
-export const CURRENT_SAVE_VERSION = '0.0.4'
+export const CURRENT_SAVE_VERSION = '0.0.5'
 
 /**
  * Saves written before `saveVersion` existed have no version field at all.
@@ -103,6 +103,22 @@ const MIGRATIONS: SaveMigration[] = [
             completionGrade: q.completionGrade ?? null,
           }))
         : state.quests,
+    }),
+  },
+  {
+    fromVersion: '0.0.4',
+    toVersion: '0.0.5',
+    // v0.0.4 Fitness Foundation: Activity layer + Workout persistence.
+    migrate: (state) => ({
+      ...state,
+      saveVersion: '0.0.5',
+      workout: state.workout ?? {
+        schemaVersion: 1,
+        templates: [],
+        sessions: [],
+        activities: [],
+        activeSessionId: null,
+      },
     }),
   },
 ]

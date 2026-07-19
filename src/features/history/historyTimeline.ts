@@ -23,6 +23,12 @@ function getEventPeriodKey(event: GameEvent): string {
   if (event.type === 'QUEST_FAILED' && event.periodKey) {
     return event.periodKey
   }
+  if (event.type === 'QUEST_COMPLETED') {
+    return event.heroDayKey
+  }
+  if (event.type === 'WORKOUT_COMPLETED') {
+    return event.heroDayKey
+  }
   return formatDateKey(new Date(event.timestamp))
 }
 

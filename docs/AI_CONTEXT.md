@@ -78,10 +78,11 @@ The game exists to encourage:
 - **Insights Engine** — behavioral interpretations (Insight Cards); see [INSIGHTS.md](INSIGHTS.md)
 - **Quest Explorer** — per-quest history, stats, charts; see [QUEST_EXPLORER.md](QUEST_EXPLORER.md)
 - **Quest History + punctuality analytics** — see [TIME.md](TIME.md)
+- **Activity architecture + Workout foundation** — see [ACTIVITIES.md](ACTIVITIES.md), [WORKOUT.md](WORKOUT.md)
 
 ## Current Priority
 
-v0.0.3 milestone complete. Next: **v0.0.4** Workout and Nutrition Tracking (gameplay milestone — distinct from save version alignment).
+v0.0.4 Fitness System — foundation shipped; nutrition migration and workout polish remain.
 
 ---
 
@@ -89,7 +90,7 @@ v0.0.3 milestone complete. Next: **v0.0.4** Workout and Nutrition Tracking (game
 
 Future systems (not implemented):
 
-- Workout and Nutrition Tracking (**v0.0.4**)
+- Nutrition activity migration + workout polish (**v0.0.4** remaining)
 - Polish (**v0.0.5**)
 - Combat, bosses, abilities, transformations, equipment, inventory, story/world, skills (**v0.1.x only**)
 - AI-generated challenges
