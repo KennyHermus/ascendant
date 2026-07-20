@@ -2,6 +2,7 @@ export const GAME_EVENT_TYPES = [
   'QUEST_COMPLETED',
   'QUEST_FAILED',
   'WORKOUT_COMPLETED',
+  'PERSONAL_RECORD_ACHIEVED',
   'LEVEL_UP',
   'STREAK_INCREASED',
   'STREAK_BROKEN',
@@ -68,4 +69,22 @@ export type GameEvent =
       completedSetCount?: number
       totalReps?: number
       totalVolume?: number
+    })
+  | (BaseGameEvent & {
+      type: 'PERSONAL_RECORD_ACHIEVED'
+      heroDayKey: string
+      assessmentId: string
+      assessmentKind: 'baseline' | 'performance'
+      exerciseId: string
+      exerciseFamilyId: string
+      prType:
+        | 'highest_weight'
+        | 'highest_reps'
+        | 'longest_duration'
+        | 'longest_distance'
+        | 'highest_volume'
+      previousDisplayValue: string | null
+      newDisplayValue: string
+      previousValue: number | null
+      newValue: number
     })

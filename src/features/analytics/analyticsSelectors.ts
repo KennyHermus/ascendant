@@ -14,6 +14,7 @@ import {
   getTimedQuestAnalytics,
   type AnalyticsInput,
 } from '@/features/analytics/analyticsLogic'
+export { getPerformanceAnalytics } from '@/features/performance/performanceAnalyticsLogic'
 import {
   buildAnalyticsDashboardModel,
   type AnalyticsDashboardModel,
@@ -32,6 +33,7 @@ import {
 } from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
 import type { AnalyticsPeriod, PeriodAnalytics } from '@/types/analytics'
+import type { PerformanceState } from '@/types/performance'
 import type { WorkoutActivity } from '@/types/workout'
 
 /** Keeps period bounds aligned with simulated / real application time. */
@@ -59,6 +61,7 @@ export function selectAnalyticsInput(
     dayStartHeroSnapshot: AnalyticsInput['dayStartHeroSnapshot']
     questHistory: AnalyticsInput['questHistory']
     workout: { activities: WorkoutActivity[] }
+    performance: PerformanceState
   },
   now: Date = getCurrentGameTime(),
 ): AnalyticsInput {
@@ -74,6 +77,7 @@ export function selectAnalyticsInput(
     dayStartHeroSnapshot: state.dayStartHeroSnapshot,
     questHistory: state.questHistory,
     workoutActivities: state.workout.activities,
+    performance: state.performance,
     now,
   }
 }
@@ -106,6 +110,7 @@ export function useFullAnalytics() {
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
+  const performance = useGameStore((s) => s.performance)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -119,6 +124,7 @@ export function useFullAnalytics() {
         dayStartHeroSnapshot,
         questHistory,
         workout,
+        performance,
       },
       now,
     )
@@ -134,6 +140,7 @@ export function useFullAnalytics() {
     dayStartHeroSnapshot,
     questHistory,
     workout,
+    performance,
   ])
 }
 
@@ -148,6 +155,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
+  const performance = useGameStore((s) => s.performance)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -161,6 +169,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
         dayStartHeroSnapshot,
         questHistory,
         workout,
+        performance,
       },
       now,
     )
@@ -177,6 +186,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
     dayStartHeroSnapshot,
     questHistory,
     workout,
+    performance,
   ])
 }
 
@@ -212,6 +222,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
+  const performance = useGameStore((s) => s.performance)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -225,6 +236,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
         dayStartHeroSnapshot,
         questHistory,
         workout,
+        performance,
       },
       now,
     )
@@ -241,6 +253,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
     dayStartHeroSnapshot,
     questHistory,
     workout,
+    performance,
   ])
 }
 

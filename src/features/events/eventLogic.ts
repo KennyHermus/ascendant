@@ -1,5 +1,6 @@
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { isPlayerVisibleQuestFailedEvent, questSupportsPlayerMiss } from '@/features/quests/questMissPolicy'
+import { getBenchmarkExerciseName } from '@/features/performance/exerciseFamilyLogic'
 import type { StreakState } from '@/features/quests/questLogic'
 import { getCurrentGameTime } from '@/lib/gameTime'
 import { getActiveHeroDayKey } from '@/lib/timeService'
@@ -9,6 +10,7 @@ import type { GameEvent } from '@/types/event'
 import type { QuestDefinition, QuestState } from '@/types/quest'
 import type { UnlockDefinition, UnlockState } from '@/types/unlock'
 import type { WorkoutActivity } from '@/types/workout'
+import type { PersonalRecordHistoryEntry } from '@/types/performance'
 
 /** Keeps persisted history bounded — this is a lightweight foundation, not a full log. */
 const MAX_STORED_EVENTS = 50
@@ -152,6 +154,40 @@ export function recordWorkoutCompleted(
   }
 }
 
+export interface PersonalRecordAchievedEventInput {
+  heroDayKey: string
+  assessmentId: string
+  assessmentKind: 'baseline' | 'performance'
+  exerciseId: string
+  exerciseFamilyId: string
+  prType: PersonalRecordHistoryEntry['prType']
+  previousDisplayValue: string | null
+  newDisplayValue: string
+  previousValue: number | null
+  newValue: number
+  now?: Date
+}
+
+export function recordPersonalRecordAchieved(
+  input: PersonalRecordAchievedEventInput,
+): GameEvent {
+  const now = input.now ?? getCurrentGameTime()
+  return {
+    ...makeEventBase(now),
+    type: 'PERSONAL_RECORD_ACHIEVED',
+    heroDayKey: input.heroDayKey,
+    assessmentId: input.assessmentId,
+    assessmentKind: input.assessmentKind,
+    exerciseId: input.exerciseId,
+    exerciseFamilyId: input.exerciseFamilyId,
+    prType: input.prType,
+    previousDisplayValue: input.previousDisplayValue,
+    newDisplayValue: input.newDisplayValue,
+    previousValue: input.previousValue,
+    newValue: input.newValue,
+  }
+}
+
 /**
  * Diffs quest status before/after a reconcile pass and returns one
  * `QUEST_FAILED` event per quest that just transitioned into `missed`.
@@ -214,6 +250,9 @@ export function getEventHeroDayKey(event: GameEvent): string | null {
     return event.heroDayKey
   }
   if (event.type === 'WORKOUT_COMPLETED') {
+    return event.heroDayKey
+  }
+  if (event.type === 'PERSONAL_RECORD_ACHIEVED') {
     return event.heroDayKey
   }
   return null
@@ -310,6 +349,8 @@ export function getEventIcon(event: GameEvent): string {
       return '🏆'
     case 'WORKOUT_COMPLETED':
       return '🏋️'
+    case 'PERSONAL_RECORD_ACHIEVED':
+      return '🏆'
   }
 }
 
@@ -334,6 +375,11 @@ export function formatEventLabel(event: GameEvent): string {
         event.durationMinutes != null ? `${event.durationMinutes} min` : '—'
       const sets = event.completedSetCount ?? event.setCount
       return `${event.templateName} Workout · ${duration} · ${event.exerciseCount} exercises · ${sets} sets`
+    }
+    case 'PERSONAL_RECORD_ACHIEVED': {
+      const name = getBenchmarkExerciseName(event.exerciseId)
+      const from = event.previousDisplayValue ?? '—'
+      return `New Personal Record · ${name} · ${from} → ${event.newDisplayValue}`
     }
   }
 }

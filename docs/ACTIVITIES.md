@@ -27,9 +27,11 @@ Do not merge these models. A quest should not become a storage container for det
 
 # v0.0.4 Scope
 
-Only **WorkoutActivity** is implemented.
+**WorkoutActivity** and **PerformanceAssessmentActivity** are implemented.
 
 Existing quest types (nutrition, timed wake-up, etc.) are **not migrated** yet. The pattern is proven with workouts first; nutrition and other systems follow in later milestones.
+
+See **[PERFORMANCE.md](PERFORMANCE.md)** for Baseline Assessments, Performance Assessments, Official PRs, and Exercise Families.
 
 ---
 
@@ -40,6 +42,7 @@ Registered in `src/types/activity.ts`:
 | Kind | Status | Quest resolution |
 |------|--------|------------------|
 | `workout` | Implemented | Resolves `workout`, `core`, `rehab` from template; walk quests from duration activities |
+| `performance_assessment` | Implemented | No quest resolution — establishes/updates Official PRs only |
 
 Future kinds (designed, not implemented):
 
@@ -120,6 +123,25 @@ Workout domain state on `GameState.workout`:
 
 Save version **0.0.5** adds this block. Migration `0.0.4 → 0.0.5` defaults empty workout state for prior saves.
 
+### Performance domain
+
+Performance assessments and Official PRs live on `GameState.performance`:
+
+```typescript
+{
+  schemaVersion: number
+  exerciseFamilies: ExerciseFamily[]
+  officialRecords: OfficialPersonalRecord[]
+  prHistory: PersonalRecordHistoryEntry[]
+  assessments: PerformanceAssessmentActivity[]
+  sessions: AssessmentSession[]
+  activeSessionId: string | null
+  baselineCompletedAt: string | null
+}
+```
+
+Save version **0.0.6** adds this block. See [PERFORMANCE.md](PERFORMANCE.md).
+
 Application version (`package.json`) remains independent from save schema version.
 
 ---
@@ -146,9 +168,9 @@ No parallel reward or analytics systems.
 
 | System | Integration |
 |--------|-------------|
-| Events | One `WORKOUT_COMPLETED` per activity |
-| Timeline | Each workout event independently viewable |
-| Analytics | Based on `workout.activities[]`, not quest completion |
+| Events | One `WORKOUT_COMPLETED` per workout; `PERSONAL_RECORD_ACHIEVED` from assessments |
+| Timeline | Workout events viewable; PR events under Progress filter |
+| Analytics | Workouts from `workout.activities[]`; Official PRs from `performance` (`PeriodAnalytics.performance`) |
 | Insights | `workoutVolume` + training load from activities |
 | Today's Journey | Workouts grouped in a collapsible accordion; lists all today's sessions + completed activities |
 | Daily Summary | Reflection when any `WORKOUT_COMPLETED` event exists |

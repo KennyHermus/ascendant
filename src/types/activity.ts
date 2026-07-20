@@ -4,7 +4,7 @@ import type { CompletionGrade } from '@/types/completion'
  * Activity kinds — extensible registry for future Nutrition, Combat, Story, etc.
  * v0.0.4 implements `workout` only.
  */
-export const ACTIVITY_KINDS = ['workout'] as const
+export const ACTIVITY_KINDS = ['workout', 'performance_assessment'] as const
 
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number]
 

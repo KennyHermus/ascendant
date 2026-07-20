@@ -1,6 +1,6 @@
 # Ascendant Analytics
 
-Version: aligned with Ascendant v0.0.3 (Charts & Visualizations)
+Version: aligned with Ascendant v0.0.4 (Performance & PR data layer)
 
 Covers the **Analytics Engine**, **metric registry**, **series builders**, **Analytics Dashboard**, and **Charts**.
 
@@ -107,7 +107,19 @@ Do not read snapshots in React. Do not duplicate Engine calculations in chart co
 
 Exposed on `PeriodAnalytics.workouts`. Source of truth is `GameState.workout.activities`, not quest state.
 
----
+### Performance analytics (v0.0.4)
+
+`AnalyticsInput.performance` feeds `getPerformanceAnalytics()`:
+
+- `currentOfficialPrs` — current Official Personal Records
+- `recentPrs` — PR history entries in the period
+- `mostImprovedExercises` — largest improvements by exercise
+- `totalPrsEarned` — count of PR updates in the period
+- `baselineCompleted`, `assessmentsCompleted`
+
+Exposed on `PeriodAnalytics.performance`. Charts not built yet — data layer only. See [PERFORMANCE.md](PERFORMANCE.md).
+
+**Rule:** Normal workouts never overwrite Official PRs; analytics reads PR data from `GameState.performance`, not workout logs.
 
 # Metric Registry
 

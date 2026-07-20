@@ -97,6 +97,7 @@ import type { HeroHistory } from '@/types/history'
 import type { DayStartHeroSnapshot, SummarySnapshot } from '@/types/summary'
 import type { UnlockState } from '@/types/unlock'
 import type { WorkoutState } from '@/types/workout'
+import type { PerformanceState } from '@/types/performance'
 import {
   buildWorkoutActivityFromSession,
   createEmptyWorkoutState,
@@ -149,6 +150,18 @@ import {
   updateSetOnExercise,
 } from '@/features/workout/workoutSessionLogic'
 import { generateSampleWorkoutHistory } from '@/features/workout/workoutSample'
+import {
+  cancelAssessmentSession,
+  completeAssessmentPipeline,
+  createBaselineSession,
+  createEmptyPerformanceState,
+  createPerformanceSession,
+  getActiveAssessmentSession,
+  mergePerformanceState,
+  needsBaselineAssessment as computeNeedsBaseline,
+  startAssessmentSession,
+  updateAssessmentSessionEntry,
+} from '@/features/performance/assessmentLogic'
 
 interface GameState {
   /** Aligned with the app/git version (e.g. "0.0.2"). Drives save migrations. */
@@ -221,6 +234,8 @@ interface GameState {
    * workout activities. Distinct from quest state; see `docs/ACTIVITIES.md`.
    */
   workout: WorkoutState
+  /** Performance assessments, official PRs, and PR history (v0.0.4). */
+  performance: PerformanceState
 }
 
 interface GameActions {
@@ -350,6 +365,23 @@ interface GameActions {
   devClearWorkoutData: () => void
   devClearWorkoutHistory: () => void
   devDumpWorkoutState: () => WorkoutState
+
+  needsBaselineAssessment: () => boolean
+  startBaselineAssessment: () => boolean
+  startPerformanceAssessment: (definitionId: string) => boolean
+  beginAssessment: () => boolean
+  logAssessmentEntry: (
+    definitionId: string,
+    values: {
+      weight?: number
+      reps?: number
+      durationSeconds?: number
+      distanceMeters?: number
+      notes?: string
+    },
+  ) => boolean
+  completeAssessment: () => boolean
+  cancelAssessment: () => boolean
 }
 
 type GameStore = GameState & GameActions
@@ -380,6 +412,7 @@ function createInitialState(): GameState {
     history: createEmptyHistory(),
     questHistory: createEmptyQuestHistory(),
     workout: createEmptyWorkoutState(),
+    performance: createEmptyPerformanceState(),
   }
 }
 
@@ -1422,6 +1455,129 @@ export const useGameStore = create<GameStore>()(
         return true
       },
 
+      needsBaselineAssessment: () => computeNeedsBaseline(get().performance),
+
+      startBaselineAssessment: () => {
+        const state = get()
+        if (getActiveAssessmentSession(state.performance)) return false
+        if (!computeNeedsBaseline(state.performance)) return false
+
+        const heroDayKey = getActiveHeroDayKey(getCurrentGameTime())
+        const sessionId = crypto.randomUUID()
+        const session = startAssessmentSession(
+          createBaselineSession(heroDayKey, sessionId),
+        )
+
+        set({
+          performance: {
+            ...state.performance,
+            sessions: [...state.performance.sessions, session],
+            activeSessionId: sessionId,
+          },
+        })
+        return true
+      },
+
+      startPerformanceAssessment: (definitionId) => {
+        const state = get()
+        if (getActiveAssessmentSession(state.performance)) return false
+        if (computeNeedsBaseline(state.performance)) return false
+
+        const heroDayKey = getActiveHeroDayKey(getCurrentGameTime())
+        const sessionId = crypto.randomUUID()
+        const draft = createPerformanceSession(definitionId, heroDayKey, sessionId)
+        if (!draft) return false
+
+        const session = startAssessmentSession(draft)
+        set({
+          performance: {
+            ...state.performance,
+            sessions: [...state.performance.sessions, session],
+            activeSessionId: sessionId,
+          },
+        })
+        return true
+      },
+
+      beginAssessment: () => {
+        const state = get()
+        const session = getActiveAssessmentSession(state.performance)
+        if (!session || session.status !== 'draft') return false
+
+        set({
+          performance: {
+            ...state.performance,
+            sessions: state.performance.sessions.map((entry) =>
+              entry.id === session.id ? startAssessmentSession(entry) : entry,
+            ),
+          },
+        })
+        return true
+      },
+
+      logAssessmentEntry: (definitionId, values) => {
+        const state = get()
+        const session = getActiveAssessmentSession(state.performance)
+        if (!session || session.status !== 'in_progress') return false
+
+        set({
+          performance: {
+            ...state.performance,
+            sessions: state.performance.sessions.map((entry) =>
+              entry.id === session.id
+                ? updateAssessmentSessionEntry(entry, definitionId, {
+                    ...values,
+                    completed: true,
+                  })
+                : entry,
+            ),
+          },
+        })
+        return true
+      },
+
+      completeAssessment: () => {
+        const state = get()
+        const session = getActiveAssessmentSession(state.performance)
+        if (!session || session.status !== 'in_progress') return false
+        if (!session.entries.every((entry) => entry.completed)) return false
+
+        const now = getCurrentGameTime()
+        const heroDayKey = getActiveHeroDayKey(now)
+        const completedAt = now.toISOString()
+
+        const { performance, events } = completeAssessmentPipeline({
+          session,
+          performance: state.performance,
+          heroDayKey,
+          completedAt,
+          now,
+        })
+
+        set({
+          performance,
+          events: appendEvents(state.events, events),
+        })
+        return true
+      },
+
+      cancelAssessment: () => {
+        const state = get()
+        const session = getActiveAssessmentSession(state.performance)
+        if (!session) return false
+
+        set({
+          performance: {
+            ...state.performance,
+            sessions: state.performance.sessions.map((entry) =>
+              entry.id === session.id ? cancelAssessmentSession(entry) : entry,
+            ),
+            activeSessionId: null,
+          },
+        })
+        return true
+      },
+
       startExerciseTimer: (exerciseLogId, setId) => {
         const state = get()
         const session = getActiveSession(state.workout)
@@ -1873,6 +2029,7 @@ export const useGameStore = create<GameStore>()(
           history: mergeHistory(saved.history),
           questHistory: mergeQuestHistory(saved.questHistory),
           workout: mergeWorkoutState(saved.workout),
+          performance: mergePerformanceState(saved.performance),
         }
       },
       onRehydrateStorage: () => (state) => {

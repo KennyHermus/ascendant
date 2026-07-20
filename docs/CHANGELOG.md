@@ -87,6 +87,19 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - Daily Summary reflection for logged workouts
 - DevTools: generate/complete sample workout, generate/clear history
 
+### Performance & Personal Records
+
+- **Hero Assessment architecture** — Fitness → Baseline / Performance Assessments ([PERFORMANCE.md](PERFORMANCE.md))
+- **Baseline Assessment** — dedicated activity; establishes initial Official PRs
+- **Performance Assessments** — intentional benchmark tests; separate from workouts
+- **Official PRs** — highest weight/reps/duration/distance/volume; updated only from assessments
+- **Exercise Families** — push-up, plank, squat, curl, walking families with stable exercise ids
+- **PR history** — append-only log; never overwrites prior records
+- **Timeline** — `PERSONAL_RECORD_ACHIEVED` events under Progress filter
+- **Analytics** — `PeriodAnalytics.performance` (current PRs, history, most improved, totals)
+- **Progression extension points** — stub interfaces for future recommendations
+- Save version **0.0.6**
+
 ---
 
 ## v0.0.2

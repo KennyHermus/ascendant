@@ -179,6 +179,22 @@ See [ACTIVITIES.md](ACTIVITIES.md), [WORKOUT.md](WORKOUT.md).
 
 ---
 
+## v0.0.4 Implementation Notes — Performance & Personal Records
+
+Training, Performance Assessments, and Official PRs are **separate layers**. Normal workouts record execution data only; Official PRs update only from completed Baseline or Performance Assessments.
+
+- **Types & state** — `src/types/performance.ts`, `GameState.performance`
+- **Static data** — `src/data/exerciseFamilies.ts`, `src/data/benchmarkAssessments.ts`
+- **Feature modules** — `src/features/performance/` (assessment lifecycle, PR logic, analytics, UI)
+- **Activity kind** — `performance_assessment` on `PerformanceAssessmentActivity`
+- **Events** — `PERSONAL_RECORD_ACHIEVED` with exercise, PR type, old/new values
+- **Persistence** — save version **0.0.6**; backward compatible with existing `WorkoutActivity` records
+- **Future** — Progression Engine hooks in `progressionExtensionPoints.ts` (not implemented)
+
+See [PERFORMANCE.md](PERFORMANCE.md).
+
+---
+
 ## Non-Negotiables Restructure & Time Simulation (also v0.0.2)
 
 `QuestDefinition` gained `subcategory` (`morningRoutine` | `nutrition` | `eveningRoutine`, only meaningful for `nonNegotiable`), `schedule` (`{ weekdaysOnly?, streakOnlyOnWeekdays? }`), `contributesToStreak`, and `optional`. There is deliberately no separate "required quests today" list anywhere — `src/features/quests/questSchedule.ts` derives it from the data:
@@ -296,7 +312,7 @@ Presentation/organization-only redesign — no gameplay mechanic changed. Two in
 
 ### GameEvent — a foundation, not a full history feature
 
-`src/types/event.ts` defines `GameEvent` as a discriminated union on `type`: `QUEST_COMPLETED`, `QUEST_FAILED`, `LEVEL_UP`, `STREAK_INCREASED`, `STREAK_BROKEN`, `UNLOCK_EARNED`, `ACHIEVEMENT_UNLOCKED`. Each carries only an `id`, ISO `timestamp`, and minimal type-specific payload (e.g. `questName`, `streak`, `achievementName`). `src/features/events/eventLogic.ts` is the only place that constructs, diffs, or formats events:
+`src/types/event.ts` defines `GameEvent` as a discriminated union on `type`: `QUEST_COMPLETED`, `QUEST_FAILED`, `LEVEL_UP`, `STREAK_INCREASED`, `STREAK_BROKEN`, `UNLOCK_EARNED`, `ACHIEVEMENT_UNLOCKED`, `WORKOUT_COMPLETED`, `PERSONAL_RECORD_ACHIEVED`. Each carries only an `id`, ISO `timestamp`, and minimal type-specific payload (e.g. `questName`, `streak`, `achievementName`, PR exercise and values). `src/features/events/eventLogic.ts` is the only place that constructs, diffs, or formats events:
 
 - `record*()` — one constructor per event type.
 - `findNewlyMissedQuestEvents()` / `findNewlyUnlockedEvents()` — diff a before/after array (quest statuses, unlock states) and return one event per item that *just* transitioned, not items that were already in that state.

@@ -1,3 +1,4 @@
+import { getBenchmarkExerciseName } from '@/features/performance/exerciseFamilyLogic'
 import type { GameEvent, GameEventType } from '@/types/event'
 import type { TimelineFilterCategory } from '@/types/historyUi'
 
@@ -13,6 +14,7 @@ const PROGRESS_TYPES = new Set<GameEventType>([
   'LEVEL_UP',
   'STREAK_INCREASED',
   'STREAK_BROKEN',
+  'PERSONAL_RECORD_ACHIEVED',
 ])
 const QUEST_TYPES = new Set<GameEventType>([
   'QUEST_COMPLETED',
@@ -56,6 +58,12 @@ export function eventMatchesSearch(event: GameEvent, query: string): boolean {
       return (
         event.templateName.toLowerCase().includes(normalized) ||
         'workout'.includes(normalized)
+      )
+    case 'PERSONAL_RECORD_ACHIEVED':
+      return (
+        'personal record'.includes(normalized) ||
+        'pr'.includes(normalized) ||
+        getBenchmarkExerciseName(event.exerciseId).toLowerCase().includes(normalized)
       )
   }
 }

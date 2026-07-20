@@ -39,6 +39,7 @@ function useQuestExplorerInput() {
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
+  const performance = useGameStore((s) => s.performance)
 
   return useMemo(
     () =>
@@ -53,6 +54,7 @@ function useQuestExplorerInput() {
           dayStartHeroSnapshot,
           questHistory,
           workout,
+          performance,
         },
         now,
       ),
@@ -67,6 +69,7 @@ function useQuestExplorerInput() {
       dayStartHeroSnapshot,
       questHistory,
       workout,
+      performance,
     ],
   )
 }

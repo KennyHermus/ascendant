@@ -148,12 +148,24 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ Workout detail modal from timeline  
 ✓ Sample workout history DevTools  
 
+## Performance & Personal Records (shipped)
+
+✓ Hero Assessment architecture (Fitness → Baseline / Performance) — [PERFORMANCE.md](PERFORMANCE.md)  
+✓ Baseline Assessment — initial benchmarks (push-ups, plank, squat, curl, walking)  
+✓ Performance Assessments — separate from workouts; dedicated activity type  
+✓ Official PRs — updated only from completed assessments  
+✓ Exercise Families — stable exercise ids, family benchmark anchors  
+✓ Append-only PR history + `PERSONAL_RECORD_ACHIEVED` timeline events  
+✓ Analytics `PerformanceAnalytics` on `PeriodAnalytics.performance`  
+✓ Progression Engine extension points (stub only)  
+✓ Save version **0.0.6** (performance persistence)
+
 ## Remaining v0.0.4
 
 - Nutrition activity migration
 - Workout timeline drill-down UI
 - Analytics dashboard workout section
-- PR tracking, recommendations, progression (later tasks)
+- Progression Engine recommendations (future — extension points only)
 - Nutrition tracking
 
 ---

@@ -23,6 +23,7 @@ export function InsightsTestingTools() {
   const dayStartHeroSnapshot = useGameStore((s) => s.dayStartHeroSnapshot)
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
+  const performance = useGameStore((s) => s.performance)
   const devGenerateSampleInsightData = useGameStore(
     (s) => s.devGenerateSampleInsightData,
   )
@@ -45,6 +46,7 @@ export function InsightsTestingTools() {
         dayStartHeroSnapshot,
         questHistory,
         workout,
+        performance,
       },
       period,
       getCurrentGameTime(),
@@ -61,6 +63,7 @@ export function InsightsTestingTools() {
     dayStartHeroSnapshot,
     questHistory,
     workout,
+    performance,
   ])
 
   const total = countInsights(insights)

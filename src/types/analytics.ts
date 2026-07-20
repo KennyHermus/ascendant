@@ -2,6 +2,11 @@ import type {
   NonNegotiableSubcategory,
   QuestCategory,
 } from '@/types/quest'
+import type {
+  OfficialPersonalRecord,
+  PersonalRecordHistoryEntry,
+  PrType,
+} from '@/types/performance'
 
 /**
  * Reusable time windows for Analytics calculations.
@@ -99,6 +104,21 @@ export interface WorkoutAnalytics {
   workoutFrequencyPerWeek: number | null
 }
 
+/** Official PR analytics — sourced from `PerformanceState`, not workouts. */
+export interface PerformanceAnalytics {
+  totalPrsEarned: number
+  baselineCompleted: boolean
+  assessmentsCompleted: number
+  currentOfficialPrs: OfficialPersonalRecord[]
+  recentPrs: PersonalRecordHistoryEntry[]
+  mostImprovedExercises: {
+    exerciseId: string
+    exerciseName: string
+    prType: PrType
+    improvement: number
+  }[]
+}
+
 /**
  * Full read-only analytics bundle for one resolved period.
  * Hero identity fields (level, streaks) and achievements are lifetime;
@@ -115,4 +135,5 @@ export interface PeriodAnalytics {
   history: HistoryAnalytics
   achievements: AchievementAnalytics
   workouts: WorkoutAnalytics
+  performance: PerformanceAnalytics
 }

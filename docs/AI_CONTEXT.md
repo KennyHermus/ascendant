@@ -79,6 +79,7 @@ The game exists to encourage:
 - **Quest Explorer** — per-quest history, stats, charts; see [QUEST_EXPLORER.md](QUEST_EXPLORER.md)
 - **Quest History + punctuality analytics** — see [TIME.md](TIME.md)
 - **Activity architecture + Workout foundation** — see [ACTIVITIES.md](ACTIVITIES.md), [WORKOUT.md](WORKOUT.md)
+- **Performance & Official PRs** — Baseline/Performance Assessments, exercise families, PR history, timeline events; see [PERFORMANCE.md](PERFORMANCE.md)
 
 ## Current Priority
 

@@ -29,6 +29,9 @@ function getEventPeriodKey(event: GameEvent): string {
   if (event.type === 'WORKOUT_COMPLETED') {
     return event.heroDayKey
   }
+  if (event.type === 'PERSONAL_RECORD_ACHIEVED') {
+    return event.heroDayKey
+  }
   return formatDateKey(new Date(event.timestamp))
 }
 
