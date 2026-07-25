@@ -57,7 +57,8 @@ The game exists to encourage:
 
 # Current Version
 
-**Application version:** v0.0.4 (v0.0.3 milestone complete)
+**Application version:** v0.0.4 complete  
+**Next milestone:** v0.0.5 — Polish and refinement
 
 ## Implemented
 
@@ -82,10 +83,13 @@ The game exists to encourage:
 - **Performance & Official PRs** — Baseline/Performance Assessments, exercise families, PR history, timeline events; see [PERFORMANCE.md](PERFORMANCE.md)
 - **Exercise Progression Engine** — coaching recommendations from training trends + PRs + prerequisites; see [COACHING.md](COACHING.md)
 - **Workout Analytics** — dedicated fitness dashboard (Exercise/Template/PR analytics, Training Distribution, coaching integration), first **Analytics Domain**; see [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md)
+- **Nutrition System** — meal logging, quest integration, analytics, insights; see [NUTRITION.md](NUTRITION.md)
+- **Fitness Settings** — configurable targets and units; see [FITNESS_SETTINGS.md](FITNESS_SETTINGS.md)
+- **Hero Dashboard coaching** — top recommendations in Today's Journey; see [COACHING.md](COACHING.md)
 
 ## Current Priority
 
-v0.0.4 Fitness System — Workout Analytics shipped; nutrition migration and workout polish remain.
+v0.0.5 — quality-of-life, visual polish, balance pass.
 
 ---
 
@@ -93,7 +97,6 @@ v0.0.4 Fitness System — Workout Analytics shipped; nutrition migration and wor
 
 Future systems (not implemented):
 
-- Nutrition activity migration + workout polish (**v0.0.4** remaining)
 - Polish (**v0.0.5**)
 - Combat, bosses, abilities, transformations, equipment, inventory, story/world, skills (**v0.1.x only**)
 - AI-generated challenges

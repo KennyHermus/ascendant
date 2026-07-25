@@ -168,6 +168,30 @@ import {
   runCoachingPipeline,
 } from '@/features/progression/coachingProgressionLogic'
 import type { CoachingState } from '@/types/progression'
+import {
+  appendMealActivity,
+  buildMealActivity,
+  createEmptyNutritionState,
+  getMealActivitiesForHeroDay,
+  mergeNutritionState,
+  removeMealActivity,
+  updateNutritionTargets as applyNutritionTargetsPatch,
+  type LogMealInput,
+} from '@/features/nutrition/nutritionLogic'
+import { computeActivitiesTotals, computeFoodEntryTotals } from '@/features/nutrition/nutritionStatistics'
+import { generateSampleNutritionHistory } from '@/features/nutrition/nutritionSample'
+import {
+  applyFitnessSettingsPatch,
+  createDefaultFitnessSettings,
+  fitnessSettingsFromNutritionTargets,
+  fitnessSettingsToNutritionTargets,
+  mergeFitnessSettings,
+} from '@/features/settings/fitnessSettingsLogic'
+import { resolveNutritionQuests } from '@/features/nutrition/nutritionQuestResolution'
+import { recordMealLogged, recordNutritionTargetAchieved } from '@/features/events/eventLogic'
+import { revertNutritionQuestsForDay } from '@/features/nutrition/nutritionQuestSync'
+import type { FitnessSettings, FitnessSettingsPatch } from '@/types/fitnessSettings'
+import type { NutritionState, NutritionTargets } from '@/types/nutrition'
 
 interface GameState {
   /** Aligned with the app/git version (e.g. "0.0.2"). Drives save migrations. */
@@ -244,6 +268,14 @@ interface GameState {
   performance: PerformanceState
   /** Exercise Progression Engine — coaching recommendations (v0.0.4). */
   coaching: CoachingState
+  /**
+   * Nutrition / Meal Activity layer (v0.0.4) — logged meals. Meal logging
+   * auto-completes breakfast/lunch/dinner quests and vitamins-protein when
+   * the daily protein target is met. Targets mirror `fitnessSettings`.
+   */
+  nutrition: NutritionState
+  /** Player-configurable fitness targets and unit preferences (v0.0.4). */
+  fitnessSettings: FitnessSettings
 }
 
 interface GameActions {
@@ -391,6 +423,19 @@ interface GameActions {
   completeAssessment: () => boolean
   cancelAssessment: () => boolean
   refreshCoachingRecommendations: () => void
+
+  /** Logs one meal as a completed `MealActivity`. Always succeeds — no session lifecycle. */
+  logMeal: (input: LogMealInput) => boolean
+  /** Removes a previously logged meal (correcting a mistake). */
+  deleteMealActivity: (activityId: string) => void
+  /** Edits configurable daily Nutrition targets (protein/calories/water). */
+  updateNutritionTargets: (patch: Partial<NutritionTargets>) => void
+  /** Updates fitness settings and syncs nutrition targets. */
+  updateFitnessSettings: (patch: FitnessSettingsPatch) => void
+  devLogSampleMeal: () => boolean
+  devGenerateNutritionHistory: (days?: number) => number
+  devClearNutritionData: () => void
+  devDumpNutritionState: () => NutritionState
 }
 
 type GameStore = GameState & GameActions
@@ -407,6 +452,7 @@ function applyCoachingUpdate(state: GameState, now: Date): Pick<GameState, 'coac
 
 function createInitialState(): GameState {
   const hero = createInitialHero()
+  const fitnessSettings = createDefaultFitnessSettings()
 
   return {
     saveVersion: CURRENT_SAVE_VERSION,
@@ -433,6 +479,11 @@ function createInitialState(): GameState {
     workout: createEmptyWorkoutState(),
     performance: createEmptyPerformanceState(),
     coaching: createEmptyCoachingState(),
+    nutrition: {
+      ...createEmptyNutritionState(),
+      targets: fitnessSettingsToNutritionTargets(fitnessSettings),
+    },
+    fitnessSettings,
   }
 }
 
@@ -1618,6 +1669,145 @@ export const useGameStore = create<GameStore>()(
         return true
       },
 
+      logMeal: (input) => {
+        const state = get()
+        const now = getCurrentGameTime()
+        const heroDayKey = getActiveHeroDayKey(now)
+        const targets = state.nutrition.targets
+
+        const proteinBefore = computeActivitiesTotals(
+          getMealActivitiesForHeroDay(state.nutrition, heroDayKey),
+        ).proteinGrams
+        const mealProtein = computeFoodEntryTotals(input.foodEntries).proteinGrams
+        const proteinAfter = proteinBefore + mealProtein
+        const proteinTargetJustMet =
+          proteinBefore < targets.proteinGrams && proteinAfter >= targets.proteinGrams
+
+        const resolution = resolveNutritionQuests({
+          mealType: input.mealType,
+          proteinTargetJustMet,
+          definitions: QUEST_DEFINITIONS,
+          completeQuest: (questId) => get().completeQuest(questId),
+        })
+
+        const activity = buildMealActivity(
+          input,
+          now,
+          heroDayKey,
+          resolution.primaryResolvedQuestId,
+        )
+
+        const latest = get()
+        const nutrition = appendMealActivity(latest.nutrition, activity)
+
+        const newEvents = [recordMealLogged(activity, now)]
+        if (proteinTargetJustMet) {
+          newEvents.push(
+            recordNutritionTargetAchieved({
+              heroDayKey,
+              target: 'protein',
+              consumed: proteinAfter,
+              targetValue: targets.proteinGrams,
+              now,
+            }),
+          )
+        }
+
+        set({
+          nutrition,
+          events: appendEvents(latest.events, newEvents),
+        })
+        return true
+      },
+
+      deleteMealActivity: (activityId) => {
+        const state = get()
+        const activity = state.nutrition.activities.find((entry) => entry.id === activityId)
+        if (!activity) return
+
+        const nutrition = removeMealActivity(state.nutrition, activityId)
+        if (nutrition === state.nutrition) return
+
+        const quests = revertNutritionQuestsForDay(
+          state.quests,
+          nutrition,
+          activity.heroDayKey,
+        )
+        const unlocks = evaluateUnlockStates(UNLOCK_DEFINITIONS, quests, QUEST_DEFINITIONS)
+
+        set({ nutrition, quests, unlocks })
+        get().reconcileStreak()
+        get().syncDailySummary()
+      },
+
+      updateNutritionTargets: (patch) => {
+        const state = get()
+        const nutrition = applyNutritionTargetsPatch(state.nutrition, patch)
+        set({
+          nutrition,
+          fitnessSettings: fitnessSettingsFromNutritionTargets(nutrition.targets),
+        })
+      },
+
+      updateFitnessSettings: (patch) => {
+        const state = get()
+        const fitnessSettings = applyFitnessSettingsPatch(state.fitnessSettings, patch)
+        set({
+          fitnessSettings,
+          nutrition: applyNutritionTargetsPatch(
+            state.nutrition,
+            fitnessSettingsToNutritionTargets(fitnessSettings),
+          ),
+        })
+      },
+
+      devLogSampleMeal: () => {
+        if (!import.meta.env.DEV) return false
+        return get().logMeal({
+          mealType: 'lunch',
+          foodEntries: [
+            {
+              id: crypto.randomUUID(),
+              name: 'Chicken & rice bowl',
+              proteinGrams: 45,
+              carbsGrams: 60,
+              fatGrams: 15,
+              calories: 550,
+            },
+          ],
+        })
+      },
+
+      devGenerateNutritionHistory: (days = 14) => {
+        if (!import.meta.env.DEV) return 0
+
+        const state = get()
+        const now = getCurrentGameTime()
+        const todayKey = getActiveHeroDayKey(now)
+        const before = state.nutrition.activities.length
+        const result = generateSampleNutritionHistory({
+          nutrition: state.nutrition,
+          todayKey,
+          days,
+          now,
+        })
+
+        set({
+          nutrition: result.nutrition,
+          events: appendEvents(state.events, result.events),
+        })
+        return result.nutrition.activities.length - before
+      },
+
+      devClearNutritionData: () => {
+        if (!import.meta.env.DEV) return
+        set({ nutrition: createEmptyNutritionState() })
+      },
+
+      devDumpNutritionState: () => {
+        return get().nutrition
+      },
+
       startExerciseTimer: (exerciseLogId, setId) => {
         const state = get()
         const session = getActiveSession(state.workout)
@@ -2071,6 +2261,16 @@ export const useGameStore = create<GameStore>()(
           workout: mergeWorkoutState(saved.workout),
           performance: mergePerformanceState(saved.performance),
           coaching: mergeCoachingState(saved.coaching),
+          // Missing on any save from before this feature existed — empty
+          // nutrition state (default targets) is a safe default, same
+          // pattern as `workout`/`performance`.
+          nutrition: mergeNutritionState(saved.nutrition),
+          fitnessSettings: mergeFitnessSettings(
+            saved.fitnessSettings ??
+              (saved.nutrition?.targets
+                ? fitnessSettingsFromNutritionTargets(saved.nutrition.targets)
+                : undefined),
+          ),
         }
       },
       onRehydrateStorage: () => (state) => {

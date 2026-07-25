@@ -32,7 +32,7 @@ const HERO_DAY_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 export interface QuestPerformanceStats {
   questId: string
   period: AnalyticsPeriod
-  range: AnalyticsDateRange | null
+  range: AnalyticsDateRange
   completed: number
   missed: number
   completionRate: number | null
@@ -57,7 +57,7 @@ export interface QuestExplorerEntry {
 }
 
 export interface QuestPeriodRecords {
-  range: AnalyticsDateRange | null
+  range: AnalyticsDateRange
   definition: QuestDefinition | undefined
   completions: QuestCompletionRecord[]
   misses: QuestMissRecord[]
@@ -67,7 +67,7 @@ export interface QuestPeriodRecords {
 function filterCompletions(
   history: QuestHistory,
   questId: string,
-  range: AnalyticsDateRange | null,
+  range: AnalyticsDateRange,
 ): QuestCompletionRecord[] {
   return history.completions.filter(
     (c) => c.questId === questId && isDateInRange(c.heroDayKey, range),
@@ -77,7 +77,7 @@ function filterCompletions(
 function filterMisses(
   history: QuestHistory,
   questId: string,
-  range: AnalyticsDateRange | null,
+  range: AnalyticsDateRange,
   includeAllMisses: boolean,
   definition: QuestDefinition | undefined,
 ): QuestMissRecord[] {
@@ -91,7 +91,7 @@ function filterMisses(
 
 function includeLiveToday(
   input: AnalyticsInput,
-  range: AnalyticsDateRange | null,
+  range: AnalyticsDateRange,
 ): boolean {
   const todayKey = getActiveQuestDayKey(input.questDefinitions, input.now)
   if (!isDateInRange(todayKey, range)) return false
@@ -359,7 +359,7 @@ export function getQuestHistoryInPeriod(
 ): {
   completions: QuestCompletionRecord[]
   misses: QuestMissRecord[]
-  range: AnalyticsDateRange | null
+  range: AnalyticsDateRange
 } {
   const records = resolveQuestPeriodRecords(input, questId, period)
   return {

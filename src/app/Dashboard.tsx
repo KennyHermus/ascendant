@@ -36,6 +36,10 @@ import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
 import { WorkoutPanel } from '@/features/workout/WorkoutPanel'
 import { PerformancePanel } from '@/features/performance/PerformancePanel'
 import { WorkoutAnalyticsPanel } from '@/features/workoutAnalytics/WorkoutAnalyticsPanel'
+import { selectHeroCoachingItems } from '@/features/coaching/heroCoachingLogic'
+import { NutritionPanel } from '@/features/nutrition/NutritionPanel'
+import { selectActiveCoachingRecommendations } from '@/features/progression/progressionSelectors'
+import { FitnessSettingsPanel } from '@/features/settings/FitnessSettingsPanel'
 import { UnlockList } from '@/features/unlocks/UnlockList'
 import { useGameTime } from '@/lib/useGameTime'
 import { useGameStore } from '@/store/gameStore'
@@ -46,6 +50,8 @@ export function Dashboard() {
   const events = useGameStore((s) => s.events)
   const history = useGameStore((s) => s.history)
   const workout = useGameStore((s) => s.workout)
+  const coaching = useGameStore((s) => s.coaching)
+  const nutrition = useGameStore((s) => s.nutrition)
   const currentStreak = useGameStore((s) => s.currentStreak)
   const achievements = useGameStore((s) => s.achievements)
   const dailySummary = useGameStore((s) => s.dailySummary)
@@ -70,6 +76,16 @@ export function Dashboard() {
   const workoutProgressList = useMemo(
     () => getWorkoutJourneyProgressList(workout, activeQuestDayKey),
     [workout, activeQuestDayKey],
+  )
+
+  const coachingItems = useMemo(
+    () =>
+      selectHeroCoachingItems({
+        activeRecommendations: selectActiveCoachingRecommendations({ coaching }),
+        nutrition,
+        now,
+      }),
+    [coaching, nutrition, now],
   )
 
   const heroStatus = useMemo(() => {
@@ -177,13 +193,19 @@ export function Dashboard() {
           status={heroStatus}
           nextObjective={nextObjective}
         />
-        <TodaysJourney progress={progress} workoutProgressList={workoutProgressList} />
+        <TodaysJourney
+          progress={progress}
+          workoutProgressList={workoutProgressList}
+          coachingItems={coachingItems}
+        />
         <UnlockList quests={quests} />
         <ActiveObjectives objectives={objectives} />
         <QuestList quests={quests} onComplete={completeQuest} />
         <WorkoutPanel />
         <PerformancePanel />
         <WorkoutAnalyticsPanel />
+        <NutritionPanel />
+        <FitnessSettingsPanel />
         <RecentProgress events={recentEvents} />
         <AchievementPanel
           states={achievements}

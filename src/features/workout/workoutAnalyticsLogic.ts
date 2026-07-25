@@ -10,7 +10,6 @@ function filterActivitiesForPeriod(
   input: AnalyticsInput,
 ): WorkoutActivity[] {
   const range = resolvePeriodRange(period, input.questDefinitions, input.now)
-  if (!range) return activities
   return activities.filter((activity) =>
     isDateInRange(activity.heroDayKey, range),
   )
@@ -19,10 +18,8 @@ function filterActivitiesForPeriod(
 function periodDayCount(
   period: AnalyticsPeriod,
   input: AnalyticsInput,
-): number | undefined {
+): number {
   const range = resolvePeriodRange(period, input.questDefinitions, input.now)
-  if (!range) return undefined
-
   const start = new Date(`${range.start}T12:00:00`)
   const end = new Date(`${range.end}T12:00:00`)
   const diffMs = end.getTime() - start.getTime()
@@ -31,7 +28,7 @@ function periodDayCount(
 
 export function getWorkoutAnalytics(
   input: AnalyticsInput,
-  period: AnalyticsPeriod = 'lifetime',
+  period: AnalyticsPeriod = 'last365',
 ): WorkoutAnalytics {
   const activities = filterActivitiesForPeriod(
     input.workoutActivities,

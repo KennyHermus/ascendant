@@ -12,6 +12,9 @@ import type { UnlockDefinition, UnlockState } from '@/types/unlock'
 import type { WorkoutActivity } from '@/types/workout'
 import type { CoachingRecommendation } from '@/types/progression'
 import type { PersonalRecordHistoryEntry } from '@/types/performance'
+import { computeMealActivityTotals } from '@/features/nutrition/nutritionStatistics'
+import { MEAL_TYPE_LABELS } from '@/features/nutrition/nutritionPresentation'
+import type { MealActivity } from '@/types/nutrition'
 
 /** Keeps persisted history bounded — this is a lightweight foundation, not a full log. */
 const MAX_STORED_EVENTS = 50
@@ -189,6 +192,46 @@ export function recordPersonalRecordAchieved(
   }
 }
 
+export function recordMealLogged(
+  activity: MealActivity,
+  now: Date = getCurrentGameTime(),
+): GameEvent {
+  const totals = computeMealActivityTotals(activity)
+  return {
+    ...makeEventBase(now),
+    type: 'NUTRITION_MEAL_LOGGED',
+    activityId: activity.id,
+    mealType: activity.mealType,
+    heroDayKey: activity.heroDayKey,
+    completedAt: activity.completedAt,
+    foodEntryCount: activity.foodEntries.length,
+    proteinGrams: totals.proteinGrams,
+    calories: totals.calories,
+  }
+}
+
+export interface NutritionTargetAchievedEventInput {
+  heroDayKey: string
+  target: 'protein' | 'calories'
+  consumed: number
+  targetValue: number
+  now?: Date
+}
+
+export function recordNutritionTargetAchieved(
+  input: NutritionTargetAchievedEventInput,
+): GameEvent {
+  const now = input.now ?? getCurrentGameTime()
+  return {
+    ...makeEventBase(now),
+    type: 'NUTRITION_TARGET_ACHIEVED',
+    heroDayKey: input.heroDayKey,
+    target: input.target,
+    consumed: input.consumed,
+    targetValue: input.targetValue,
+  }
+}
+
 export function recordCoachingRecommendation(
   recommendation: CoachingRecommendation,
   now: Date = getCurrentGameTime(),
@@ -273,6 +316,9 @@ export function getEventHeroDayKey(event: GameEvent): string | null {
     return event.heroDayKey
   }
   if (event.type === 'PERSONAL_RECORD_ACHIEVED') {
+    return event.heroDayKey
+  }
+  if (event.type === 'NUTRITION_MEAL_LOGGED' || event.type === 'NUTRITION_TARGET_ACHIEVED') {
     return event.heroDayKey
   }
   return null
@@ -373,6 +419,10 @@ export function getEventIcon(event: GameEvent): string {
       return '🏆'
     case 'COACHING_RECOMMENDATION':
       return '🎯'
+    case 'NUTRITION_MEAL_LOGGED':
+      return '🍽️'
+    case 'NUTRITION_TARGET_ACHIEVED':
+      return '💪'
   }
 }
 
@@ -405,6 +455,15 @@ export function formatEventLabel(event: GameEvent): string {
     }
     case 'COACHING_RECOMMENDATION':
       return `Coach Recommendation · ${event.title}`
+    case 'NUTRITION_MEAL_LOGGED': {
+      const label = MEAL_TYPE_LABELS[event.mealType]
+      const entries = `${event.foodEntryCount} item${event.foodEntryCount === 1 ? '' : 's'}`
+      return `Logged ${label} · ${entries}`
+    }
+    case 'NUTRITION_TARGET_ACHIEVED': {
+      const label = event.target === 'protein' ? 'Protein' : 'Calorie'
+      return `${label} target achieved · ${Math.round(event.consumed)} / ${Math.round(event.targetValue)}`
+    }
   }
 }
 

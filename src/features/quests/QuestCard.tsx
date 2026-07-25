@@ -2,7 +2,7 @@ import type { QuestDefinition, QuestStatus } from '@/types/quest'
 import type { StatKey } from '@/types/hero'
 import { STAT_LABELS } from '@/features/hero/heroLogic'
 import { QUEST_DEFINITIONS } from '@/data/quests'
-import { isActivityDrivenQuest } from '@/features/activities/activityRegistry'
+import { isActivityDrivenQuest, activityPanelLabelForQuest } from '@/features/activities/activityRegistry'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
 import {
   evaluateQuestTimingForDay,
@@ -143,7 +143,7 @@ export function QuestCard({ quest, status, onComplete }: QuestCardProps) {
 
         {activityDriven && !completed && !missed ? (
           <span className="shrink-0 rounded-md border border-stone-700/50 bg-stone-900/40 px-3 py-1.5 text-xs text-stone-400">
-            Use Workout panel
+            {activityPanelLabelForQuest(quest.id) ?? 'Use activity panel'}
           </span>
         ) : (
           <button

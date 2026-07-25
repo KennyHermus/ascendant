@@ -185,11 +185,27 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ Visualizations — workout frequency, duration/volume trend, exercise frequency, PR timeline, weekday consistency, distribution charts (reuses existing chart components)
 ✓ React selectors (`workoutAnalyticsSelectors.ts`) — no direct `GameState` reads in components
 
-## Remaining v0.0.4
+## Nutrition System (shipped)
 
-- Nutrition activity migration
-- Workout timeline drill-down UI
-- Nutrition tracking
+✓ Meal logging as a Hero Activity (`MealActivity`, `'nutrition'` kind) — [NUTRITION.md](NUTRITION.md)
+✓ Food Entry model — optional name/protein/carbs/fat/calories/notes, quick-logging friendly
+✓ Configurable daily targets (protein, calories, water placeholder) — editable in-app, not hardcoded
+✓ Daily Nutrition Summary — meals eaten, totals, target completion %, meal timing, missed meals
+✓ Hero integration events — `NUTRITION_MEAL_LOGGED`, `NUTRITION_TARGET_ACHIEVED` (no stat bonuses yet, by design)
+✓ Analytics — `PeriodAnalytics.nutrition` (protein/calorie trends, streaks, adherence, meal timing) + protein/calorie trend charts
+✓ Insights — protein target streak, meal consistency, missed meal, meal timing
+✓ Nutrition panel UI (log meal, summary, targets editor, trends) + DevTools
+✓ Save version **0.0.8** (nutrition persistence, backward compatible)
+
+## v0.0.4 Integration & Polish ✓
+
+✓ Nutrition ↔ Quest integration (meal logging → quest completion, protein target → vitamins-protein)  
+✓ Unified rolling analytics time windows (Today, Last 7/30/90/180/365 Days)  
+✓ Hero Dashboard coaching in Today's Journey  
+✓ Fitness Settings (`GameState.fitnessSettings`, save **0.0.9**)  
+✓ Cross-system integration review + documentation
+
+**v0.0.4 complete.**
 
 ---
 

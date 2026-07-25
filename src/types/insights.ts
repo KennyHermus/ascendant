@@ -22,6 +22,10 @@ export const INSIGHT_TYPES = [
   'consistentlyEarly',
   'consistentlyInGrace',
   'workoutVolume',
+  'nutritionProteinStreak',
+  'nutritionMealConsistency',
+  'nutritionMissedMeal',
+  'nutritionMealTiming',
   // Routine
   'strongestRoutine',
   'weakestRoutine',

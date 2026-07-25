@@ -27,11 +27,11 @@ Do not merge these models. A quest should not become a storage container for det
 
 # v0.0.4 Scope
 
-**WorkoutActivity** and **PerformanceAssessmentActivity** are implemented.
+**WorkoutActivity**, **PerformanceAssessmentActivity**, and **MealActivity** are implemented.
 
-Existing quest types (nutrition, timed wake-up, etc.) are **not migrated** yet. The pattern is proven with workouts first; nutrition and other systems follow in later milestones.
+Existing checkbox-based nutrition quests (Breakfast, Lunch, Dinner, Vitamins) are **not migrated** — they keep working independently. `MealActivity` is additive: it does not resolve those quests or grant rewards, it only feeds Hero Time-stamped history, Analytics, and Insights. Other quest types (timed wake-up, etc.) remain unmigrated for now.
 
-See **[PERFORMANCE.md](PERFORMANCE.md)** for Baseline Assessments, Performance Assessments, Official PRs, and Exercise Families.
+See **[PERFORMANCE.md](PERFORMANCE.md)** for Baseline Assessments, Performance Assessments, Official PRs, and Exercise Families. See **[NUTRITION.md](NUTRITION.md)** for the Meal model, Food Entry model, and Nutrition Analytics/Insights.
 
 ---
 
@@ -43,10 +43,10 @@ Registered in `src/types/activity.ts`:
 |------|--------|------------------|
 | `workout` | Implemented | Resolves `workout`, `core`, `rehab` from template; walk quests from duration activities |
 | `performance_assessment` | Implemented | No quest resolution — establishes/updates Official PRs only |
+| `nutrition` | Implemented | None — `questId` always `null`; legacy checkbox nutrition quests are separate and unaffected |
 
 Future kinds (designed, not implemented):
 
-- `nutrition`
 - `combat`
 - `story`
 - `shop`
@@ -142,6 +142,20 @@ Performance assessments and Official PRs live on `GameState.performance`:
 
 Save version **0.0.6** adds this block. See [PERFORMANCE.md](PERFORMANCE.md).
 
+### Nutrition domain
+
+Meal activities and configurable targets live on `GameState.nutrition`:
+
+```typescript
+{
+  schemaVersion: number
+  targets: NutritionTargets
+  activities: MealActivity[]   // unbounded per hero day
+}
+```
+
+Save version **0.0.8** adds this block. See [NUTRITION.md](NUTRITION.md).
+
 Application version (`package.json`) remains independent from save schema version.
 
 ---
@@ -170,8 +184,8 @@ No parallel reward or analytics systems.
 |--------|-------------|
 | Events | One `WORKOUT_COMPLETED` per workout; `PERSONAL_RECORD_ACHIEVED` from assessments |
 | Timeline | Workout events viewable; PR events under Progress filter |
-| Analytics | Workouts from `workout.activities[]`; Official PRs from `performance` (`PeriodAnalytics.performance`) |
-| Insights | `workoutVolume` + training load from activities |
+| Analytics | Workouts from `workout.activities[]`; Official PRs from `performance` (`PeriodAnalytics.performance`); meals from `nutrition.activities[]` (`PeriodAnalytics.nutrition`) |
+| Insights | `workoutVolume` + training load from activities; nutrition streak/consistency/timing insights (see [NUTRITION.md](NUTRITION.md)) |
 | Today's Journey | Workouts grouped in a collapsible accordion; lists all today's sessions + completed activities |
 | Daily Summary | Reflection when any `WORKOUT_COMPLETED` event exists |
 | Quest UI | Activity-driven quests show "Use Workout panel" |
@@ -189,4 +203,4 @@ To add a new activity kind:
 5. Add event type + timeline/analytics hooks
 6. Migrate save version if persistence changes
 
-Nutrition should follow the same Activity → Quest Resolution split when migrated.
+Nutrition (see [NUTRITION.md](NUTRITION.md)) follows this pattern with one deliberate difference: it has no quest resolution step (`questId` always `null`) — meals are instant, completed records that feed history/analytics/insights without a session lifecycle.

@@ -28,9 +28,10 @@ export function AnalyticsTestingTools() {
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
+  const nutrition = useGameStore((s) => s.nutrition)
 
   const { snapshotCount, eventCount } = useAnalyticsDiagnostics()
-  const [seriesPeriod, setSeriesPeriod] = useState<AnalyticsPeriod>('week')
+  const [seriesPeriod, setSeriesPeriod] = useState<AnalyticsPeriod>('last7')
   const chartBundle = usePeriodChartBundle(seriesPeriod)
   const periodSeries = useMemo(
     () => flattenPeriodChartBundle(chartBundle),
@@ -56,6 +57,7 @@ export function AnalyticsTestingTools() {
         workout,
         performance,
         coaching,
+        nutrition,
       },
       getCurrentGameTime(),
     )
@@ -73,6 +75,7 @@ export function AnalyticsTestingTools() {
     workout,
     performance,
     coaching,
+    nutrition,
   ])
 
   return (
@@ -90,7 +93,7 @@ export function AnalyticsTestingTools() {
         {' · '}
         Level:{' '}
         <span className="text-stone-200">
-          {analytics.lifetime.hero.currentLevel}
+          {analytics.last365.hero.currentLevel}
         </span>
       </p>
       <p className="mb-3 text-[11px] text-stone-500">

@@ -17,13 +17,12 @@ function filterHistoryForPeriod(
   now: Date,
 ): PersonalRecordHistoryEntry[] {
   const range = resolvePeriodRange(period, questDefinitions, now)
-  if (!range) return history
   return history.filter((entry) => isDateInRange(entry.heroDayKey, range))
 }
 
 export function getPerformanceAnalytics(
   input: PerformanceAnalyticsInput,
-  period: AnalyticsPeriod = 'lifetime',
+  period: AnalyticsPeriod = 'last365',
 ): PerformanceAnalytics {
   const { performance } = input
   const periodHistory = filterHistoryForPeriod(

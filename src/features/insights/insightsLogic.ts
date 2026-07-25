@@ -1,4 +1,5 @@
 import type { AnalyticsInput } from '@/features/analytics/analyticsLogic'
+import { generateNutritionInsights } from '@/features/insights/insightsNutrition'
 import { generateQuestInsights } from '@/features/insights/insightsQuest'
 import { generateRoutineInsights } from '@/features/insights/insightsRoutine'
 import { generateTrendInsights } from '@/features/insights/insightsTrends'
@@ -27,6 +28,7 @@ export function generateInsightsForPeriod(
     quest: [
       ...generateQuestInsights(input, period),
       ...generateWorkoutInsights(input, period),
+      ...generateNutritionInsights(input, period),
     ],
     routine: generateRoutineInsights(input, period),
     trends: generateTrendInsights(input, period),
@@ -35,15 +37,19 @@ export function generateInsightsForPeriod(
 
 export function generateFullInsights(input: AnalyticsInput): {
   today: PeriodInsights
-  week: PeriodInsights
-  month: PeriodInsights
-  lifetime: PeriodInsights
+  last7: PeriodInsights
+  last30: PeriodInsights
+  last90: PeriodInsights
+  last180: PeriodInsights
+  last365: PeriodInsights
 } {
   return {
     today: generateInsightsForPeriod(input, 'today'),
-    week: generateInsightsForPeriod(input, 'week'),
-    month: generateInsightsForPeriod(input, 'month'),
-    lifetime: generateInsightsForPeriod(input, 'lifetime'),
+    last7: generateInsightsForPeriod(input, 'last7'),
+    last30: generateInsightsForPeriod(input, 'last30'),
+    last90: generateInsightsForPeriod(input, 'last90'),
+    last180: generateInsightsForPeriod(input, 'last180'),
+    last365: generateInsightsForPeriod(input, 'last365'),
   }
 }
 

@@ -9,6 +9,8 @@ export const GAME_EVENT_TYPES = [
   'STREAK_BROKEN',
   'UNLOCK_EARNED',
   'ACHIEVEMENT_UNLOCKED',
+  'NUTRITION_MEAL_LOGGED',
+  'NUTRITION_TARGET_ACHIEVED',
 ] as const
 
 export type GameEventType = (typeof GAME_EVENT_TYPES)[number]
@@ -88,6 +90,23 @@ export type GameEvent =
       newDisplayValue: string
       previousValue: number | null
       newValue: number
+    })
+  | (BaseGameEvent & {
+      type: 'NUTRITION_MEAL_LOGGED'
+      activityId: string
+      mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+      heroDayKey: string
+      completedAt: string
+      foodEntryCount: number
+      proteinGrams: number
+      calories: number
+    })
+  | (BaseGameEvent & {
+      type: 'NUTRITION_TARGET_ACHIEVED'
+      heroDayKey: string
+      target: 'protein' | 'calories'
+      consumed: number
+      targetValue: number
     })
   | (BaseGameEvent & {
       type: 'COACHING_RECOMMENDATION'

@@ -1,10 +1,14 @@
 import type { SaveMigration } from '@/lib/migrations/types'
+import {
+  fitnessSettingsFromNutritionTargets,
+  fitnessSettingsToNutritionTargets,
+} from '@/features/settings/fitnessSettingsLogic'
 
 /**
  * Semantic save version, kept aligned with the app/git version.
  * Bump this whenever the persisted shape changes, and add a migration below.
  */
-export const CURRENT_SAVE_VERSION = '0.0.7'
+export const CURRENT_SAVE_VERSION = '0.0.9'
 
 /**
  * Saves written before `saveVersion` existed have no version field at all.
@@ -154,6 +158,48 @@ const MIGRATIONS: SaveMigration[] = [
         lastGeneratedAt: null,
       },
     }),
+  },
+  {
+    fromVersion: '0.0.7',
+    toVersion: '0.0.8',
+    // v0.0.4 Nutrition System — meal logging as a Hero Activity, independent
+    // of Non-Negotiable nutrition quests (breakfast/lunch/dinner/vitamins
+    // checkboxes are untouched). Empty state + default targets are a safe
+    // default for prior saves.
+    migrate: (state) => ({
+      ...state,
+      saveVersion: '0.0.8',
+      nutrition: state.nutrition ?? {
+        schemaVersion: 1,
+        targets: { proteinGrams: 150, calories: 2200, waterMl: null },
+        activities: [],
+      },
+    }),
+  },
+  {
+    fromVersion: '0.0.8',
+    toVersion: '0.0.9',
+    // v0.0.4 Fitness Settings — player-configurable targets and units.
+    // Seeds from existing nutrition targets when present.
+    migrate: (state) => {
+      const nutrition = state.nutrition ?? {
+        schemaVersion: 1,
+        targets: { proteinGrams: 150, calories: 2200, waterMl: null },
+        activities: [],
+      }
+      const fitnessSettings =
+        state.fitnessSettings ??
+        fitnessSettingsFromNutritionTargets(nutrition.targets)
+      return {
+        ...state,
+        saveVersion: '0.0.9',
+        fitnessSettings,
+        nutrition: {
+          ...nutrition,
+          targets: fitnessSettingsToNutritionTargets(fitnessSettings),
+        },
+      }
+    },
   },
 ]
 

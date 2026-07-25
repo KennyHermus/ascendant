@@ -175,7 +175,7 @@ export function useWorkoutAnalyticsDomainModel(period: AnalyticsPeriod): Analyti
 
 /** Selection + period/search state for the Workout Analytics panel. */
 export function useWorkoutAnalyticsState() {
-  const [period, setPeriod] = useState<AnalyticsPeriod>('month')
+  const [period, setPeriod] = useState<AnalyticsPeriod>('last30')
   const [exerciseQuery, setExerciseQuery] = useState('')
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)

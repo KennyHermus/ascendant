@@ -2,6 +2,7 @@ import { Accordion } from '@/components/Accordion'
 import { Panel } from '@/components/Panel'
 import { ProgressBar } from '@/components/ProgressBar'
 import { QUEST_CATEGORY_LABELS, SUBCATEGORY_LABELS } from '@/data/questLabels'
+import type { HeroCoachingItem } from '@/features/coaching/heroCoachingLogic'
 import type { TodaysJourneyProgress } from '@/features/quests/questProgress'
 
 import type { WorkoutJourneyProgress } from '@/features/workout/workoutProgress'
@@ -9,6 +10,7 @@ import type { WorkoutJourneyProgress } from '@/features/workout/workoutProgress'
 interface TodaysJourneyProps {
   progress: TodaysJourneyProgress
   workoutProgressList?: WorkoutJourneyProgress[]
+  coachingItems?: HeroCoachingItem[]
 }
 
 function ProgressRow({
@@ -78,6 +80,18 @@ function WorkoutJourneyRow({ workoutProgress }: { workoutProgress: WorkoutJourne
   )
 }
 
+function CoachRecommendationRow({ item }: { item: HeroCoachingItem }) {
+  return (
+    <div className="rounded-lg border border-violet-800/30 bg-violet-950/15 px-3 py-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-violet-300/70">
+        Coach Recommendation
+      </p>
+      <p className="mt-1 text-sm font-medium text-violet-100">{item.headline}</p>
+      <p className="mt-0.5 text-xs text-violet-200/75">{item.detail}</p>
+    </div>
+  )
+}
+
 /**
  * Glanceable summary of today's progress, mirroring the real quest
  * hierarchy (category/subcategory) instead of a fixed set of placeholder
@@ -87,13 +101,24 @@ function WorkoutJourneyRow({ workoutProgress }: { workoutProgress: WorkoutJourne
  * progress rows — expand to see Morning Routine / Nutrition / Evening
  * Routine detail. Any row with nothing to show (0 total) is simply omitted.
  */
-export function TodaysJourney({ progress, workoutProgressList = [] }: TodaysJourneyProps) {
+export function TodaysJourney({
+  progress,
+  workoutProgressList = [],
+  coachingItems = [],
+}: TodaysJourneyProps) {
   const { nonNegotiable, dailyBonus, weekly, weeklyBonus, special } = progress
   const visibleSubcategories = nonNegotiable.subcategories.filter((sub) => sub.total > 0)
 
   return (
     <Panel title="Today's Journey">
       <div className="space-y-4">
+        {coachingItems.length > 0 && (
+          <div className="space-y-2">
+            {coachingItems.map((item) => (
+              <CoachRecommendationRow key={item.id} item={item} />
+            ))}
+          </div>
+        )}
         {workoutProgressList.length > 0 && (
           <Accordion
             title="Workouts"

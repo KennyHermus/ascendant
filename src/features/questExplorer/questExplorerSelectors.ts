@@ -41,6 +41,7 @@ function useQuestExplorerInput() {
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
+  const nutrition = useGameStore((s) => s.nutrition)
 
   return useMemo(
     () =>
@@ -57,6 +58,7 @@ function useQuestExplorerInput() {
           workout,
           performance,
           coaching,
+          nutrition,
         },
         now,
       ),
@@ -73,6 +75,7 @@ function useQuestExplorerInput() {
       workout,
       performance,
       coaching,
+      nutrition,
     ],
   )
 }
@@ -121,7 +124,7 @@ export function useSelectedQuestDefinition(
 
 /** Single source of truth for Quest Explorer selection + period/filter state. */
 export function useQuestExplorerState(defaultQuestId?: string) {
-  const [period, setPeriod] = useState<AnalyticsPeriod>('month')
+  const [period, setPeriod] = useState<AnalyticsPeriod>('last30')
   const [query, setQuery] = useState('')
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(
     defaultQuestId ?? QUEST_DEFINITIONS[0]?.id ?? null,

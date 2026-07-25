@@ -7,6 +7,7 @@ import { AnalyticsTestingTools } from '@/dev/AnalyticsTestingTools'
 import { DEV_XP_TEST_AMOUNT } from '@/dev/devConstants'
 import { HistoryTestingTools } from '@/dev/HistoryTestingTools'
 import { InsightsTestingTools } from '@/dev/InsightsTestingTools'
+import { NutritionTestingTools } from '@/dev/NutritionTestingTools'
 import { QuestTestingTools } from '@/dev/QuestTestingTools'
 import { WorkoutTestingTools } from '@/dev/WorkoutTestingTools'
 import { generateDailySummary } from '@/features/summary/dailySummaryLogic'
@@ -299,6 +300,7 @@ export function DevTools() {
       <TimeSimulationTools />
       <QuestTestingTools />
       <WorkoutTestingTools />
+      <NutritionTestingTools />
       <AchievementTestingTools />
       <HistoryTestingTools />
       <AnalyticsTestingTools />

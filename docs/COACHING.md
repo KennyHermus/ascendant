@@ -176,6 +176,19 @@ Logic: `src/features/progression/progressionAnalyticsLogic.ts`
 
 ---
 
+# Hero Dashboard Integration (v0.0.4)
+
+Top-priority coaching items appear in **Today's Journey** — not only inside Workout Analytics.
+
+- Selector: `selectHeroCoachingItems()` in `heroCoachingLogic.ts`
+- Sources: active workout recommendations (Progression Engine) + same-day protein-target nudge
+- Cap: 3 items max, ranked by confidence and recommendation kind
+- Presentation: compact "Coach Recommendation" rows in `TodaysJourney.tsx`
+
+Per-exercise banners in the Workout panel remain for in-context detail.
+
+---
+
 # Future Extensions
 
 Stubbed — not implemented:

@@ -35,6 +35,9 @@ function getEventPeriodKey(event: GameEvent): string {
   if (event.type === 'COACHING_RECOMMENDATION') {
     return event.heroDayKey
   }
+  if (event.type === 'NUTRITION_MEAL_LOGGED' || event.type === 'NUTRITION_TARGET_ACHIEVED') {
+    return event.heroDayKey
+  }
   return formatDateKey(new Date(event.timestamp))
 }
 

@@ -26,13 +26,9 @@ export interface WorkoutAnalyticsChartBundle {
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 function buildDayKeysInRange(
-  range: { start: string; end: string } | null,
-  activities: WorkoutActivity[],
+  range: { start: string; end: string },
+  _activities: WorkoutActivity[],
 ): string[] {
-  if (!range) {
-    const keys = [...new Set(activities.map((a) => a.heroDayKey))].sort()
-    return keys
-  }
   const keys: string[] = []
   let cursor = range.start
   while (cursor <= range.end) {

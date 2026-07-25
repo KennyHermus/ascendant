@@ -18,9 +18,11 @@ import {
 
 export const ANALYTICS_PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
   today: 'Today',
-  week: 'This Week',
-  month: 'This Month',
-  lifetime: 'Lifetime',
+  last7: 'Last 7 Days',
+  last30: 'Last 30 Days',
+  last90: 'Last 90 Days',
+  last180: 'Last 180 Days',
+  last365: 'Last 365 Days',
 }
 
 export type MetricSectionId =
@@ -122,7 +124,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'longestStreak',
     title: 'Longest Streak',
     section: 'hero',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale:
       'Peak streak within the selected period (from snapshots + live today when in range). Hidden for Today.',
     resolve: (a) => ({ value: formatInteger(a.hero.longestStreak) }),
@@ -164,7 +166,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'perfectDays',
     title: 'Perfect Days',
     section: 'questPerformance',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale:
       'Historical metric — a day cannot be perfect until it is complete; hidden for Today.',
     resolve: (a) => ({ value: formatInteger(a.quests.perfectDays) }),
@@ -225,7 +227,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'unlocked',
     title: 'Unlocked',
     section: 'achievements',
-    supportedPeriods: ['lifetime'],
+    supportedPeriods: ['last365'],
     rationale:
       'Achievement catalog progress is lifetime-only; week/month filters would show identical misleading numbers.',
     resolve: (a) => ({
@@ -236,7 +238,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'total',
     title: 'Total',
     section: 'achievements',
-    supportedPeriods: ['lifetime'],
+    supportedPeriods: ['last365'],
     resolve: (a) => ({
       value: formatInteger(a.achievements.totalDefined),
     }),
@@ -245,7 +247,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'percent',
     title: 'Completion',
     section: 'achievements',
-    supportedPeriods: ['lifetime'],
+    supportedPeriods: ['last365'],
     resolve: (a) => ({
       value: `${a.achievements.unlockPercentage}%`,
     }),
@@ -256,7 +258,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'days',
     title: 'Days Tracked',
     section: 'history',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale:
       'Counts finalized snapshots in range — not meaningful for an in-progress Today.',
     resolve: (a) => ({ value: formatInteger(a.history.daysTracked) }),
@@ -265,7 +267,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'snapshots',
     title: 'Snapshots Stored',
     section: 'history',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale: 'Same as Days Tracked — historical finalized-day records only.',
     resolve: (a) => ({ value: formatInteger(a.history.totalSnapshots) }),
   },
@@ -273,7 +275,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'avgXp',
     title: 'Average XP/day',
     section: 'history',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale:
       'Averages need multiple days to be meaningful; Today hides this (use XP Earned instead).',
     resolve: (a) => ({ value: formatDecimal(a.history.averageXpPerDay) }),
@@ -282,7 +284,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'avgGold',
     title: 'Average Gold/day',
     section: 'history',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale: 'Same as Average XP/day — not shown for Today.',
     resolve: (a) => ({ value: formatDecimal(a.history.averageGoldPerDay) }),
   },
@@ -290,7 +292,7 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
     id: 'avgCompletion',
     title: 'Average Completion',
     section: 'history',
-    supportedPeriods: ['week', 'month', 'lifetime'],
+    supportedPeriods: ['last7', 'last30', 'last90', 'last180', 'last365'],
     rationale: 'Mean of daily completion rates across snapshots in range.',
     resolve: (a) => ({
       value: formatRatePercent(a.history.averageCompletionRate),

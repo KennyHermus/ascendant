@@ -13,7 +13,6 @@ import {
 import { getAchievementSummary } from '@/features/achievements/achievementLogic'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
 import { questSupportsPlayerMiss } from '@/features/quests/questMissPolicy'
-import { formatDateKey } from '@/lib/storage'
 import type {
   AchievementAnalytics,
   AnalyticsPeriod,
@@ -27,7 +26,6 @@ import type {
   TimedQuestAnalytics,
 } from '@/types/analytics'
 import type { AchievementDefinition, AchievementState } from '@/types/achievement'
-import type { GameEvent } from '@/types/event'
 import type { Hero } from '@/types/hero'
 import type { DailySnapshot, HeroHistory } from '@/types/history'
 import type { QuestDefinition, QuestState } from '@/types/quest'
@@ -36,9 +34,12 @@ import type { DayStartHeroSnapshot } from '@/types/summary'
 import type { WorkoutActivity } from '@/types/workout'
 import type { PerformanceState } from '@/types/performance'
 import type { CoachingState } from '@/types/progression'
+import type { NutritionState } from '@/types/nutrition'
 import { getPerformanceAnalytics } from '@/features/performance/performanceAnalyticsLogic'
 import { getProgressionAnalytics } from '@/features/progression/progressionAnalyticsLogic'
 import { getWorkoutAnalytics } from '@/features/workout/workoutAnalyticsLogic'
+import { getNutritionAnalytics } from '@/features/nutrition/nutritionAnalyticsLogic'
+import type { GameEvent } from '@/types/event'
 
 /**
  * Read-only inputs the Analytics Engine needs. Callers assemble this from
@@ -58,6 +59,7 @@ export interface AnalyticsInput {
   workoutActivities: WorkoutActivity[]
   performance: PerformanceState
   coaching: CoachingState
+  nutrition: NutritionState
   /** Application / simulated clock. */
   now: Date
 }
@@ -66,11 +68,14 @@ export interface AnalyticsInput {
 
 export function getHeroAnalytics(
   input: AnalyticsInput,
-  period: AnalyticsPeriod = 'lifetime',
+  period: AnalyticsPeriod = 'last365',
 ): HeroAnalytics {
   const { hero, currentStreak, history } = input
+  const range = resolvePeriodRange(period, input.questDefinitions, input.now)
+  const snapshots = filterSnapshotsForPeriod(history.dailySnapshots, range)
+
   let highestLevelReached = hero.level
-  for (const snapshot of history.dailySnapshots) {
+  for (const snapshot of snapshots) {
     if (snapshot.level > highestLevelReached) {
       highestLevelReached = snapshot.level
     }
@@ -89,16 +94,11 @@ export function getHeroAnalytics(
 /**
  * Peak streak within a period — max end-of-day `currentStreak` from snapshots
  * in range (plus live streak when today is in range but not yet snapshotted).
- * Lifetime uses the authoritative lifetime record on the hero.
  */
 export function getLongestStreakForPeriod(
   input: AnalyticsInput,
   period: AnalyticsPeriod,
 ): number {
-  if (period === 'lifetime') {
-    return input.hero.lifetimeStats.longestStreak
-  }
-
   const range = resolvePeriodRange(period, input.questDefinitions, input.now)
   const snapshots = filterSnapshotsForPeriod(input.history.dailySnapshots, range)
 
@@ -124,7 +124,7 @@ export function getLongestStreakForPeriod(
 
 export function getHistoryAnalytics(
   input: AnalyticsInput,
-  period: AnalyticsPeriod = 'lifetime',
+  period: AnalyticsPeriod = 'last365',
 ): HistoryAnalytics {
   const range = resolvePeriodRange(period, input.questDefinitions, input.now)
   const snapshots = filterSnapshotsForPeriod(input.history.dailySnapshots, range)
@@ -181,22 +181,11 @@ export function getProgressAnalytics(
   let xpEarned = sumField(snapshots, (s) => s.xpEarned)
   let goldEarned = sumField(snapshots, (s) => s.goldEarned)
 
-  // In-progress active quest day is not in History until finalize — add live deltas.
   const todayKey = getActiveQuestDayKey(input.questDefinitions, input.now)
-  if (
-    isDateInRange(todayKey, range) &&
-    !snapshottedDates.has(todayKey)
-  ) {
+  if (isDateInRange(todayKey, range) && !snapshottedDates.has(todayKey)) {
     const live = liveDayEarnings(input)
     xpEarned += live.xpEarned
     goldEarned += live.goldEarned
-  }
-
-  if (period === 'lifetime') {
-    return {
-      xpEarned: input.hero.lifetimeStats.totalXpEarned,
-      goldEarned: input.hero.lifetimeStats.totalGoldEarned,
-    }
   }
 
   return { xpEarned, goldEarned }
@@ -236,16 +225,7 @@ export function getQuestAnalytics(
     totalMissed += live.missed
   }
 
-  // Lifetime completed counter is authoritative (incremental); prefer it when
-  // it exceeds the snapshot sum (e.g. days before History existed).
-  if (period === 'lifetime') {
-    totalCompleted = Math.max(
-      totalCompleted,
-      input.hero.lifetimeStats.totalQuestsCompleted,
-    )
-  }
-
-  const { byCategory, bySubcategory } = buildCategoryBreakdown(input, period, range)
+  const { byCategory, bySubcategory } = buildCategoryBreakdown(input, range)
 
   let perfectDays = snapshots.filter(isPerfectDaySnapshot).length
   if (isDateInRange(todayKey, range) && !snapshottedDates.has(todayKey)) {
@@ -296,17 +276,8 @@ function liveDayQuestTotals(input: AnalyticsInput): {
   return { completed, missed }
 }
 
-/**
- * Category / subcategory rates.
- *
- * - Lifetime completed: `questCompletionCounts` (authoritative).
- * - Misses + short periods: GameEvents in range (recent buffer — not complete
- *   long-term history). Snapshot aggregates do not yet store per-category
- *   breakdowns.
- */
 function buildCategoryBreakdown(
   input: AnalyticsInput,
-  period: AnalyticsPeriod,
   range: ReturnType<typeof resolvePeriodRange>,
 ): Pick<QuestAnalytics, 'byCategory' | 'bySubcategory'> {
   const byCategory = emptyCategoryAttemptMap()
@@ -315,52 +286,26 @@ function buildCategoryBreakdown(
     input.questDefinitions.map((definition) => [definition.id, definition]),
   )
 
-  if (period === 'lifetime') {
-    for (const [questId, count] of Object.entries(
-      input.hero.lifetimeStats.questCompletionCounts,
-    )) {
-      const definition = definitionById.get(questId)
-      if (!definition || count <= 0) continue
-      byCategory[definition.category].completed += count
-      if (definition.subcategory) {
-        bySubcategory[definition.subcategory].completed += count
-      }
-    }
-  }
-
-  for (const event of input.events) {
-    if (event.type !== 'QUEST_COMPLETED' && event.type !== 'QUEST_FAILED') {
-      continue
-    }
-
-    const periodKey =
-      event.type === 'QUEST_FAILED' && event.periodKey
-        ? event.periodKey
-        : formatDateKey(new Date(event.timestamp))
-
-    if (!isDateInRange(periodKey, range)) continue
-
-    const definition = definitionById.get(event.questId)
+  for (const completion of input.questHistory.completions) {
+    if (!isDateInRange(completion.heroDayKey, range)) continue
+    const definition = definitionById.get(completion.questId)
     if (!definition) continue
-
-    const categoryBucket = byCategory[definition.category]
-    const subcategoryBucket = definition.subcategory
-      ? bySubcategory[definition.subcategory]
-      : null
-
-    if (event.type === 'QUEST_COMPLETED') {
-      // Lifetime already counted from questCompletionCounts — avoid double-count.
-      if (period !== 'lifetime') {
-        categoryBucket.completed += 1
-        if (subcategoryBucket) subcategoryBucket.completed += 1
-      }
-    } else {
-      categoryBucket.missed += 1
-      if (subcategoryBucket) subcategoryBucket.missed += 1
+    byCategory[definition.category].completed += 1
+    if (definition.subcategory) {
+      bySubcategory[definition.subcategory].completed += 1
     }
   }
 
-  // Recompute rates after mutation.
+  for (const miss of input.questHistory.misses) {
+    if (!isDateInRange(miss.heroDayKey, range)) continue
+    const definition = definitionById.get(miss.questId)
+    if (!definition) continue
+    byCategory[definition.category].missed += 1
+    if (definition.subcategory) {
+      bySubcategory[definition.subcategory].missed += 1
+    }
+  }
+
   finalizeAttemptMap(byCategory)
   finalizeAttemptMap(bySubcategory)
 
@@ -398,34 +343,21 @@ export function getTimedQuestAnalytics(
     isDateInRange(todayKey, range) && !hasTodaySnapshot
 
   let completed = 0
-  let missed = 0
+  let missed = sumField(snapshots, (s) => s.questsMissed)
 
-  if (period === 'lifetime') {
-    for (const id of timedIds) {
-      completed += input.hero.lifetimeStats.questCompletionCounts[id] ?? 0
-    }
-  } else {
-    // Prefer events for completed counts in short windows (buffer may truncate).
-    for (const event of input.events) {
-      if (event.type !== 'QUEST_COMPLETED') continue
-      if (!timedIds.has(event.questId)) continue
-      const periodKey = formatDateKey(new Date(event.timestamp))
-      if (!isDateInRange(periodKey, range)) continue
-      // Live today is counted from quest state below — skip event double-count.
-      if (includeLiveToday && periodKey === todayKey) continue
-      completed += 1
-    }
+  for (const completion of input.questHistory.completions) {
+    if (!timedIds.has(completion.questId)) continue
+    if (!isDateInRange(completion.heroDayKey, range)) continue
+    if (includeLiveToday && completion.heroDayKey === todayKey) continue
+    completed += 1
   }
-
-  // Only timed quests become `missed`; snapshot totals beat the event buffer.
-  missed = sumField(snapshots, (s) => s.questsMissed)
 
   if (includeLiveToday) {
     const questStatus = new Map(input.quests.map((q) => [q.id, q.status]))
     for (const id of timedIds) {
       const status = questStatus.get(id)
       if (status === 'missed') missed += 1
-      if (status === 'completed' && period !== 'lifetime') completed += 1
+      if (status === 'completed') completed += 1
     }
   }
 
@@ -518,21 +450,26 @@ export function getAnalyticsForPeriod(
     workouts: getWorkoutAnalytics(input, period),
     performance: getPerformanceAnalytics(input, period),
     progression: getProgressionAnalytics({ coaching: input.coaching, period, now: input.now }),
+    nutrition: getNutritionAnalytics(input, period),
   }
 }
 
-/** Convenience: lifetime analytics plus progress for today / week / month. */
+/** Convenience: common rolling windows precomputed for DevTools / comparisons. */
 export function getFullAnalytics(input: AnalyticsInput): {
-  lifetime: PeriodAnalytics
   today: PeriodAnalytics
-  week: PeriodAnalytics
-  month: PeriodAnalytics
+  last7: PeriodAnalytics
+  last30: PeriodAnalytics
+  last90: PeriodAnalytics
+  last180: PeriodAnalytics
+  last365: PeriodAnalytics
 } {
   return {
-    lifetime: getAnalyticsForPeriod(input, 'lifetime'),
     today: getAnalyticsForPeriod(input, 'today'),
-    week: getAnalyticsForPeriod(input, 'week'),
-    month: getAnalyticsForPeriod(input, 'month'),
+    last7: getAnalyticsForPeriod(input, 'last7'),
+    last30: getAnalyticsForPeriod(input, 'last30'),
+    last90: getAnalyticsForPeriod(input, 'last90'),
+    last180: getAnalyticsForPeriod(input, 'last180'),
+    last365: getAnalyticsForPeriod(input, 'last365'),
   }
 }
 

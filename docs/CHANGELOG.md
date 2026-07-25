@@ -127,6 +127,30 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - **Selectors** — `workoutAnalyticsSelectors.ts` is the sole React entry point; no component reads `GameState` or domain logic directly
 - No new persistence — consumes `WorkoutActivities`, `PerformanceState`, and `CoachingState` only
 
+### Nutrition System
+
+- **Meals as Hero Activities** — `MealActivity` (`'nutrition'` kind), instant/completed records with no session lifecycle; `questId` always `null` ([NUTRITION.md](NUTRITION.md))
+- **Food Entry model** — optional name, protein, carbs, fat, calories, notes; empty rows dropped on save
+- **Configurable Nutrition Targets** — protein, calories, water (placeholder); editable in-app via `updateNutritionTargets()`, not hardcoded
+- **Daily Nutrition Summary** — meals logged, nutrient totals, target completion %, meal timing, missed required meals
+- **Hero integration events** — `NUTRITION_MEAL_LOGGED`, `NUTRITION_TARGET_ACHIEVED`; timeline-integrated (Quest / Progress filters); no stat/XP/gold rewards yet by design
+- **Analytics** — `PeriodAnalytics.nutrition` (protein/calorie trends, target adherence, meal consistency, streaks, missed-meal counts, average meal timing) via a narrow `NutritionAnalyticsInput`; protein/calorie trend charts reuse `TimeSeriesLineChart`
+- **Insights** — protein target streak, meal consistency, missed-meal pattern, meal-timing drift (`insightsNutrition.ts`)
+- **UI** — `NutritionPanel` (log meal, daily summary, targets editor, trend charts), its own Dashboard section
+- **DevTools** — log sample meal, generate 14-day sample history (tuned to surface each insight type), clear data, dump state
+- **Extension points** — `NutritionIntegration` + `NUTRITION_ENTRY_SOURCES` model barcode scan / photo log / Apple Health / Google Health Connect / MyFitnessPal / MacroFactor sync; not implemented
+- Save version **0.0.8**
+
+### v0.0.4 Integration & Polish (complete)
+
+- **Nutrition ↔ Quest integration** — meal logging auto-completes breakfast/lunch/dinner quests; protein target met completes `vitamins-protein`; full `completeQuest()` pipeline (XP, gold, stats, events, history, analytics, insights, streaks, unlocks); quest revert on meal delete
+- **Unified rolling analytics time windows** — Today, Last 7/30/90/180/365 Days across Hero, Quest, Workout, Nutrition, Quest Explorer, and Insights; shared `resolvePeriodRange()` (no calendar weeks/months or unbounded lifetime filter)
+- **Hero Dashboard coaching** — top coaching recommendations surfaced in Today's Journey (workout progression + protein-target nudge)
+- **Fitness Settings** — `GameState.fitnessSettings` (protein/calorie/water targets, preferred units, workout prefs placeholder); synced to `nutrition.targets`; save **0.0.9**
+- **Activity registry** — nutrition quest ids in `ACTIVITY_DRIVEN_QUEST_IDS`; QuestCard shows "Use Nutrition panel"
+
+**v0.0.4 complete.**
+
 ---
 
 ## v0.0.2

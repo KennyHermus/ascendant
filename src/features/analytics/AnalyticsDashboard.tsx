@@ -25,7 +25,7 @@ interface AnalyticsDashboardProps {
  * via `useAnalyticsDashboardModel` — components only render the model.
  */
 export function AnalyticsDashboard({ onDaySelect }: AnalyticsDashboardProps = {}) {
-  const [period, setPeriod] = useState<AnalyticsPeriod>('week')
+  const [period, setPeriod] = useState<AnalyticsPeriod>('last7')
   const model = useAnalyticsDashboardModel(period)
   const statisticsCount = useMemo(() => countStatisticsMetrics(model), [model])
 

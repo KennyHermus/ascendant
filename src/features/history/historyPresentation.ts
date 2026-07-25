@@ -16,11 +16,13 @@ const PROGRESS_TYPES = new Set<GameEventType>([
   'STREAK_BROKEN',
   'PERSONAL_RECORD_ACHIEVED',
   'COACHING_RECOMMENDATION',
+  'NUTRITION_TARGET_ACHIEVED',
 ])
 const QUEST_TYPES = new Set<GameEventType>([
   'QUEST_COMPLETED',
   'QUEST_FAILED',
   'WORKOUT_COMPLETED',
+  'NUTRITION_MEAL_LOGGED',
 ])
 const ACHIEVEMENT_TYPES = new Set<GameEventType>(['ACHIEVEMENT_UNLOCKED'])
 const UNLOCK_TYPES = new Set<GameEventType>(['UNLOCK_EARNED'])
@@ -72,6 +74,18 @@ export function eventMatchesSearch(event: GameEvent, query: string): boolean {
         'recommendation'.includes(normalized) ||
         event.title.toLowerCase().includes(normalized) ||
         event.message.toLowerCase().includes(normalized)
+      )
+    case 'NUTRITION_MEAL_LOGGED':
+      return (
+        event.mealType.includes(normalized) ||
+        'meal'.includes(normalized) ||
+        'nutrition'.includes(normalized)
+      )
+    case 'NUTRITION_TARGET_ACHIEVED':
+      return (
+        event.target.includes(normalized) ||
+        'target'.includes(normalized) ||
+        'nutrition'.includes(normalized)
       )
   }
 }

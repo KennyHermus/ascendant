@@ -137,7 +137,7 @@ The Zustand store only wires in `storage: createMigratingStorage()` — it conta
 
 ### Analytics Engine (also v0.0.3)
 
-Read-only statistics layer — `src/types/analytics.ts`, `src/features/analytics/`. Consumes History snapshots, lifetime stats, hero state, quest definitions, achievements, and the recent event buffer. Period filters: today / week / month / lifetime.
+Read-only statistics layer — `src/types/analytics.ts`, `src/features/analytics/`. Consumes History snapshots, hero state, quest definitions, achievements, quest history, and domain activity records. Period filters: **Today, Last 7/30/90/180/365 Days** (rolling windows via `resolvePeriodRange()` — not calendar weeks/months).
 
 ### Analytics Dashboard & Charts (also v0.0.3)
 

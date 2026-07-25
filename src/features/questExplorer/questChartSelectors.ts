@@ -21,17 +21,10 @@ export interface QuestChartBundle {
 }
 
 function buildDayKeysInRange(
-  range: { start: string; end: string } | null,
-  completions: { heroDayKey: string }[],
-  misses: { heroDayKey: string }[],
+  range: { start: string; end: string },
+  _completions: { heroDayKey: string }[],
+  _misses: { heroDayKey: string }[],
 ): string[] {
-  if (!range) {
-    const keys = new Set<string>()
-    for (const c of completions) keys.add(c.heroDayKey)
-    for (const m of misses) keys.add(m.heroDayKey)
-    return [...keys].sort()
-  }
-
   const keys: string[] = []
   let cursor = range.start
   while (cursor <= range.end) {

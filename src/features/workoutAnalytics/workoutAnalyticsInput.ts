@@ -23,7 +23,7 @@ export interface WorkoutAnalyticsInput {
 export function resolveWorkoutAnalyticsRange(
   input: WorkoutAnalyticsInput,
   period: AnalyticsPeriod,
-): AnalyticsDateRange | null {
+): AnalyticsDateRange {
   return resolvePeriodRange(period, input.questDefinitions, input.now)
 }
 
@@ -32,19 +32,17 @@ export function filterActivitiesForPeriod(
   period: AnalyticsPeriod,
 ): WorkoutActivity[] {
   const range = resolveWorkoutAnalyticsRange(input, period)
-  if (!range) return input.workoutActivities
   return input.workoutActivities.filter((activity) =>
     isDateInRange(activity.heroDayKey, range),
   )
 }
 
-/** Number of calendar days spanned by a period — undefined for lifetime. */
+/** Number of inclusive calendar days spanned by a rolling period. */
 export function periodDayCount(
   input: WorkoutAnalyticsInput,
   period: AnalyticsPeriod,
-): number | undefined {
+): number {
   const range = resolveWorkoutAnalyticsRange(input, period)
-  if (!range) return undefined
   const start = new Date(`${range.start}T12:00:00`)
   const end = new Date(`${range.end}T12:00:00`)
   const diffMs = end.getTime() - start.getTime()
@@ -54,8 +52,8 @@ export function periodDayCount(
 /** Frequency per week helper shared by exercise / template / dashboard rollups. */
 export function frequencyPerWeek(
   occurrences: number,
-  days: number | undefined,
+  days: number,
 ): number | null {
-  if (days == null || days <= 0) return null
+  if (days <= 0) return null
   return Math.round((occurrences / days) * 7 * 10) / 10
 }

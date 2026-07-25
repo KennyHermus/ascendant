@@ -12,16 +12,24 @@ import type {
   PersonalRecordHistoryEntry,
   PrType,
 } from '@/types/performance'
+import type { MealType } from '@/types/nutrition'
 
 /**
- * Reusable time windows for Analytics calculations.
- * Bounds are resolved against application/simulated time.
+ * Reusable rolling time windows for Analytics calculations.
+ * Bounds are resolved against application/simulated time — not calendar weeks/months.
  */
-export const ANALYTICS_PERIODS = ['today', 'week', 'month', 'lifetime'] as const
+export const ANALYTICS_PERIODS = [
+  'today',
+  'last7',
+  'last30',
+  'last90',
+  'last180',
+  'last365',
+] as const
 
 export type AnalyticsPeriod = (typeof ANALYTICS_PERIODS)[number]
 
-/** Inclusive quest-day key range, or `null` for unbounded lifetime. */
+/** Inclusive quest-day key range for a rolling window. */
 export interface AnalyticsDateRange {
   start: string
   end: string
@@ -45,7 +53,7 @@ export interface HeroAnalytics {
   totalXpEarned: number
   totalGoldEarned: number
   currentStreak: number
-  /** Peak streak for the analytics period (lifetime = all-time record). */
+  /** Peak streak within the analytics period (from snapshots + live today). */
   longestStreak: number
 }
 
@@ -134,14 +142,29 @@ export interface ProgressionAnalytics {
   confidenceDistribution: Record<RecommendationConfidence, number>
 }
 
+/** Nutrition rollups for a period — sourced from `MealActivity` records. See docs/NUTRITION.md. */
+export interface NutritionAnalytics {
+  mealsLogged: number
+  daysTracked: number
+  averageProteinPerDay: number | null
+  averageCaloriesPerDay: number | null
+  proteinTargetAdherenceRate: number | null
+  calorieTargetAdherenceRate: number | null
+  mealConsistencyRate: number | null
+  currentMealLoggingStreak: number
+  currentProteinTargetStreak: number
+  currentMealConsistencyStreak: number
+  missedMealCounts: Record<MealType, number>
+  averageMealTimeMinutes: Partial<Record<MealType, number>>
+}
+
 /**
  * Full read-only analytics bundle for one resolved period.
- * Hero identity fields (level, streaks) and achievements are lifetime;
- * progress, quests, timed quests, and history rollups respect `period`.
+ * All rollups respect the selected rolling window.
  */
 export interface PeriodAnalytics {
   period: AnalyticsPeriod
-  range: AnalyticsDateRange | null
+  range: AnalyticsDateRange
   hero: HeroAnalytics
   quests: QuestAnalytics
   timedQuests: TimedQuestAnalytics
@@ -152,4 +175,5 @@ export interface PeriodAnalytics {
   workouts: WorkoutAnalytics
   performance: PerformanceAnalytics
   progression: ProgressionAnalytics
+  nutrition: NutritionAnalytics
 }

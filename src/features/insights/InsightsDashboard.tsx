@@ -12,7 +12,7 @@ import type { AnalyticsPeriod } from '@/types/analytics'
  * Renders interpretation cards from the Insights Engine — no Engine math here.
  */
 export function InsightsDashboard() {
-  const [period, setPeriod] = useState<AnalyticsPeriod>('week')
+  const [period, setPeriod] = useState<AnalyticsPeriod>('last7')
   const model = useInsightsDashboardModel(period)
 
   return (

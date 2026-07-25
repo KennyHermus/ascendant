@@ -32,7 +32,15 @@ Events → Daily Snapshots → Analytics Engine → Selectors / Registry → Das
 
 # Charts (`AnalyticsCharts.tsx`)
 
-Uses **Recharts**. Shares the Dashboard period filter (Today / Week / Month / Lifetime).
+Uses **Recharts**. Shares the Dashboard period filter — rolling windows only (not calendar weeks/months):
+
+| Period | Range |
+|--------|-------|
+| Today | Active quest day only |
+| Last 7 Days | Previous 7 calendar days ending today |
+| Last 30 / 90 / 180 / 365 Days | Previous N calendar days ending today |
+
+Shared resolution: `resolvePeriodRange()` in `analyticsPeriods.ts` (`addHeroDays(today, -(N-1))` … `today`).
 
 **Cross-navigation:** optional `onDaySelect(date)` on line/bar charts — clicking a point opens Hero History Daily Browser for that quest-day (wired from Dashboard).
 
@@ -133,6 +141,17 @@ Exposed on `PeriodAnalytics.progression`. See [COACHING.md](COACHING.md).
 
 **Rule:** Normal workouts never overwrite Official PRs; analytics reads PR data from `GameState.performance`, not workout logs.
 
+### Nutrition analytics (v0.0.4)
+
+`NutritionAnalyticsInput` (a narrow input — `nutrition`, `questDefinitions`, `now` — structurally compatible with `AnalyticsInput`) feeds `getNutritionAnalytics()`:
+
+- `mealsLogged`, `daysTracked`, `averageProteinPerDay`, `averageCaloriesPerDay`
+- `proteinTargetAdherenceRate`, `calorieTargetAdherenceRate`, `mealConsistencyRate`
+- `currentMealLoggingStreak`, `currentProteinTargetStreak`, `currentMealConsistencyStreak`
+- `missedMealCounts`, `averageMealTimeMinutes` (per meal type)
+
+Exposed on `PeriodAnalytics.nutrition`. Source of truth is `GameState.nutrition.activities`. Protein/calorie trend charts reuse `TimeSeriesLineChart` via `buildNutritionChartBundle()`. See [NUTRITION.md](NUTRITION.md).
+
 # Metric Registry
 
 See `analyticsMetricRegistry.ts` for scalar dashboard period rules.
@@ -168,8 +187,9 @@ Implemented in v0.0.3 — separate Dashboard section, shares History data with A
 
 # Out of Scope
 
-- Nutrition / combat analytics UI
+- Combat analytics UI
 - Deep workout analytics UI (see [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md) — implemented as its own Analytics Domain, not part of this dashboard)
+- A dedicated Nutrition Analytics Domain UI (light rollup only — see [NUTRITION.md](NUTRITION.md); may follow the Workout Analytics pattern in a later milestone)
 
 ---
 
@@ -211,3 +231,9 @@ The first **Analytics Domain** — dedicated fitness dashboard (per-exercise, pe
 
 Implemented in v0.0.3 — interprets Analytics / History into behavioral Insight Cards.
 Analytics remain objective statistics; Insights never coach or recommend.
+
+---
+
+# Nutrition (see [NUTRITION.md](NUTRITION.md))
+
+Implemented in v0.0.4 — meal logging, Daily Nutrition Summary, configurable targets, and light Analytics rollup (above). Its own Dashboard section (`NutritionPanel`), separate from this core dashboard.

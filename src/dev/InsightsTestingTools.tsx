@@ -25,11 +25,12 @@ export function InsightsTestingTools() {
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
+  const nutrition = useGameStore((s) => s.nutrition)
   const devGenerateSampleInsightData = useGameStore(
     (s) => s.devGenerateSampleInsightData,
   )
 
-  const [period, setPeriod] = useState<AnalyticsPeriod>('week')
+  const [period, setPeriod] = useState<AnalyticsPeriod>('last7')
   const [refreshToken, setRefreshToken] = useState(0)
   const [showRaw, setShowRaw] = useState(false)
   const [note, setNote] = useState<string | null>(null)
@@ -49,6 +50,7 @@ export function InsightsTestingTools() {
         workout,
         performance,
         coaching,
+        nutrition,
       },
       period,
       getCurrentGameTime(),
@@ -67,6 +69,7 @@ export function InsightsTestingTools() {
     workout,
     performance,
     coaching,
+    nutrition,
   ])
 
   const total = countInsights(insights)
