@@ -172,11 +172,23 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ Future extension points — mastery, readiness, fatigue, estimated PRs  
 ✓ Save version **0.0.7**
 
+## Workout Analytics (shipped)
+
+✓ **Analytics Domain architecture** — reusable Overview/Statistics/Visualizations/Insights/Recommendations shape + `AnalyticsDomainPanel` UI chrome ([WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md))
+✓ Workout Analytics implemented as the first Analytics Domain — own Dashboard section, core Analytics Dashboard untouched
+✓ Workout Dashboard Overview — training streak, totals, frequency, completion rate
+✓ Exercise Analytics — per-exercise stats, trend, best session, official PR, recommendation
+✓ Workout (Template) Analytics — per-template completion rate, weak section, most skipped exercise, recommendation
+✓ PR Analytics — extends existing `PerformanceAnalytics` with longest-standing PR + PR frequency
+✓ Training Distribution — family / role / muscle region / training type / workout category, weighted by completed sets
+✓ Coaching Integration — surfaces Progression Engine recommendations + distribution-derived imbalance suggestions
+✓ Visualizations — workout frequency, duration/volume trend, exercise frequency, PR timeline, weekday consistency, distribution charts (reuses existing chart components)
+✓ React selectors (`workoutAnalyticsSelectors.ts`) — no direct `GameState` reads in components
+
 ## Remaining v0.0.4
 
 - Nutrition activity migration
 - Workout timeline drill-down UI
-- Analytics dashboard workout section
 - Nutrition tracking
 
 ---

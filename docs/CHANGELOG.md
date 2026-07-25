@@ -113,6 +113,20 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - **Future hooks** — Exercise Mastery, readiness, fatigue, estimated PRs
 - Save version **0.0.7**
 
+### Workout Analytics
+
+- **Analytics Domain architecture** — `types/analyticsDomain.ts` + shared `AnalyticsDomainPanel` UI chrome; reusable for future domains (Nutrition, Finance, Learning, Combat, …) ([WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md))
+- **Workout Analytics** — the first Analytics Domain; dedicated Dashboard section, separate from and non-modifying of the core Analytics Dashboard
+- **Workout Dashboard** — training streak, workouts completed, average/total duration, total exercises/sets/reps/volume, frequency, completion rate
+- **Exercise Analytics** — per-exercise times performed, averages (weight/reps/duration/volume), recent trend, best session, official PR, training frequency, current recommendation — searchable list covering the full exercise catalog
+- **Workout (Template) Analytics** — per-template times completed, completion rate, average duration/volume, most difficult section, most skipped exercise, current recommendation
+- **PR Analytics** — extends the existing `PerformanceAnalytics` data layer with longest-standing PR and PR frequency per month (no PR data duplicated)
+- **Training Distribution** — exercise family, exercise role, muscle region (upper/lower/core), training type (strength/cardio/mobility), and workout category, weighted by completed sets
+- **Coaching Integration** — most common / high-confidence recommendations, exercises ready for assessment, and distribution-derived training imbalance suggestions, all read from the existing Progression Engine output
+- **Visualizations** — workout frequency, duration/volume trend, exercise frequency, PR timeline, workout consistency by weekday, training distribution charts — reuses `TimeSeriesLineChart` / `TimeSeriesBarChart`
+- **Selectors** — `workoutAnalyticsSelectors.ts` is the sole React entry point; no component reads `GameState` or domain logic directly
+- No new persistence — consumes `WorkoutActivities`, `PerformanceState`, and `CoachingState` only
+
 ---
 
 ## v0.0.2

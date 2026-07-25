@@ -107,6 +107,8 @@ Do not read snapshots in React. Do not duplicate Engine calculations in chart co
 
 Exposed on `PeriodAnalytics.workouts`. Source of truth is `GameState.workout.activities`, not quest state.
 
+This light rollup stays part of the core engine. Deeper per-exercise, per-template, PR, and training-distribution analytics live in the dedicated **Workout Analytics** domain — its own Dashboard section, separate from this one. See [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md) and the **Analytics Domain** architecture it introduces.
+
 ### Performance analytics (v0.0.4)
 
 `AnalyticsInput.performance` feeds `getPerformanceAnalytics()`:
@@ -166,7 +168,8 @@ Implemented in v0.0.3 — separate Dashboard section, shares History data with A
 
 # Out of Scope
 
-- Workout / nutrition / combat analytics UI
+- Nutrition / combat analytics UI
+- Deep workout analytics UI (see [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md) — implemented as its own Analytics Domain, not part of this dashboard)
 
 ---
 
@@ -195,6 +198,12 @@ Hero Day boundaries for period filters: [TIME.md](TIME.md).
 # Quest Explorer (see [QUEST_EXPLORER.md](QUEST_EXPLORER.md))
 
 Per-quest stats and charts — separate Dashboard section, same period filter as Analytics.
+
+---
+
+# Workout Analytics (see [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md))
+
+The first **Analytics Domain** — dedicated fitness dashboard (per-exercise, per-template, PR, and training-distribution analytics + coaching integration). Separate Dashboard section; this core dashboard is unmodified.
 
 ---
 

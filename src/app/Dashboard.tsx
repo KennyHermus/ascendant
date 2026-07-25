@@ -35,6 +35,7 @@ import { isDailySummaryDisplayable } from '@/features/summary/dailySummaryLogic'
 import { DailySummaryModal } from '@/features/summary/DailySummaryModal'
 import { WorkoutPanel } from '@/features/workout/WorkoutPanel'
 import { PerformancePanel } from '@/features/performance/PerformancePanel'
+import { WorkoutAnalyticsPanel } from '@/features/workoutAnalytics/WorkoutAnalyticsPanel'
 import { UnlockList } from '@/features/unlocks/UnlockList'
 import { useGameTime } from '@/lib/useGameTime'
 import { useGameStore } from '@/store/gameStore'
@@ -182,6 +183,7 @@ export function Dashboard() {
         <QuestList quests={quests} onComplete={completeQuest} />
         <WorkoutPanel />
         <PerformancePanel />
+        <WorkoutAnalyticsPanel />
         <RecentProgress events={recentEvents} />
         <AchievementPanel
           states={achievements}

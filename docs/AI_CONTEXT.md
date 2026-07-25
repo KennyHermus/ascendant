@@ -81,10 +81,11 @@ The game exists to encourage:
 - **Activity architecture + Workout foundation** — see [ACTIVITIES.md](ACTIVITIES.md), [WORKOUT.md](WORKOUT.md)
 - **Performance & Official PRs** — Baseline/Performance Assessments, exercise families, PR history, timeline events; see [PERFORMANCE.md](PERFORMANCE.md)
 - **Exercise Progression Engine** — coaching recommendations from training trends + PRs + prerequisites; see [COACHING.md](COACHING.md)
+- **Workout Analytics** — dedicated fitness dashboard (Exercise/Template/PR analytics, Training Distribution, coaching integration), first **Analytics Domain**; see [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md)
 
 ## Current Priority
 
-v0.0.4 Fitness System — foundation shipped; nutrition migration and workout polish remain.
+v0.0.4 Fitness System — Workout Analytics shipped; nutrition migration and workout polish remain.
 
 ---
 
