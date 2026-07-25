@@ -4,45 +4,63 @@ import type {
   PersonalRecordHistoryEntry,
   PerformanceState,
 } from '@/types/performance'
+import type { CoachingRecommendation, CoachingState } from '@/types/progression'
+import { generateCoachingRecommendations } from '@/features/progression/progressionEngineLogic'
 
 /**
- * Future Progression Engine inputs — not computed yet.
- * Combines training history + official PRs for recommendations.
+ * Progression Engine inputs — combines training history + Official PRs.
  */
 export interface ProgressionEngineInput {
   trainingActivities: WorkoutActivity[]
   officialRecords: OfficialPersonalRecord[]
   prHistory: PersonalRecordHistoryEntry[]
   performance: PerformanceState
+  coaching?: CoachingState
 }
 
 export const PROGRESSION_RECOMMENDATION_KINDS = [
   'increase_weight',
   'increase_reps',
-  'advance_variation',
+  'maintain_training',
+  'reduce_weight',
   'recommend_assessment',
+  'introduce_advanced_exercise',
+  'improve_consistency',
+  'add_recovery',
 ] as const
 
 export type ProgressionRecommendationKind =
   (typeof PROGRESSION_RECOMMENDATION_KINDS)[number]
 
-/** Stub recommendation — populated by the future Progression Engine. */
+/** Coaching recommendation surfaced by the Progression Engine. */
 export interface ProgressionRecommendation {
   kind: ProgressionRecommendationKind
-  exerciseFamilyId: string
+  exerciseFamilyId?: string
+  exerciseId?: string
+  targetExerciseId?: string
   message: string
-  /** Future: estimated PR, confidence, readiness scores. */
-  confidence?: number
+  title: string
+  reason: string
+  confidence: CoachingRecommendation['confidence']
 }
 
-/**
- * Extension point for the Progression Engine (v0.0.5+).
- * Returns empty today — architecture only.
- */
 export function getProgressionRecommendations(
-  _input: ProgressionEngineInput,
+  input: ProgressionEngineInput,
 ): ProgressionRecommendation[] {
-  return []
+  return generateCoachingRecommendations({
+    trainingActivities: input.trainingActivities,
+    performance: input.performance,
+    now: new Date(),
+  }).map((rec) => ({
+    kind: rec.kind,
+    exerciseFamilyId: rec.exerciseFamilyId,
+    exerciseId: rec.exerciseId,
+    targetExerciseId: rec.targetExerciseId,
+    message: rec.message,
+    title: rec.title,
+    reason: rec.reason,
+    confidence: rec.confidence,
+  }))
 }
 
 /** Future: estimated PR from training data without an assessment. */
@@ -66,7 +84,20 @@ export interface PerformanceSessionScheduleHint {
 }
 
 export function getPerformanceSessionScheduleHints(
-  _input: ProgressionEngineInput,
+  input: ProgressionEngineInput,
 ): PerformanceSessionScheduleHint[] {
-  return []
+  return getProgressionRecommendations(input)
+    .filter((rec) => rec.kind === 'recommend_assessment')
+    .map((rec) => ({
+      recommendedAssessmentId: rec.exerciseId ?? '',
+      reason: rec.reason,
+    }))
+    .filter((hint) => hint.recommendedAssessmentId.length > 0)
 }
+
+/** Re-export mastery extension points for future coaching systems. */
+export {
+  getExerciseMasteryScores,
+  getTrainingReadinessScore,
+  getFatigueEstimate,
+} from '@/features/progression/masteryExtensionPoints'

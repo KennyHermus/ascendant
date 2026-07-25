@@ -119,6 +119,16 @@ Exposed on `PeriodAnalytics.workouts`. Source of truth is `GameState.workout.act
 
 Exposed on `PeriodAnalytics.performance`. Charts not built yet — data layer only. See [PERFORMANCE.md](PERFORMANCE.md).
 
+### Progression analytics (v0.0.4)
+
+`AnalyticsInput.coaching` feeds `getProgressionAnalytics()`:
+
+- `totalRecommendations`, `recentRecommendations`
+- `mostFrequentKinds`, `mostActiveFamilies`
+- `confidenceDistribution`, `activeRecommendationCount`
+
+Exposed on `PeriodAnalytics.progression`. See [COACHING.md](COACHING.md).
+
 **Rule:** Normal workouts never overwrite Official PRs; analytics reads PR data from `GameState.performance`, not workout logs.
 
 # Metric Registry

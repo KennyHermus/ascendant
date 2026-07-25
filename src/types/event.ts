@@ -3,6 +3,7 @@ export const GAME_EVENT_TYPES = [
   'QUEST_FAILED',
   'WORKOUT_COMPLETED',
   'PERSONAL_RECORD_ACHIEVED',
+  'COACHING_RECOMMENDATION',
   'LEVEL_UP',
   'STREAK_INCREASED',
   'STREAK_BROKEN',
@@ -87,4 +88,24 @@ export type GameEvent =
       newDisplayValue: string
       previousValue: number | null
       newValue: number
+    })
+  | (BaseGameEvent & {
+      type: 'COACHING_RECOMMENDATION'
+      heroDayKey: string
+      kind:
+        | 'increase_weight'
+        | 'increase_reps'
+        | 'maintain_training'
+        | 'reduce_weight'
+        | 'recommend_assessment'
+        | 'introduce_advanced_exercise'
+        | 'improve_consistency'
+        | 'add_recovery'
+      title: string
+      message: string
+      reason: string
+      confidence: 'low' | 'medium' | 'high' | 'very_high'
+      exerciseId?: string
+      exerciseFamilyId?: string
+      targetExerciseId?: string
     })

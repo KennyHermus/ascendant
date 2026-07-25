@@ -160,12 +160,23 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ Progression Engine extension points (stub only)  
 ✓ Save version **0.0.6** (performance persistence)
 
+## Exercise Progression Engine (shipped)
+
+✓ Multi-workout trend analysis — planned vs actual reps/weight  
+✓ Exercise Roles — foundation, variation, strength, power, skill, accessory  
+✓ Exercise Prerequisites — advanced exercises (Tiger Bend, One-arm, Planche)  
+✓ Coaching recommendations with confidence levels  
+✓ Recommendation history persistence + Hero Timeline events  
+✓ Workout panel coaching banners (informational only)  
+✓ Analytics `ProgressionAnalytics` on `PeriodAnalytics.progression`  
+✓ Future extension points — mastery, readiness, fatigue, estimated PRs  
+✓ Save version **0.0.7**
+
 ## Remaining v0.0.4
 
 - Nutrition activity migration
 - Workout timeline drill-down UI
 - Analytics dashboard workout section
-- Progression Engine recommendations (future — extension points only)
 - Nutrition tracking
 
 ---

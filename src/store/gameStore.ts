@@ -162,6 +162,12 @@ import {
   startAssessmentSession,
   updateAssessmentSessionEntry,
 } from '@/features/performance/assessmentLogic'
+import {
+  createEmptyCoachingState,
+  mergeCoachingState,
+  runCoachingPipeline,
+} from '@/features/progression/coachingProgressionLogic'
+import type { CoachingState } from '@/types/progression'
 
 interface GameState {
   /** Aligned with the app/git version (e.g. "0.0.2"). Drives save migrations. */
@@ -236,6 +242,8 @@ interface GameState {
   workout: WorkoutState
   /** Performance assessments, official PRs, and PR history (v0.0.4). */
   performance: PerformanceState
+  /** Exercise Progression Engine — coaching recommendations (v0.0.4). */
+  coaching: CoachingState
 }
 
 interface GameActions {
@@ -382,9 +390,20 @@ interface GameActions {
   ) => boolean
   completeAssessment: () => boolean
   cancelAssessment: () => boolean
+  refreshCoachingRecommendations: () => void
 }
 
 type GameStore = GameState & GameActions
+
+function applyCoachingUpdate(state: GameState, now: Date): Pick<GameState, 'coaching'> & { coachingEvents: import('@/types/event').GameEvent[] } {
+  const result = runCoachingPipeline({
+    coaching: state.coaching,
+    performance: state.performance,
+    trainingActivities: state.workout.activities,
+    now,
+  })
+  return { coaching: result.coaching, coachingEvents: result.events }
+}
 
 function createInitialState(): GameState {
   const hero = createInitialHero()
@@ -413,6 +432,7 @@ function createInitialState(): GameState {
     questHistory: createEmptyQuestHistory(),
     workout: createEmptyWorkoutState(),
     performance: createEmptyPerformanceState(),
+    coaching: createEmptyCoachingState(),
   }
 }
 
@@ -1438,6 +1458,7 @@ export const useGameStore = create<GameStore>()(
             )
 
         const latest = get()
+        const coachingUpdate = applyCoachingUpdate(latest, now)
         set({
           workout: {
             ...latest.workout,
@@ -1449,7 +1470,9 @@ export const useGameStore = create<GameStore>()(
           },
           events: appendEvents(latest.events, [
             recordWorkoutCompleted({ activity, now }),
+            ...coachingUpdate.coachingEvents,
           ]),
+          coaching: coachingUpdate.coaching,
         })
 
         return true
@@ -1554,11 +1577,28 @@ export const useGameStore = create<GameStore>()(
           now,
         })
 
+        const afterAssessment = {
+          ...state,
+          performance,
+        }
+        const coachingUpdate = applyCoachingUpdate(afterAssessment, now)
+
         set({
           performance,
-          events: appendEvents(state.events, events),
+          coaching: coachingUpdate.coaching,
+          events: appendEvents(state.events, [...events, ...coachingUpdate.coachingEvents]),
         })
         return true
+      },
+
+      refreshCoachingRecommendations: () => {
+        const state = get()
+        const now = getCurrentGameTime()
+        const coachingUpdate = applyCoachingUpdate(state, now)
+        set({
+          coaching: coachingUpdate.coaching,
+          events: appendEvents(state.events, coachingUpdate.coachingEvents),
+        })
       },
 
       cancelAssessment: () => {
@@ -2030,6 +2070,7 @@ export const useGameStore = create<GameStore>()(
           questHistory: mergeQuestHistory(saved.questHistory),
           workout: mergeWorkoutState(saved.workout),
           performance: mergePerformanceState(saved.performance),
+          coaching: mergeCoachingState(saved.coaching),
         }
       },
       onRehydrateStorage: () => (state) => {
@@ -2039,6 +2080,13 @@ export const useGameStore = create<GameStore>()(
         state?.evaluateUnlocks()
         state?.syncDailySummary()
         state?.syncAchievements()
+        if (
+          state &&
+          state.workout.activities.length > 0 &&
+          state.coaching.lastGeneratedAt == null
+        ) {
+          state.refreshCoachingRecommendations()
+        }
       },
     },
   ),

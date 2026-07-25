@@ -14,6 +14,7 @@ import {
   getTimedQuestAnalytics,
   type AnalyticsInput,
 } from '@/features/analytics/analyticsLogic'
+export { getProgressionAnalytics } from '@/features/progression/progressionAnalyticsLogic'
 export { getPerformanceAnalytics } from '@/features/performance/performanceAnalyticsLogic'
 import {
   buildAnalyticsDashboardModel,
@@ -33,6 +34,7 @@ import {
 } from '@/lib/gameTime'
 import { useGameStore } from '@/store/gameStore'
 import type { AnalyticsPeriod, PeriodAnalytics } from '@/types/analytics'
+import type { CoachingState } from '@/types/progression'
 import type { PerformanceState } from '@/types/performance'
 import type { WorkoutActivity } from '@/types/workout'
 
@@ -62,6 +64,7 @@ export function selectAnalyticsInput(
     questHistory: AnalyticsInput['questHistory']
     workout: { activities: WorkoutActivity[] }
     performance: PerformanceState
+    coaching: CoachingState
   },
   now: Date = getCurrentGameTime(),
 ): AnalyticsInput {
@@ -78,6 +81,7 @@ export function selectAnalyticsInput(
     questHistory: state.questHistory,
     workoutActivities: state.workout.activities,
     performance: state.performance,
+    coaching: state.coaching,
     now,
   }
 }
@@ -111,6 +115,7 @@ export function useFullAnalytics() {
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -125,6 +130,7 @@ export function useFullAnalytics() {
         questHistory,
         workout,
         performance,
+        coaching,
       },
       now,
     )
@@ -141,6 +147,7 @@ export function useFullAnalytics() {
     questHistory,
     workout,
     performance,
+    coaching,
   ])
 }
 
@@ -156,6 +163,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -170,6 +178,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
         questHistory,
         workout,
         performance,
+        coaching,
       },
       now,
     )
@@ -187,6 +196,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
     questHistory,
     workout,
     performance,
+    coaching,
   ])
 }
 
@@ -223,6 +233,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -237,6 +248,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
         questHistory,
         workout,
         performance,
+        coaching,
       },
       now,
     )
@@ -254,6 +266,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
     questHistory,
     workout,
     performance,
+    coaching,
   ])
 }
 

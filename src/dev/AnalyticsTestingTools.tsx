@@ -27,6 +27,7 @@ export function AnalyticsTestingTools() {
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   const { snapshotCount, eventCount } = useAnalyticsDiagnostics()
   const [seriesPeriod, setSeriesPeriod] = useState<AnalyticsPeriod>('week')
@@ -54,6 +55,7 @@ export function AnalyticsTestingTools() {
         questHistory,
         workout,
         performance,
+        coaching,
       },
       getCurrentGameTime(),
     )
@@ -70,6 +72,7 @@ export function AnalyticsTestingTools() {
     questHistory,
     workout,
     performance,
+    coaching,
   ])
 
   return (

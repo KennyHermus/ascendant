@@ -15,6 +15,7 @@ const PROGRESS_TYPES = new Set<GameEventType>([
   'STREAK_INCREASED',
   'STREAK_BROKEN',
   'PERSONAL_RECORD_ACHIEVED',
+  'COACHING_RECOMMENDATION',
 ])
 const QUEST_TYPES = new Set<GameEventType>([
   'QUEST_COMPLETED',
@@ -64,6 +65,13 @@ export function eventMatchesSearch(event: GameEvent, query: string): boolean {
         'personal record'.includes(normalized) ||
         'pr'.includes(normalized) ||
         getBenchmarkExerciseName(event.exerciseId).toLowerCase().includes(normalized)
+      )
+    case 'COACHING_RECOMMENDATION':
+      return (
+        'coach'.includes(normalized) ||
+        'recommendation'.includes(normalized) ||
+        event.title.toLowerCase().includes(normalized) ||
+        event.message.toLowerCase().includes(normalized)
       )
   }
 }

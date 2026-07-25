@@ -40,6 +40,7 @@ function useQuestExplorerInput() {
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   return useMemo(
     () =>
@@ -55,6 +56,7 @@ function useQuestExplorerInput() {
           questHistory,
           workout,
           performance,
+          coaching,
         },
         now,
       ),
@@ -70,6 +72,7 @@ function useQuestExplorerInput() {
       questHistory,
       workout,
       performance,
+      coaching,
     ],
   )
 }

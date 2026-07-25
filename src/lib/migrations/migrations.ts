@@ -4,7 +4,7 @@ import type { SaveMigration } from '@/lib/migrations/types'
  * Semantic save version, kept aligned with the app/git version.
  * Bump this whenever the persisted shape changes, and add a migration below.
  */
-export const CURRENT_SAVE_VERSION = '0.0.6'
+export const CURRENT_SAVE_VERSION = '0.0.7'
 
 /**
  * Saves written before `saveVersion` existed have no version field at all.
@@ -137,6 +137,21 @@ const MIGRATIONS: SaveMigration[] = [
         sessions: [],
         activeSessionId: null,
         baselineCompletedAt: null,
+      },
+    }),
+  },
+  {
+    fromVersion: '0.0.6',
+    toVersion: '0.0.7',
+    // v0.0.4 Exercise Progression Engine — coaching recommendations + history.
+    migrate: (state) => ({
+      ...state,
+      saveVersion: '0.0.7',
+      coaching: state.coaching ?? {
+        schemaVersion: 1,
+        activeRecommendations: [],
+        recommendationHistory: [],
+        lastGeneratedAt: null,
       },
     }),
   },

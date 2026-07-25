@@ -32,6 +32,9 @@ function getEventPeriodKey(event: GameEvent): string {
   if (event.type === 'PERSONAL_RECORD_ACHIEVED') {
     return event.heroDayKey
   }
+  if (event.type === 'COACHING_RECOMMENDATION') {
+    return event.heroDayKey
+  }
   return formatDateKey(new Date(event.timestamp))
 }
 

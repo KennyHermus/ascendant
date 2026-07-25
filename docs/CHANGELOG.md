@@ -100,6 +100,19 @@ Release notes for shipped application versions. Design docs for unreleased syste
 - **Progression extension points** — stub interfaces for future recommendations
 - Save version **0.0.6**
 
+### Exercise Progression Engine
+
+- **Coaching recommendations** — multi-workout trends + Official PRs + prerequisites ([COACHING.md](COACHING.md))
+- **Exercise Roles** — foundation, variation, strength, power, skill, accessory
+- **Exercise Prerequisites** — Tiger Bend, One-arm, Planche readiness (no linear paths)
+- **Recommendation kinds** — increase weight/reps, maintain, reduce, assessment, advanced exercise, consistency, recovery
+- **Confidence levels** — low / medium / high / very high
+- **Workout integration** — per-exercise coaching banners (informational only)
+- **Timeline** — `COACHING_RECOMMENDATION` events under Progress filter
+- **Analytics** — `PeriodAnalytics.progression`
+- **Future hooks** — Exercise Mastery, readiness, fatigue, estimated PRs
+- Save version **0.0.7**
+
 ---
 
 ## v0.0.2

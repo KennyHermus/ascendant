@@ -10,6 +10,7 @@ import type { GameEvent } from '@/types/event'
 import type { QuestDefinition, QuestState } from '@/types/quest'
 import type { UnlockDefinition, UnlockState } from '@/types/unlock'
 import type { WorkoutActivity } from '@/types/workout'
+import type { CoachingRecommendation } from '@/types/progression'
 import type { PersonalRecordHistoryEntry } from '@/types/performance'
 
 /** Keeps persisted history bounded — this is a lightweight foundation, not a full log. */
@@ -188,6 +189,25 @@ export function recordPersonalRecordAchieved(
   }
 }
 
+export function recordCoachingRecommendation(
+  recommendation: CoachingRecommendation,
+  now: Date = getCurrentGameTime(),
+): GameEvent {
+  return {
+    ...makeEventBase(now),
+    type: 'COACHING_RECOMMENDATION',
+    heroDayKey: recommendation.heroDayKey,
+    kind: recommendation.kind,
+    title: recommendation.title,
+    message: recommendation.message,
+    reason: recommendation.reason,
+    confidence: recommendation.confidence,
+    exerciseId: recommendation.exerciseId,
+    exerciseFamilyId: recommendation.exerciseFamilyId,
+    targetExerciseId: recommendation.targetExerciseId,
+  }
+}
+
 /**
  * Diffs quest status before/after a reconcile pass and returns one
  * `QUEST_FAILED` event per quest that just transitioned into `missed`.
@@ -351,6 +371,8 @@ export function getEventIcon(event: GameEvent): string {
       return '🏋️'
     case 'PERSONAL_RECORD_ACHIEVED':
       return '🏆'
+    case 'COACHING_RECOMMENDATION':
+      return '🎯'
   }
 }
 
@@ -381,6 +403,8 @@ export function formatEventLabel(event: GameEvent): string {
       const from = event.previousDisplayValue ?? '—'
       return `New Personal Record · ${name} · ${from} → ${event.newDisplayValue}`
     }
+    case 'COACHING_RECOMMENDATION':
+      return `Coach Recommendation · ${event.title}`
   }
 }
 

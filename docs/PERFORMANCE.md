@@ -173,23 +173,18 @@ Exposed on `PeriodAnalytics.performance`. No charts yet — data layer only.
 
 ---
 
-# Progression Engine (future)
+# Progression Engine (implemented)
 
-Extension points: `src/features/performance/progressionExtensionPoints.ts`
+Coaching recommendations: `src/features/progression/` — see [COACHING.md](COACHING.md)
 
 ```typescript
-getProgressionRecommendations(input)  // returns [] today
-getEstimatedPrProjections(input)      // future estimated PRs
-getPerformanceSessionScheduleHints()  // future retest recommendations
+generateCoachingRecommendations(input)  // multi-workout trend analysis
+getProgressionRecommendations(input)    // extension point wrapper
+getEstimatedPrProjections(input)        // future — returns []
+getPerformanceSessionScheduleHints()    // assessment hints from recommendations
 ```
 
-Future inputs combine **training history + Official PRs** for recommendations:
-
-- Increase weight / reps
-- Advance to harder exercise variations
-- Recommend a Performance Assessment
-
-Also reserved (not implemented): performance confidence, weekly performance sessions, training readiness, recovery metrics.
+Also reserved (not implemented): estimated PRs, training readiness, recovery metrics, Exercise Mastery, adaptive workouts.
 
 ---
 

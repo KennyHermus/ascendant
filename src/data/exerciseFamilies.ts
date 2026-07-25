@@ -18,6 +18,9 @@ export const EXERCISE_FAMILIES: ExerciseFamily[] = [
       'archer-push-ups',
       'weighted-push-ups',
       'clap-push-ups',
+      'tiger-bend-push-ups',
+      'one-arm-push-ups',
+      'planche-push-ups',
     ],
   },
   {
@@ -36,7 +39,7 @@ export const EXERCISE_FAMILIES: ExerciseFamily[] = [
     id: 'curl-family',
     name: 'Curl Family',
     benchmarkExerciseId: 'bicep-curl',
-    memberExerciseIds: ['bicep-curl', 'hammer-curl', 'side-curl'],
+    memberExerciseIds: ['bicep-curl', 'hammer-curl', 'side-curl', 'concentration-curl'],
   },
   {
     id: 'walking-family',

@@ -35,7 +35,9 @@ import type { QuestHistory } from '@/types/questHistory'
 import type { DayStartHeroSnapshot } from '@/types/summary'
 import type { WorkoutActivity } from '@/types/workout'
 import type { PerformanceState } from '@/types/performance'
+import type { CoachingState } from '@/types/progression'
 import { getPerformanceAnalytics } from '@/features/performance/performanceAnalyticsLogic'
+import { getProgressionAnalytics } from '@/features/progression/progressionAnalyticsLogic'
 import { getWorkoutAnalytics } from '@/features/workout/workoutAnalyticsLogic'
 
 /**
@@ -55,6 +57,7 @@ export interface AnalyticsInput {
   questHistory: QuestHistory
   workoutActivities: WorkoutActivity[]
   performance: PerformanceState
+  coaching: CoachingState
   /** Application / simulated clock. */
   now: Date
 }
@@ -514,6 +517,7 @@ export function getAnalyticsForPeriod(
     achievements: getAchievementAnalytics(input),
     workouts: getWorkoutAnalytics(input, period),
     performance: getPerformanceAnalytics(input, period),
+    progression: getProgressionAnalytics({ coaching: input.coaching, period, now: input.now }),
   }
 }
 

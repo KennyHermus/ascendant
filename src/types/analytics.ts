@@ -3,6 +3,11 @@ import type {
   QuestCategory,
 } from '@/types/quest'
 import type {
+  CoachingRecommendationHistoryEntry,
+  ProgressionRecommendationKind,
+  RecommendationConfidence,
+} from '@/types/progression'
+import type {
   OfficialPersonalRecord,
   PersonalRecordHistoryEntry,
   PrType,
@@ -119,6 +124,16 @@ export interface PerformanceAnalytics {
   }[]
 }
 
+/** Exercise Progression Engine analytics — sourced from `CoachingState`. */
+export interface ProgressionAnalytics {
+  totalRecommendations: number
+  activeRecommendationCount: number
+  recentRecommendations: CoachingRecommendationHistoryEntry[]
+  mostFrequentKinds: { kind: ProgressionRecommendationKind; count: number }[]
+  mostActiveFamilies: { exerciseFamilyId: string; familyName: string; count: number }[]
+  confidenceDistribution: Record<RecommendationConfidence, number>
+}
+
 /**
  * Full read-only analytics bundle for one resolved period.
  * Hero identity fields (level, streaks) and achievements are lifetime;
@@ -136,4 +151,5 @@ export interface PeriodAnalytics {
   achievements: AchievementAnalytics
   workouts: WorkoutAnalytics
   performance: PerformanceAnalytics
+  progression: ProgressionAnalytics
 }

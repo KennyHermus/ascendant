@@ -40,6 +40,8 @@ import {
 import {
   getDefaultSetInputValues,
 } from '@/features/workout/workoutTemplateLogic'
+import { CoachingRecommendationList } from '@/features/progression/components/CoachingRecommendationBanner'
+import { useCoachingRecommendationsForExercise } from '@/features/progression/progressionSelectors'
 import { useGameStore } from '@/store/gameStore'
 import {
   isSessionInLoggingScreen,
@@ -102,6 +104,7 @@ function ExerciseSetLogger({
   onStopExerciseTimer: () => void
   onMarkExerciseTargetReached: () => void
 }) {
+  const recommendations = useCoachingRecommendationsForExercise(exercise.exerciseId)
   const visibleSets = getVisibleSetsForExercise(exercise, circuitProgress)
   const completedCount = exercise.sets.filter((set) => set.completed).length
   const activeSet =
@@ -127,6 +130,7 @@ function ExerciseSetLogger({
       {exercise.notes && (
         <p className="mt-0.5 text-xs text-stone-500">{exercise.notes}</p>
       )}
+      <CoachingRecommendationList recommendations={recommendations} />
       <p className="mb-3 text-xs text-stone-500">
         {completedCount} / {exercise.sets.length} sets complete
         {circuitProgress && exercise.blockId === circuitProgress.blockId && (

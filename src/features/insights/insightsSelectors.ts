@@ -47,6 +47,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -61,6 +62,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
         questHistory,
         workout,
         performance,
+        coaching,
       },
       now,
     )
@@ -78,6 +80,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
     questHistory,
     workout,
     performance,
+    coaching,
   ])
 }
 
@@ -93,6 +96,7 @@ export function useFullInsights() {
   const questHistory = useGameStore((s) => s.questHistory)
   const workout = useGameStore((s) => s.workout)
   const performance = useGameStore((s) => s.performance)
+  const coaching = useGameStore((s) => s.coaching)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -107,6 +111,7 @@ export function useFullInsights() {
         questHistory,
         workout,
         performance,
+        coaching,
       },
       now,
     )
@@ -123,6 +128,7 @@ export function useFullInsights() {
     questHistory,
     workout,
     performance,
+    coaching,
   ])
 }
 
@@ -146,6 +152,7 @@ export function selectInsightsBundle(
     questHistory: AnalyticsInput['questHistory']
     workout: { activities: import('@/types/workout').WorkoutActivity[] }
     performance: AnalyticsInput['performance']
+    coaching: AnalyticsInput['coaching']
   },
   period: AnalyticsPeriod,
   now: Date = getCurrentGameTime(),
