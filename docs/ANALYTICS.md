@@ -1,6 +1,6 @@
 # Ascendant Analytics
 
-Version: aligned with Ascendant v0.0.4 (Performance & PR data layer)
+Version: aligned with Ascendant v0.0.4 — core engine, domains (workout, nutrition), rolling time windows
 
 Covers the **Analytics Engine**, **metric registry**, **series builders**, **Analytics Dashboard**, and **Charts**.
 

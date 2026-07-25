@@ -42,7 +42,7 @@ Inspirations:
 
 # Main Screens
 
-**Current app (v0.0.3):** a single **Dashboard** — no router. Separate Quest / Progress / Inventory screens below are design targets for later, not separate routes today.
+**Current app (v0.0.4):** a single **Dashboard** — no router. Separate Quest / Progress / Inventory screens below are design targets for later, not separate routes today.
 
 ## Hero Dashboard (implemented)
 

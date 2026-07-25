@@ -1,6 +1,8 @@
 # Ascendant Coding Standards
 
-Version: 0.1
+Version: aligned with application v0.0.4
+
+See also: [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for architecture conventions.
 
 ---
 
@@ -142,10 +144,13 @@ When adding major features:
 
 Update:
 
-- GAME_BIBLE
-- ARCHITECTURE
-- IMPLEMENTATION_PLAN (roadmap)
-- Relevant feature docs (QUESTS, PROGRESSION, UI_UX, …)
+- [ARCHITECTURE.md](ARCHITECTURE.md) (subsystem index entry)
+- [GAME_BIBLE.md](GAME_BIBLE.md) if game design changes
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) (roadmap)
+- [CHANGELOG.md](CHANGELOG.md)
+- [PERSISTENCE.md](PERSISTENCE.md) if save schema changes
+- Relevant feature docs (QUESTS, WORKOUT, NUTRITION, …)
+- [README.md](../README.md) if user-facing scope changes
 
 ---
 

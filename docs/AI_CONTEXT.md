@@ -113,3 +113,15 @@ Do not over-engineer early versions.
 A fun simple game is better than a complex unfinished game.
 
 Do not invent major systems (**combat, inventory, equipment, story, world, skills**) unless the **v0.1.x** milestone explicitly asks for them. History + Analytics + Insights already exist — extend via [HISTORY.md](HISTORY.md) / [ANALYTICS.md](ANALYTICS.md) / [INSIGHTS.md](INSIGHTS.md), do not replace them.
+
+---
+
+# Documentation Map
+
+| Start here | Purpose |
+|------------|---------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Subsystem index and integration map |
+| [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Conventions for contributors |
+| [PERSISTENCE.md](PERSISTENCE.md) | Save schema and migrations |
+| [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) | Roadmap |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes |

@@ -2,165 +2,251 @@
 
 > Walk the Path of Resolve.
 
-Ascendant is a real-life progression RPG designed to transform personal growth into an adventure.
+Ascendant is a real-life progression RPG. Daily actions become quests, discipline becomes experience, and consistency becomes power.
 
-The player is the hero.
-
-Daily actions become quests.
-
-Discipline becomes experience.
-
-Consistency becomes power.
-
-The goal is not simply to track productivity.
-
-The goal is to create a game system that encourages becoming:
-
-- Stronger
-- Smarter
-- More disciplined
-- More resilient
-- More skilled
-- More well-rounded
+The player improves their real life and their character simultaneously — not through checkbox productivity, but through a hero's journey.
 
 ---
 
-# Vision
+# Philosophy
 
-Most productivity apps treat habits as checkboxes.
+Most habit apps treat actions as chores. Ascendant treats them as **character development**:
 
-Ascendant treats them as character development.
+- A completed workout is Strength, Stamina, and XP — not just a checkmark.
+- Reading builds Intellect and prepares future challenges.
+- Nutrition, sleep, and routine quests maintain the hero's foundation.
 
-A completed workout is not just a workout.
-
-It is:
-
-- Strength growth
-- Stamina growth
-- Character growth
-- Progress toward future abilities
-
-Reading is not just reading.
-
-It is:
-
-- Intellect growth
-- Knowledge growth
-- Preparation for future challenges
-
-Every action contributes to the hero's journey.
-
----
-
-# Core Gameplay Loop
-
-Complete quests
-→ Gain XP / gold
-→ Improve stats
-→ Maintain streaks
-→ Unlock features
-→ Grow hero
-
-(Future: face greater challenges — combat, bosses, story. Those systems are **v0.1.x only**.)
+The game should motivate growth without encouraging unhealthy grinding. See [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md).
 
 ---
 
 # Current Version
 
-## v0.0.3
+**Application:** v0.0.4 (complete)  
+**Save schema:** 0.0.9  
+**Next milestone:** v0.0.5 — Polish and refinement
 
-Current application version: **0.0.3**
+---
 
-A playable daily RPG foundation with:
+# Major Features
 
-**Core**
+## Core (v0.0.2+)
 
-- React + TypeScript + Vite
-- Zustand state management
-- localStorage persistence (versioned saves)
-- Feature-based architecture
-- Data-driven quest definitions
+- **Hero** — level, XP, gold, eight stats, titles, lifetime statistics, dynamic status
+- **Quests** — Non-Negotiables (Morning / Nutrition / Evening), Daily Bonus, Weekly, timed quests, optional quests, streaks
+- **Unlocks** — earn daily access to Messages, YouTube, Gaming, Social Media, Netflix
+- **Daily Summary** — end-of-day recap when the day is complete
+- **Achievements** — data-driven milestones with rarity and Achievement Points
+- **Events** — recent progress feed and timeline foundation
 
-**Hero**
+## History & Analytics (v0.0.3)
 
-- Level, XP, gold
-- Eight stats (Strength, HP, Defense, Stamina, Speed, Intellect, Willpower, Special Technique)
-- Hero title (level-based)
-- Lifetime statistics
-- Status + Next Objective on the Hero Banner
+- **Hero History** — timeline, contribution calendar, daily browser
+- **Analytics Engine** — rolling-window statistics (Today → Last 365 Days)
+- **Charts** — Recharts visualizations for hero, quest, and stat growth
+- **Insights Engine** — behavioral pattern cards (not coaching)
+- **Quest Explorer** — per-quest stats, punctuality, charts
+- **Hero Day** — 5:00 AM day boundary via Time Service
 
-**Quests**
+## Fitness System (v0.0.4)
 
-- Non-Negotiables (Morning Routine, Nutrition, Evening Routine)
-- Daily Bonus, Weekly, Weekly Bonus, Special (empty / future)
-- Optional quests, timed quests (target + grace), weekday schedules
-- Category / subcategory completion rewards
-- Streak based on required Non-Negotiables
+- **Workout Engine** — templates, sessions, set logging, timers, duration activities (cardio, walks)
+- **Workout Analytics** — exercise/template stats, training distribution, PR timeline
+- **Performance Assessments** — baseline + benchmark tests; Official Personal Records
+- **Exercise Families, Roles, Prerequisites** — structured progression paths
+- **Progression Engine** — coaching recommendations (informational only)
+- **Nutrition System** — meal logging, daily targets, analytics, insights
+- **Nutrition ↔ Quest integration** — meals auto-complete breakfast/lunch/dinner; protein target completes vitamins quest
+- **Fitness Settings** — configurable targets and unit preferences
+- **Hero Dashboard coaching** — top recommendations in Today's Journey
 
-**Systems**
+**Not implemented:** Combat, inventory, equipment, story, world, skills (**v0.1.x only**).
 
-- Unlock system (Messages, YouTube, Gaming, Social Media, Netflix)
-- Internal GameEvent log (Recent Progress foundation)
-- Daily Summary (end-of-day recap)
-- Achievements (data-driven, rarity, Achievement Points)
-- **History Foundation** — append-only daily snapshots ([docs/HISTORY.md](docs/HISTORY.md))
-- **Analytics Engine + Dashboard + Charts** — stats, metric registry, Recharts ([docs/ANALYTICS.md](docs/ANALYTICS.md))
-- **Hero History** — timeline, contribution calendar, daily browser ([docs/HISTORY.md](docs/HISTORY.md))
-- **Insights Engine** — behavioral pattern cards from Analytics / History ([docs/INSIGHTS.md](docs/INSIGHTS.md))
-- **Quest Explorer** — per-quest history, stats, and charts ([docs/QUEST_EXPLORER.md](docs/QUEST_EXPLORER.md))
-- **Hero Day & Time Service** — 5:00 AM boundary ([docs/TIME.md](docs/TIME.md))
-- **Completion grades & timestamps** — timed quest punctuality, reward multipliers
-- Quest progress aggregation utilities
-- Developer time simulation + quest/achievement/history/analytics/insights testing tools
+---
 
-**Dashboard order**
+# Technology Stack
+
+| | |
+|---|---|
+| **UI** | React 19, TypeScript |
+| **Build** | Vite 8 |
+| **Styling** | Tailwind CSS 4 |
+| **State** | Zustand (persisted) |
+| **Charts** | Recharts |
+| **Storage** | Browser localStorage (versioned migrations) |
+
+---
+
+# Running the Project
+
+## Prerequisites
+
+- Node.js 20+ (LTS recommended)
+- npm
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+Starts the Vite dev server (default: `http://localhost:5173`). Hot module replacement enabled. Game state persists to `localStorage` under the key `ascendant-game`.
+
+## Production build
+
+```bash
+npm run build
+```
+
+Runs TypeScript project references (`tsc -b`) then Vite production bundle to `dist/`.
+
+## Preview production build
+
+```bash
+npm run preview
+```
+
+Serves the `dist/` output locally for smoke-testing the production bundle.
+
+## Lint
+
+```bash
+npm run lint
+```
+
+Runs [oxlint](https://oxc.rs/docs/guide/usage/linter) on the codebase.
+
+## DevTools
+
+When running in development mode, the Dashboard includes a **DevTools** panel at the bottom:
+
+- Time simulation (advance clock, test timed quests and daily reset)
+- Quest bulk-complete / reset helpers
+- History, analytics, insights, workout, nutrition, and achievement testing tools
+
+DevTools never ship to production builds (`import.meta.env.DEV` guards).
+
+---
+
+# Architecture Overview
+
+Feature-based architecture: logic in `src/features/*/`, data in `src/data/`, types in `src/types/`, single store in `src/store/gameStore.ts`.
+
+```
+Player action → Feature logic → gameStore → Events / History / Activities
+                                      ↓
+                              Analytics (read-only) → Insights → UI
+```
+
+**Entry point:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)  
+**Persistence:** [docs/PERSISTENCE.md](docs/PERSISTENCE.md)  
+**Developer guide:** [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
+
+---
+
+# Folder Structure
+
+```
+src/
+├── app/           # Dashboard and app shell
+├── components/    # Shared UI primitives
+├── data/          # Quest, exercise, template definitions
+├── features/      # Domain modules (hero, quests, workout, nutrition, …)
+├── lib/           # Time, storage, migrations
+├── store/         # Zustand gameStore
+├── types/         # TypeScript models
+└── dev/           # Dev-only testing tools
+docs/              # Design and technical documentation
+```
+
+---
+
+# Dashboard Layout (v0.0.4)
 
 1. Daily Summary banner (when available)
 2. Hero Banner
-3. Today's Journey
+3. Today's Journey (quests + workouts + coaching)
 4. Unlocks
 5. Active Objectives
 6. Quests
-7. Recent Progress
-8. Achievements
-9. Analytics
-10. Quest Explorer
-11. Insights
-12. Hero History
-13. Attributes
-
-**Current version:** v0.0.3 complete (save version 0.0.4 for quest history migration)
-
----
-
-# Technology
-
-Frontend:
-
-- React
-- TypeScript
-- Vite
-- Zustand
-- Tailwind CSS
-
-Future possibilities:
-
-- PWA mobile support
-- Cloud saves
-- Native mobile application
-- AI-generated quests
-- Procedural story content
+7. Workout
+8. Performance Assessments
+9. Workout Analytics
+10. Nutrition
+11. Fitness Settings
+12. Recent Progress
+13. Achievements
+14. Analytics
+15. Quest Explorer
+16. Insights
+17. Hero History
+18. Attributes
 
 ---
 
-# Development Philosophy
+# Version History
 
-Ascendant should prioritize:
+## v0.0.1 — Foundation
 
-1. Long-term sustainability over short-term optimization.
-2. Enjoyment over perfection.
-3. Consistency over intensity.
-4. Real improvement over artificial points.
+First playable loop: hero profile, quest completion with XP/gold rewards, localStorage persistence, single dashboard. Superseded structurally by v0.0.2.
+
+## v0.0.2 — Hero Dashboard & Core Systems
+
+- Hero Dashboard 2.0 (Banner, Today's Journey, Active Objectives, Recent Progress)
+- Non-Negotiables restructure (Morning / Nutrition / Evening subcategories)
+- Timed quests with grace periods and completion grades
+- Unlock system, streaks, category completion rewards
+- GameEvent foundation, Daily Summary, Achievements
+- Lifetime statistics, developer time simulation
+- Save schema through additive fields (no migration chain yet for some features)
+
+## v0.0.3 — History & Analytics
+
+- Append-only `HeroHistory` daily snapshots
+- Analytics Engine + Dashboard + Recharts
+- Insights Engine (behavioral patterns)
+- Hero History UI (timeline, calendar, daily browser)
+- Quest History + Quest Explorer + punctuality analytics
+- Hero Day (5:00 AM) via Time Service
+- Save migrations **0.0.2 → 0.0.3 → 0.0.4**
+
+## v0.0.4 — Fitness System (complete)
+
+- **Activities** — workout, nutrition, performance assessment records separate from quest checkboxes
+- **Workout** — full session lifecycle, timers, duration activities, quest-driven completion
+- **Performance** — baseline/performance assessments, Official PRs, exercise families
+- **Coaching** — Progression Engine with recommendation history
+- **Workout Analytics** — first Analytics Domain (exercise, template, distribution, PR charts)
+- **Nutrition** — meal logging, analytics, insights, quest integration
+- **Integration pass** — unified rolling analytics windows, Fitness Settings, dashboard coaching
+- Save migrations **0.0.5 → 0.0.9**
+
+Full release notes: [docs/CHANGELOG.md](docs/CHANGELOG.md)
+
+---
+
+# Roadmap
+
+| Version | Scope | Status |
+|---------|-------|--------|
+| v0.0.5 | Polish, QoL, visual refinement, balance | **Next** |
+| v0.1.x | Combat, inventory, equipment, story, skills | Future |
+
+Details: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
+
+---
+
+# Development Workflow
+
+1. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and relevant feature docs before coding.
+2. Follow feature-based layout — logic separate from UI.
+3. Use existing foundations (`events`, `history`, `questHistory`, `completeQuest()`) instead of reinventing.
+4. Bump save version + add migration when persisted shape changes — see [docs/PERSISTENCE.md](docs/PERSISTENCE.md).
+5. Update documentation when adding major features.
+6. Run `npm run lint` and `npm run build` before committing significant changes.
+
+AI contributors: also read [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md).
 
 ---
 
@@ -168,27 +254,32 @@ Ascendant should prioritize:
 
 ## Game Design
 
-- [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md)
-- [docs/QUESTS.md](docs/QUESTS.md)
-- [docs/PROGRESSION.md](docs/PROGRESSION.md)
-- [docs/ECONOMY.md](docs/ECONOMY.md)
-- [docs/COMBAT.md](docs/COMBAT.md)
-- [docs/STORY.md](docs/STORY.md)
+- [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md) — vision and mechanics
+- [docs/QUESTS.md](docs/QUESTS.md) — quest categories and rules
+- [docs/PROGRESSION.md](docs/PROGRESSION.md) — XP, levels, streaks, achievements
+- [docs/ECONOMY.md](docs/ECONOMY.md) — gold and rewards
 
-## Technical Design
+## Technical
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- [docs/HISTORY.md](docs/HISTORY.md)
-- [docs/ANALYTICS.md](docs/ANALYTICS.md)
-- [docs/QUEST_EXPLORER.md](docs/QUEST_EXPLORER.md)
-- [docs/TIME.md](docs/TIME.md)
-- [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md)
-- [docs/UI_UX.md](docs/UI_UX.md)
-- [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
-- [docs/CHANGELOG.md](docs/CHANGELOG.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — **start here**
+- [docs/PERSISTENCE.md](docs/PERSISTENCE.md) — save schema and migrations
+- [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — conventions for contributors
+- [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) — roadmap
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) — release notes
 
-## AI Context
+## v0.0.4 Systems
 
-- [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)
-- [AGENTS.md](AGENTS.md)
-- [CLAUDE.md](CLAUDE.md)
+- [docs/ACTIVITIES.md](docs/ACTIVITIES.md) — Hero Activity architecture
+- [docs/WORKOUT.md](docs/WORKOUT.md) — workout engine
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md) — assessments and PRs
+- [docs/COACHING.md](docs/COACHING.md) — Progression Engine
+- [docs/WORKOUT_ANALYTICS.md](docs/WORKOUT_ANALYTICS.md) — workout analytics domain
+- [docs/NUTRITION.md](docs/NUTRITION.md) — nutrition system
+- [docs/FITNESS_SETTINGS.md](docs/FITNESS_SETTINGS.md) — settings
+- [docs/HISTORY.md](docs/HISTORY.md) — long-term history
+- [docs/ANALYTICS.md](docs/ANALYTICS.md) — analytics engine
+- [docs/INSIGHTS.md](docs/INSIGHTS.md) — insights engine
+
+## Future (design only)
+
+- [docs/COMBAT.md](docs/COMBAT.md), [docs/STORY.md](docs/STORY.md), [docs/FUTURE_IDEAS.md](docs/FUTURE_IDEAS.md)

@@ -11,8 +11,8 @@ globs:
 
 You are contributing to Ascendant.
 
-**Current version:** v0.0.2  
-**Next milestone:** v0.0.3 — History & Analytics
+**Current version:** v0.0.4 (complete)  
+**Next milestone:** v0.0.5 — Polish and refinement
 
 Before making changes:
 
@@ -21,9 +21,9 @@ Read:
 - README.md
 - AGENTS.md
 - CLAUDE.md
-- docs/AI_CONTEXT.md
-- docs/GAME_BIBLE.md
 - docs/ARCHITECTURE.md
+- docs/DEVELOPER_GUIDE.md
+- docs/PERSISTENCE.md
 
 ---
 

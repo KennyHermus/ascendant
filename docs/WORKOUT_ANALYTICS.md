@@ -195,7 +195,7 @@ Imbalance suggestions are **derived from Training Distribution**, distinct from 
 
 `WorkoutAnalyticsPanel.tsx` — wired into `Dashboard.tsx` directly below `PerformancePanel`, as its **own** section (not inside the core Analytics Dashboard).
 
-- Header: shared `AnalyticsPeriodFilter` (today / week / month / lifetime), same period semantics as core Analytics
+- Header: shared `AnalyticsPeriodFilter` (Today, Last 7/30/90/180/365 Days), same rolling-window semantics as core Analytics
 - Overview: dashboard metric tiles (`AnalyticsDomainPanel`)
 - Statistics: nested accordions — Exercises (searchable), Workout Templates, Personal Records, Training Distribution
 - Visualizations: chart grid

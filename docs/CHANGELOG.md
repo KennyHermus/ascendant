@@ -4,7 +4,7 @@ Release notes for shipped application versions. Design docs for unreleased syste
 
 ---
 
-## v0.0.3 (in progress)
+## v0.0.3 (complete)
 
 ### History Foundation
 
@@ -17,9 +17,9 @@ Release notes for shipped application versions. Design docs for unreleased syste
 ### Analytics Engine
 
 - **Read-only Analytics** — `features/analytics/` derives hero / quest / timed / progress / history / achievement stats
-- Period filters: today, week, month, lifetime (application / simulated time)
-- Consumes History snapshots, lifetime stats, hero state, definitions, recent events
-- Analytics DevTools (view object, refresh, snapshot/event counts) — never mutates state
+- Period filters: rolling windows (Today, Last 7/30/90/180/365 Days) — standardized in v0.0.4 integration pass
+- Consumes History snapshots, quest history, hero state, definitions, activity records
+- Analytics DevTools — never mutates state
 
 ### Analytics Dashboard
 
@@ -64,7 +64,7 @@ Release notes for shipped application versions. Design docs for unreleased syste
 
 ---
 
-## v0.0.4 (in progress)
+## v0.0.4 (complete)
 
 ### Fitness Foundation
 
@@ -129,14 +129,14 @@ Release notes for shipped application versions. Design docs for unreleased syste
 
 ### Nutrition System
 
-- **Meals as Hero Activities** — `MealActivity` (`'nutrition'` kind), instant/completed records with no session lifecycle; `questId` always `null` ([NUTRITION.md](NUTRITION.md))
-- **Food Entry model** — optional name, protein, carbs, fat, calories, notes; empty rows dropped on save
-- **Configurable Nutrition Targets** — protein, calories, water (placeholder); editable in-app via `updateNutritionTargets()`, not hardcoded
+- **Meals as Hero Activities** — `MealActivity` (`'nutrition'` kind); quest integration via `nutritionQuestResolution.ts` ([NUTRITION.md](NUTRITION.md))
+- **Food Entry model** — optional name, protein, carbs, fat, calories, notes
+- **Configurable targets** — via Fitness Settings (`fitnessSettings`), mirrored to `nutrition.targets`
 - **Daily Nutrition Summary** — meals logged, nutrient totals, target completion %, meal timing, missed required meals
 - **Hero integration events** — `NUTRITION_MEAL_LOGGED`, `NUTRITION_TARGET_ACHIEVED`; timeline-integrated (Quest / Progress filters); no stat/XP/gold rewards yet by design
 - **Analytics** — `PeriodAnalytics.nutrition` (protein/calorie trends, target adherence, meal consistency, streaks, missed-meal counts, average meal timing) via a narrow `NutritionAnalyticsInput`; protein/calorie trend charts reuse `TimeSeriesLineChart`
 - **Insights** — protein target streak, meal consistency, missed-meal pattern, meal-timing drift (`insightsNutrition.ts`)
-- **UI** — `NutritionPanel` (log meal, daily summary, targets editor, trend charts), its own Dashboard section
+- **UI** — `NutritionPanel` (log meal, daily summary, trend charts), `FitnessSettingsPanel`
 - **DevTools** — log sample meal, generate 14-day sample history (tuned to surface each insight type), clear data, dump state
 - **Extension points** — `NutritionIntegration` + `NUTRITION_ENTRY_SOURCES` model barcode scan / photo log / Apple Health / Google Health Connect / MyFitnessPal / MacroFactor sync; not implemented
 - Save version **0.0.8**
@@ -168,9 +168,7 @@ Completed features:
 - **Lifetime statistics** — incremental counters on the hero (including per-quest completion counts)
 - **Category / subcategory completion rewards**
 
-**Not in v0.0.2:** History storage/UI, Analytics, Combat, Inventory, Equipment, Story, World, Skills.
-
-**Next:** [v0.0.3 — History Foundation ✓ / Analytics Engine next](IMPLEMENTATION_PLAN.md)
+**Not in v0.0.2:** History UI, Analytics, Combat, Inventory, Equipment, Story, World, Skills.
 
 ---
 
@@ -184,3 +182,5 @@ Foundation:
 - Single dashboard
 
 Superseded in structure by v0.0.2 (Non-Negotiables, unlocks, timed quests, etc.).
+
+**Next:** [v0.0.5 — Polish](IMPLEMENTATION_PLAN.md)

@@ -43,7 +43,7 @@ Registered in `src/types/activity.ts`:
 |------|--------|------------------|
 | `workout` | Implemented | Resolves `workout`, `core`, `rehab` from template; walk quests from duration activities |
 | `performance_assessment` | Implemented | No quest resolution — establishes/updates Official PRs only |
-| `nutrition` | Implemented | None — `questId` always `null`; legacy checkbox nutrition quests are separate and unaffected |
+| `nutrition` | Implemented | Meal type → breakfast/lunch/dinner; protein target → vitamins-protein ([NUTRITION.md](NUTRITION.md)) |
 
 Future kinds (designed, not implemented):
 
@@ -203,4 +203,4 @@ To add a new activity kind:
 5. Add event type + timeline/analytics hooks
 6. Migrate save version if persistence changes
 
-Nutrition (see [NUTRITION.md](NUTRITION.md)) follows this pattern with one deliberate difference: it has no quest resolution step (`questId` always `null`) — meals are instant, completed records that feed history/analytics/insights without a session lifecycle.
+Nutrition (see [NUTRITION.md](NUTRITION.md)) follows this pattern: instant completed records with quest resolution via `nutritionQuestResolution.ts` → `completeQuest()`.

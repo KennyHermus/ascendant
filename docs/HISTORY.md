@@ -1,6 +1,6 @@
 # Ascendant History Foundation
 
-Version: aligned with Ascendant v0.0.3 (Hero History complete)
+Version: aligned with Ascendant v0.0.4
 
 > Persistent History layer + **Hero History UI** (Timeline, Calendar, Daily Browser). The read-only **Analytics Engine** is documented in [ANALYTICS.md](ANALYTICS.md).
 

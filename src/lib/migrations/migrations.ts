@@ -162,10 +162,9 @@ const MIGRATIONS: SaveMigration[] = [
   {
     fromVersion: '0.0.7',
     toVersion: '0.0.8',
-    // v0.0.4 Nutrition System — meal logging as a Hero Activity, independent
-    // of Non-Negotiable nutrition quests (breakfast/lunch/dinner/vitamins
-    // checkboxes are untouched). Empty state + default targets are a safe
-    // default for prior saves.
+    // v0.0.4 Nutrition System — meal logging as a Hero Activity with quest
+    // integration (breakfast/lunch/dinner/vitamins-protein). Empty state +
+    // default targets are a safe default for prior saves.
     migrate: (state) => ({
       ...state,
       saveVersion: '0.0.8',

@@ -1,6 +1,6 @@
 # Ascendant Implementation Plan & Roadmap
 
-Version: 0.0.2 (documentation aligned with current codebase)
+Version: aligned with application **v0.0.4** (save schema **0.0.9**)
 
 ---
 
@@ -8,10 +8,12 @@ Version: 0.0.2 (documentation aligned with current codebase)
 
 This document tracks milestones: what shipped, what is next, and what remains future.
 
-The documentation and code should agree on version numbers:
+Version alignment:
 
-- **Application version:** `package.json` → currently **0.0.2**
-- **Save schema version:** `CURRENT_SAVE_VERSION` → currently **0.0.2** (only bumps when persisted shape/meaning changes)
+- **Application version:** `package.json` → **0.0.4**
+- **Save schema version:** `CURRENT_SAVE_VERSION` → **0.0.9**
+
+See [PERSISTENCE.md](PERSISTENCE.md) for the migration table.
 
 ---
 
@@ -39,13 +41,13 @@ First playable loop:
 - Persistence via localStorage
 - Single dashboard
 
-Historical detail (quest categories, boolean completion, etc.) lived in earlier plans and has been superseded by v0.0.2. See git history / older ARCHITECTURE notes if needed.
+Historical detail superseded by v0.0.2.
 
 ---
 
 # Completed: v0.0.2
 
-✓ Hero Dashboard 2.0 (Hero Banner, Today's Journey, Active Objectives, Recent Progress, Attributes)  
+✓ Hero Dashboard 2.0 (Hero Banner, Today's Journey, Active Objectives, Recent Progress)  
 ✓ Non-Negotiables quest restructure (subcategories, optional quests, weekday schedules)  
 ✓ Timed quest system (target times, grace periods, weekday-only)  
 ✓ Developer time simulation (persisted)  
@@ -57,161 +59,123 @@ Historical detail (quest categories, boolean completion, etc.) lived in earlier 
 ✓ Lifetime statistics  
 ✓ Daily Summary  
 ✓ Achievements (data-driven, rarity, Achievement Points, popup + panel)  
-✓ Accordion organization (Quests, Unlocks, Achievements, Today's Journey Non-Negotiables)
-
-**Not completed in v0.0.2 (do not mark done):** History UI, Analytics, Combat, Inventory, Story, Equipment, Skills.
+✓ Accordion organization
 
 ---
 
-# In Progress: v0.0.3 — History and Analytics
+# Completed: v0.0.3 — History and Analytics
 
-## Completed: History Foundation
+## History Foundation
 
-✓ Persistent `HeroHistory` with append-only `DailySnapshot` records
-✓ Written on quest-day advance (application / simulated time)
-✓ Save migration `0.0.2 → 0.0.3`
-✓ History DevTools (generate / delete latest / reset history / count)
+✓ Persistent `HeroHistory` with append-only `DailySnapshot` records  
+✓ Written on quest-day advance  
+✓ Save migration `0.0.2 → 0.0.3`  
+✓ History DevTools  
 ✓ Docs: [HISTORY.md](HISTORY.md)
 
-**Not in Foundation:** charts, graphs, History page, Analytics page, calendar, workout tracking.
+## Analytics Engine
 
-## Completed: Analytics Engine
-
-✓ Read-only Analytics feature (`features/analytics/`)
-✓ Period filters: today / week / month / lifetime
-✓ Hero, quest, timed quest, progress, history, achievement stats
-✓ Memoized selectors + DevTools inspector
+✓ Read-only Analytics feature (`features/analytics/`)  
+✓ Rolling period filters: Today, Last 7/30/90/180/365 Days *(updated in v0.0.4 integration pass)*  
+✓ Hero, quest, timed quest, progress, history, achievement stats  
+✓ Memoized selectors + DevTools inspector  
 ✓ Docs: [ANALYTICS.md](ANALYTICS.md)
 
-**Not in Engine:** charts, graphs, History page, Analytics page, calendar, workout analytics.
+## Analytics Dashboard & Charts
 
-## Completed: Analytics Dashboard
-
-✓ Presentation Analytics Dashboard with period filters
-✓ Reusable metric / progress UI components
-✓ Chart series builders (no chart rendering)
-✓ Metric registry (period-aware display rules outside React)
-✓ Stabilization: achievement eval on XP grant; Unlock All pipeline; DevTools panels
+✓ Presentation Dashboard with period filters  
+✓ Metric registry (period-aware display rules)  
+✓ Recharts visualizations via `ChartSeries`  
 ✓ Docs: [ANALYTICS.md](ANALYTICS.md)
 
-**Not in Dashboard:** timeline, heatmaps, calendar, workout analytics.
+## Hero History
 
-## Completed: Charts & Visualizations
-
-✓ Recharts-based charts consuming `ChartSeries` only
-✓ Hero / Quest / Attribute Growth visualizations
-✓ Period-filtered `buildPeriodChartBundle` + `usePeriodChartBundle`
-✓ DevTools period-scoped series inspector
-✓ Docs: [ANALYTICS.md](ANALYTICS.md)
-
-**Not in Charts:** workout/nutrition/combat charts.
-
-## Completed: Hero History
-
-✓ Hero Timeline (reverse-chronological, grouped by day, filters + search)
-✓ Contribution Calendar (GitHub-style heatmap, completion intensity)
-✓ Daily History Browser (snapshot + events + optional Daily Summary)
-✓ Cross-navigation (charts, calendar, timeline, achievements)
-✓ History DevTools (sample history, inspect snapshot, jump to date)
+✓ Hero Timeline, Contribution Calendar, Daily History Browser  
+✓ Cross-navigation (charts, calendar, timeline, achievements)  
 ✓ Docs: [HISTORY.md](HISTORY.md)
 
-## Completed: Insights Engine
+## Insights Engine
 
-✓ Behavior Analytics / Insights Engine (`features/insights/`)
-✓ Quest, Routine, and Behavior Trend insight generators
-✓ Reusable Insight Card + Insights Dashboard
-✓ DevTools: sample insight data, refresh, raw JSON
+✓ Behavior Analytics / Insights Engine  
+✓ Quest, Routine, and Behavior Trend insight generators  
 ✓ Docs: [INSIGHTS.md](INSIGHTS.md)
 
-**v0.0.3 complete** (History → Analytics → Charts → Hero History → Insights).
+## Time, History & Quest Analytics
+
+✓ Hero Day — 5:00 AM boundary ([TIME.md](TIME.md))  
+✓ Completion timestamps and timed quest grading  
+✓ Quest History (`GameState.questHistory`, save `0.0.4`)  
+✓ Quest Explorer ([QUEST_EXPLORER.md](QUEST_EXPLORER.md))  
+✓ Punctuality analytics and insights  
+
+**v0.0.3 complete.**
 
 ---
 
-# v0.0.4 — Fitness System (in progress)
+# Completed: v0.0.4 — Fitness System
 
-## Foundation (shipped)
+## Foundation
 
-✓ Activity architecture (`Quest → Activity → …`) — [ACTIVITIES.md](ACTIVITIES.md)  
-✓ Workout data model — exercises, templates, sessions, activities — [WORKOUT.md](WORKOUT.md)  
-✓ Workout completion pipeline via existing `completeQuest('workout')`  
-✓ `WORKOUT_COMPLETED` events + timeline integration  
-✓ Analytics `WorkoutAnalytics` + insights  
-✓ Workout panel UI + DevTools  
-✓ Save version **0.0.5** (workout persistence)
+✓ Activity architecture — [ACTIVITIES.md](ACTIVITIES.md)  
+✓ Workout data model — [WORKOUT.md](WORKOUT.md)  
+✓ Workout completion via `completeQuest()`  
+✓ Save **0.0.5**
 
-## Logging & sessions (shipped)
+## Logging & Sessions
 
 ✓ Draft → start → log → review → complete lifecycle  
-✓ Set completion status, pause/resume, elapsed duration (Time Service)  
-✓ Session progress + Today's Journey integration  
-✓ Statistics utilities (`workoutStatistics.ts`)  
+✓ Timers, duration activities, set logging  
+✓ Today's Journey workout progress  
 ✓ Workout detail modal from timeline  
-✓ Sample workout history DevTools  
 
-## Performance & Personal Records (shipped)
+## Performance & Personal Records
 
-✓ Hero Assessment architecture (Fitness → Baseline / Performance) — [PERFORMANCE.md](PERFORMANCE.md)  
-✓ Baseline Assessment — initial benchmarks (push-ups, plank, squat, curl, walking)  
-✓ Performance Assessments — separate from workouts; dedicated activity type  
-✓ Official PRs — updated only from completed assessments  
-✓ Exercise Families — stable exercise ids, family benchmark anchors  
-✓ Append-only PR history + `PERSONAL_RECORD_ACHIEVED` timeline events  
-✓ Analytics `PerformanceAnalytics` on `PeriodAnalytics.performance`  
-✓ Progression Engine extension points (stub only)  
-✓ Save version **0.0.6** (performance persistence)
+✓ Baseline and Performance Assessments — [PERFORMANCE.md](PERFORMANCE.md)  
+✓ Official PRs from assessments only  
+✓ Exercise Families  
+✓ Save **0.0.6**
 
-## Exercise Progression Engine (shipped)
+## Exercise Progression Engine
 
-✓ Multi-workout trend analysis — planned vs actual reps/weight  
-✓ Exercise Roles — foundation, variation, strength, power, skill, accessory  
-✓ Exercise Prerequisites — advanced exercises (Tiger Bend, One-arm, Planche)  
-✓ Coaching recommendations with confidence levels  
-✓ Recommendation history persistence + Hero Timeline events  
-✓ Workout panel coaching banners (informational only)  
-✓ Analytics `ProgressionAnalytics` on `PeriodAnalytics.progression`  
-✓ Future extension points — mastery, readiness, fatigue, estimated PRs  
-✓ Save version **0.0.7**
+✓ Coaching recommendations — [COACHING.md](COACHING.md)  
+✓ Exercise Roles and Prerequisites  
+✓ Recommendation history + timeline events  
+✓ Save **0.0.7**
 
-## Workout Analytics (shipped)
+## Workout Analytics
 
-✓ **Analytics Domain architecture** — reusable Overview/Statistics/Visualizations/Insights/Recommendations shape + `AnalyticsDomainPanel` UI chrome ([WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md))
-✓ Workout Analytics implemented as the first Analytics Domain — own Dashboard section, core Analytics Dashboard untouched
-✓ Workout Dashboard Overview — training streak, totals, frequency, completion rate
-✓ Exercise Analytics — per-exercise stats, trend, best session, official PR, recommendation
-✓ Workout (Template) Analytics — per-template completion rate, weak section, most skipped exercise, recommendation
-✓ PR Analytics — extends existing `PerformanceAnalytics` with longest-standing PR + PR frequency
-✓ Training Distribution — family / role / muscle region / training type / workout category, weighted by completed sets
-✓ Coaching Integration — surfaces Progression Engine recommendations + distribution-derived imbalance suggestions
-✓ Visualizations — workout frequency, duration/volume trend, exercise frequency, PR timeline, weekday consistency, distribution charts (reuses existing chart components)
-✓ React selectors (`workoutAnalyticsSelectors.ts`) — no direct `GameState` reads in components
+✓ Analytics Domain architecture — [WORKOUT_ANALYTICS.md](WORKOUT_ANALYTICS.md)  
+✓ Exercise, template, PR, training distribution analytics  
+✓ Coaching integration in workout analytics panel  
 
-## Nutrition System (shipped)
+## Nutrition System
 
-✓ Meal logging as a Hero Activity (`MealActivity`, `'nutrition'` kind) — [NUTRITION.md](NUTRITION.md)
-✓ Food Entry model — optional name/protein/carbs/fat/calories/notes, quick-logging friendly
-✓ Configurable daily targets (protein, calories, water placeholder) — editable in-app, not hardcoded
-✓ Daily Nutrition Summary — meals eaten, totals, target completion %, meal timing, missed meals
-✓ Hero integration events — `NUTRITION_MEAL_LOGGED`, `NUTRITION_TARGET_ACHIEVED` (no stat bonuses yet, by design)
-✓ Analytics — `PeriodAnalytics.nutrition` (protein/calorie trends, streaks, adherence, meal timing) + protein/calorie trend charts
-✓ Insights — protein target streak, meal consistency, missed meal, meal timing
-✓ Nutrition panel UI (log meal, summary, targets editor, trends) + DevTools
-✓ Save version **0.0.8** (nutrition persistence, backward compatible)
+✓ Meal logging as Hero Activity — [NUTRITION.md](NUTRITION.md)  
+✓ Analytics, insights, DevTools  
+✓ Save **0.0.8**
 
-## v0.0.4 Integration & Polish ✓
+## Integration & Polish
 
-✓ Nutrition ↔ Quest integration (meal logging → quest completion, protein target → vitamins-protein)  
-✓ Unified rolling analytics time windows (Today, Last 7/30/90/180/365 Days)  
+✓ Nutrition ↔ Quest integration (meal → quest completion; protein → vitamins-protein)  
+✓ Unified rolling analytics time windows  
 ✓ Hero Dashboard coaching in Today's Journey  
-✓ Fitness Settings (`GameState.fitnessSettings`, save **0.0.9**)  
-✓ Cross-system integration review + documentation
+✓ Fitness Settings — [FITNESS_SETTINGS.md](FITNESS_SETTINGS.md)  
+✓ Save **0.0.9**
 
 **v0.0.4 complete.**
 
 ---
 
-# v0.0.5 — Polish and refinement
+# v0.0.5 — Polish and refinement (next)
 
 Quality-of-life, visual polish, balance pass, bug fixes — no major new domains.
+
+Candidate scope (not committed):
+
+- Workout timeline drill-down UI polish
+- Unit preference wiring in workout display
+- Water logging (when designed)
+- Performance and accessibility pass
 
 ---
 
@@ -219,17 +183,12 @@ Quality-of-life, visual polish, balance pass, bug fixes — no major new domains
 
 **Explicitly future.** Do not implement in v0.0.x.
 
-- Enemies
-- Bosses
-- Combat calculations
-- Abilities
-- Transformations
+- Enemies, bosses, combat calculations
+- Abilities, transformations
 - Equipment / inventory
-- Story / world
+- Story / world, skills
 
-Achievements already shipped in v0.0.2 — do not list them again as a v0.1 deliverable.
-
-Design references: `docs/COMBAT.md`, `docs/STORY.md`, `docs/ECONOMY.md` (equipment), `docs/FUTURE_IDEAS.md`.
+Design references: [COMBAT.md](COMBAT.md), [STORY.md](STORY.md), [ECONOMY.md](ECONOMY.md), [FUTURE_IDEAS.md](FUTURE_IDEAS.md).
 
 ---
 
@@ -238,18 +197,12 @@ Design references: `docs/COMBAT.md`, `docs/STORY.md`, `docs/ECONOMY.md` (equipme
 - Mobile / PWA support
 - Cloud saves
 - Advanced RPG systems
-- Long-term progression depth
-
-See also `docs/FUTURE_IDEAS.md`, `docs/COMBAT.md`, `docs/STORY.md`.
 
 ---
 
 # Explicitly Out of Scope Until Milestone Asks
 
-Do not implement early:
-
-- Combat / inventory / story / skills folders
-- History & Analytics UI (v0.0.3 — **complete**)
+- Combat / inventory / story / skills (v0.1.x)
 - OS-level app blocking for unlocks
 - AI-generated quests / story
 
@@ -259,11 +212,6 @@ Do not implement early:
 
 Before writing code:
 
-1. Read all relevant documentation.
-2. Follow `ARCHITECTURE.md` and `CODING_STANDARDS.md`.
-3. Implement only the current milestone's scope.
-4. Do not create future systems early.
-5. Prefer simple extensible solutions.
-6. Update docs when architecture or major features change.
-
-The goal is a clean foundation that grows deliberately — not maximum features.
+1. Read [ARCHITECTURE.md](ARCHITECTURE.md), [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md), and relevant feature docs.
+2. Implement only the current milestone's scope.
+3. Update docs when architecture or major features change.

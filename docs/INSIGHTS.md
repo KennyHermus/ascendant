@@ -1,6 +1,6 @@
 # Ascendant Insights Engine
 
-Version: aligned with Ascendant v0.0.3 (Behavior Analytics / Insights)
+Version: aligned with Ascendant v0.0.4
 
 > Interprets **Analytics** and **History** into behavioral patterns. Does **not** coach, recommend, or change goals.
 
@@ -100,7 +100,7 @@ docs/INSIGHTS.md                      # this file
 | `consistentlyEarly` | High share of `perfect` grades (≥3 attempts) |
 | `consistentlyInGrace` | High share of `onTime` grades (≥3 attempts) |
 
-Quest attempt profiles prefer **`questHistory`** for non-lifetime periods; event buffer is fallback only. Punctuality insights read `questHistory.completions` with `minutesOffset` and `grade`.
+Quest attempt profiles use **`questHistory`** for all rolling periods; the event buffer is fallback only when history is sparse.
 
 Timing insights using events remain **confidence-limited** by the ~50 event buffer — punctuality insights from `questHistory` are durable.
 
@@ -198,8 +198,8 @@ Pattern for each:
 
 ---
 
-# Relationship to Other v0.0.3 Systems
+# Relationship to Other Systems
 
 - [HISTORY.md](HISTORY.md) — durable day rollups + Hero History UI
 - [ANALYTICS.md](ANALYTICS.md) — objective stats + charts
-- Insights sit **after** Analytics in the pipeline and share period filters (`today` / `week` / `month` / `lifetime`)
+- Insights sit **after** Analytics in the pipeline and share rolling period filters (Today, Last 7/30/90/180/365 Days)

@@ -1,6 +1,6 @@
 # Economy System
 
-Version: 0.2 (aligned with Ascendant v0.0.2)
+Version: aligned with Ascendant v0.0.4 (core rules through v0.0.2)
 
 ---
 

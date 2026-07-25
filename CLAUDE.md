@@ -4,8 +4,8 @@ Ascendant is a personal development RPG.
 
 The player improves their real life and their character simultaneously.
 
-**Current version:** v0.0.2  
-**Next milestone:** v0.0.3 — History & Analytics
+**Current version:** v0.0.4 (complete)  
+**Next milestone:** v0.0.5 — Polish and refinement
 
 ---
 
@@ -13,76 +13,58 @@ The player improves their real life and their character simultaneously.
 
 The player begins as a weak hero.
 
-Through discipline and consistency they gain:
-
-- Experience
-- Stats
-- Achievements
-- Unlocks
-- Knowledge
+Through discipline and consistency they gain experience, stats, achievements, unlocks, and knowledge.
 
 (Future: Skills, Equipment, Abilities, Combat, Story / World — **v0.1.x only**.)
 
-Eventually they overcome increasingly difficult challenges.
-
 ---
 
-# Implemented Systems (v0.0.2)
+# Implemented Systems
 
-## Hero
+## Hero (v0.0.2+)
 
-- Level, XP, gold
-- Eight flat stats (Strength, HP, Defense, Stamina, Speed, Intellect, Willpower, Special Technique)
-- Level-based title ladder
-- Lifetime stats (longest streak, total quests, total XP/gold, per-quest completion counts)
-- Dynamic status + Next Objective on the Hero Banner
+Level, XP, gold, eight stats, title ladder, lifetime stats, dynamic status, Next Objective.
 
-## Quests
+## Quests (v0.0.2+)
 
-Real-world actions organized as:
+Non-Negotiables (Morning / Nutrition / Evening), Daily Bonus, Weekly, timed quests, optional quests, streaks, completion grades.
 
-- Non-Negotiables (Morning Routine, Nutrition, Evening Routine)
-- Daily Bonus
-- Weekly / Weekly Bonus
-- Special (empty, future-ready)
+## Progression (v0.0.2+)
 
-Support optional quests, timed quests, weekday schedules, and streak contribution flags.
+XP, level-ups, stat rewards, category bonuses, achievements, Daily Summary.
 
-## Progression
+## Unlocks (v0.0.2+)
 
-- Hero XP + level-ups (all stats +1 on level)
-- Direct stat rewards from quests
-- Category / subcategory completion bonuses
-- Streaks (required Non-Negotiables only)
-- Achievements (consume state; grant XP/gold once)
-- Daily Summary (end-of-day recap)
+Daily recomputed permissions (Messages, YouTube, Gaming, Social Media, Netflix).
 
-## Unlocks
+## History & Analytics (v0.0.3)
 
-In-game permission system for less productive activities (Messages, YouTube, Gaming, Social Media, Netflix). Recomputed from quest state daily — not permanent.
+Daily snapshots, Analytics Engine, Charts, Insights, Hero History UI, Quest Explorer, Hero Day (5:00 AM).
+
+## Fitness (v0.0.4)
+
+- **Workouts** — sessions, timers, duration activities, quest-driven completion
+- **Performance** — assessments, Official PRs, exercise families
+- **Coaching** — Progression Engine recommendations
+- **Workout Analytics** — Analytics Domain pattern
+- **Nutrition** — meal logging, quest integration, analytics, insights
+- **Fitness Settings** — targets and unit preferences
+- **Integration** — rolling analytics windows, dashboard coaching
 
 ## Events
 
-Lightweight `GameEvent` log powers Recent Progress and Daily Summary. Foundation for v0.0.3 History & Analytics — not a full history UI yet.
+`GameEvent` log powers Recent Progress, Daily Summary, and Hero Timeline. Capped recent buffer plus long-term History snapshots.
 
 ---
 
-# Major Systems (aspirational)
+# Major Systems (aspirational — v0.1.x)
 
-Skills, Equipment, Combat, Story, Inventory — designed in docs but **not implemented**. Do not invent them when coding unless the current milestone asks for them.
+Skills, Equipment, Combat, Story, Inventory — designed in docs but **not implemented**.
 
 ---
 
 # Philosophy
 
-Ascendant should feel like:
+Ascendant should feel like an RPG and a personal challenge — not a spreadsheet or punishment system.
 
-- An RPG
-- A personal challenge
-- A journey
-
-Not:
-
-- A spreadsheet
-- A punishment system
-- A productivity tracker
+See [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
