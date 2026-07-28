@@ -4,8 +4,8 @@ Ascendant is a personal development RPG.
 
 The player improves their real life and their character simultaneously.
 
-**Current version:** v0.0.4 (complete)  
-**Next milestone:** v0.0.5 — Polish and refinement
+**Current version:** v0.0.5 (complete)  
+**Next milestone:** v0.0.6 — TBD
 
 ---
 

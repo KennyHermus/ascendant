@@ -22,6 +22,8 @@ import {
   useHeroHistoryNavigationState,
 } from '@/features/history/heroHistoryNavigation'
 import { HeroBanner } from '@/features/hero/HeroBanner'
+import { resolveActiveHeroTitle } from '@/features/heroIdentity/heroIdentityLogic'
+import { HeroProfileSection } from '@/features/heroIdentity/HeroProfileSection'
 import { getHeroStatus } from '@/features/hero/heroPresentation'
 import { StatsPanel } from '@/features/hero/StatsPanel'
 import { getActiveQuestDayKey } from '@/features/quests/questDay'
@@ -46,6 +48,7 @@ import { useGameStore } from '@/store/gameStore'
 
 export function Dashboard() {
   const hero = useGameStore((s) => s.hero)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
   const quests = useGameStore((s) => s.quests)
   const events = useGameStore((s) => s.events)
   const history = useGameStore((s) => s.history)
@@ -100,6 +103,11 @@ export function Dashboard() {
   const nextObjective = useMemo(
     () => getNextObjective(quests, QUEST_DEFINITIONS, now),
     [quests, now],
+  )
+
+  const activeHeroTitle = useMemo(
+    () => resolveActiveHeroTitle(heroIdentity)?.name ?? null,
+    [heroIdentity],
   )
 
   const objectives = useMemo(
@@ -192,7 +200,9 @@ export function Dashboard() {
           currentStreak={currentStreak}
           status={heroStatus}
           nextObjective={nextObjective}
+          heroTitle={activeHeroTitle}
         />
+        <HeroProfileSection />
         <TodaysJourney
           progress={progress}
           workoutProgressList={workoutProgressList}

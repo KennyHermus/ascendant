@@ -3,12 +3,15 @@ import {
   fitnessSettingsFromNutritionTargets,
   fitnessSettingsToNutritionTargets,
 } from '@/features/settings/fitnessSettingsLogic'
+import { createInitialHeroIdentityState, backfillHeroIdentityState } from '@/features/heroIdentity/heroIdentityLogic'
+import { createEmptyPerformanceState } from '@/features/performance/assessmentLogic'
+import { QUEST_DEFINITIONS } from '@/data/quests'
 
 /**
  * Semantic save version, kept aligned with the app/git version.
  * Bump this whenever the persisted shape changes, and add a migration below.
  */
-export const CURRENT_SAVE_VERSION = '0.0.9'
+export const CURRENT_SAVE_VERSION = '0.0.10'
 
 /**
  * Saves written before `saveVersion` existed have no version field at all.
@@ -197,6 +200,38 @@ const MIGRATIONS: SaveMigration[] = [
           ...nutrition,
           targets: fitnessSettingsToNutritionTargets(fitnessSettings),
         },
+      }
+    },
+  },
+  {
+    fromVersion: '0.0.9',
+    toVersion: '0.0.10',
+    // v0.0.5 Hero Identity — seed earned milestones from existing progress
+    // without flooding the timeline (no events during migration).
+    migrate: (state) => {
+      const existing = state.heroIdentity ?? createInitialHeroIdentityState()
+      const hero = state.hero
+      const shouldBackfill =
+        hero &&
+        existing.unlockedAccomplishmentIds.length === 0 &&
+        existing.unlockedTitleIds.length === 0
+
+      const heroIdentity = shouldBackfill
+        ? backfillHeroIdentityState(existing, {
+            hero,
+            currentStreak: state.currentStreak ?? 0,
+            history: state.history ?? { schemaVersion: 1, dailySnapshots: [] },
+            workoutActivities: state.workout?.activities ?? [],
+            performance: state.performance ?? createEmptyPerformanceState(),
+            questDefinitions: QUEST_DEFINITIONS,
+            now: new Date(),
+          })
+        : existing
+
+      return {
+        ...state,
+        saveVersion: '0.0.10',
+        heroIdentity,
       }
     },
   },

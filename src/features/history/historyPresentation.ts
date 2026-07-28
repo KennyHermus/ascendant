@@ -17,6 +17,8 @@ const PROGRESS_TYPES = new Set<GameEventType>([
   'PERSONAL_RECORD_ACHIEVED',
   'COACHING_RECOMMENDATION',
   'NUTRITION_TARGET_ACHIEVED',
+  'HERO_TITLE_EARNED',
+  'LIFETIME_ACCOMPLISHMENT_EARNED',
 ])
 const QUEST_TYPES = new Set<GameEventType>([
   'QUEST_COMPLETED',
@@ -86,6 +88,19 @@ export function eventMatchesSearch(event: GameEvent, query: string): boolean {
         event.target.includes(normalized) ||
         'target'.includes(normalized) ||
         'nutrition'.includes(normalized)
+      )
+    case 'HERO_TITLE_EARNED':
+      return (
+        event.titleName.toLowerCase().includes(normalized) ||
+        'title'.includes(normalized) ||
+        'hero'.includes(normalized)
+      )
+    case 'LIFETIME_ACCOMPLISHMENT_EARNED':
+      return (
+        event.accomplishmentName.toLowerCase().includes(normalized) ||
+        event.timelineLabel.toLowerCase().includes(normalized) ||
+        'accomplishment'.includes(normalized) ||
+        'milestone'.includes(normalized)
       )
   }
 }

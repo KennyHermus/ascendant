@@ -26,6 +26,7 @@ export function InsightsTestingTools() {
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
   const devGenerateSampleInsightData = useGameStore(
     (s) => s.devGenerateSampleInsightData,
   )
@@ -51,6 +52,7 @@ export function InsightsTestingTools() {
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       period,
       getCurrentGameTime(),

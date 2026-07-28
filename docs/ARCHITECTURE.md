@@ -1,6 +1,6 @@
 # Ascendant Architecture Index
 
-Version: aligned with application **v0.0.4** (save schema **0.0.9**)
+Version: aligned with application **v0.0.5** (save schema **0.0.10**)
 
 This document is the **entry point** for developers. It maps major subsystems, their responsibilities, and where to read more. Detailed implementation notes from earlier milestones live in [ARCHITECTURE_NOTES.md](ARCHITECTURE_NOTES.md).
 
@@ -78,16 +78,16 @@ Daily Summary sync, lifetimeStats increment
 
 ## Hero System
 
-**Purpose:** Player identity — level, XP, gold, eight stats, titles, lifetime counters, status presentation.
+**Purpose:** Player identity — level, XP, gold, eight stats, ranks, accomplishment titles, biography, lifetime milestones, lifetime counters, status presentation.
 
 | | |
 |---|---|
-| **Models** | `Hero`, `LifetimeStats`, `StatState` — `src/types/hero.ts` |
-| **Logic** | `src/features/hero/` — titles, presentation, lifetime stat helpers |
-| **UI** | `HeroBanner.tsx`, `StatsPanel.tsx` |
-| **Integration** | Updated by `completeQuest()`, `grantXp()`, achievements; read by Analytics, Achievements, Daily Summary |
+| **Models** | `Hero`, `LifetimeStats`, `HeroIdentityState` — `src/types/hero.ts`, `src/types/heroIdentity.ts` |
+| **Logic** | `src/features/hero/` — level ranks, presentation; `src/features/heroIdentity/` — titles, accomplishments, biography |
+| **UI** | `HeroBanner.tsx`, `HeroProfileSection.tsx`, `StatsPanel.tsx` |
+| **Integration** | Updated by `completeQuest()`, workouts, assessments, `syncHeroIdentity()`; Timeline events; Analytics hero section |
 
-Docs: [GAME_BIBLE.md](GAME_BIBLE.md), [PROGRESSION.md](PROGRESSION.md)
+Docs: [HERO_IDENTITY.md](HERO_IDENTITY.md), [GAME_BIBLE.md](GAME_BIBLE.md), [PROGRESSION.md](PROGRESSION.md)
 
 ---
 

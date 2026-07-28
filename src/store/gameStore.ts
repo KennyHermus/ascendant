@@ -88,6 +88,7 @@ import { getTodayDateString, getWeekKey, parseDateKey, STORAGE_KEY } from '@/lib
 import type { AchievementState } from '@/types/achievement'
 import type { GameEvent } from '@/types/event'
 import type { Hero } from '@/types/hero'
+import type { HeroIdentityState } from '@/types/heroIdentity'
 import type {
   NonNegotiableSubcategory,
   QuestCategory,
@@ -190,6 +191,11 @@ import {
 import { resolveNutritionQuests } from '@/features/nutrition/nutritionQuestResolution'
 import { recordMealLogged, recordNutritionTargetAchieved } from '@/features/events/eventLogic'
 import { revertNutritionQuestsForDay } from '@/features/nutrition/nutritionQuestSync'
+import {
+  createInitialHeroIdentityState,
+  mergeHeroIdentityState,
+} from '@/features/heroIdentity/heroIdentityLogic'
+import { syncHeroIdentityState } from '@/features/heroIdentity/heroIdentitySync'
 import type { FitnessSettings, FitnessSettingsPatch } from '@/types/fitnessSettings'
 import type { NutritionState, NutritionTargets } from '@/types/nutrition'
 
@@ -276,6 +282,12 @@ interface GameState {
   nutrition: NutritionState
   /** Player-configurable fitness targets and unit preferences (v0.0.4). */
   fitnessSettings: FitnessSettings
+  /**
+   * Hero Identity (v0.0.5) — accomplishment titles, lifetime milestones,
+   * and persisted identity progress. Biography and profile percentages are
+   * derived at read time.
+   */
+  heroIdentity: HeroIdentityState
 }
 
 interface GameActions {
@@ -307,6 +319,8 @@ interface GameActions {
    * actually change.
    */
   syncAchievements: () => void
+  /** Re-evaluates lifetime accomplishments and titles; emits timeline events. */
+  syncHeroIdentity: () => void
   createWorkoutSession: (templateId: string) => boolean
   startDurationActivity: (activityType: DurationActivityType) => boolean
   beginWorkout: () => boolean
@@ -484,6 +498,7 @@ function createInitialState(): GameState {
       targets: fitnessSettingsToNutritionTargets(fitnessSettings),
     },
     fitnessSettings,
+    heroIdentity: createInitialHeroIdentityState(),
   }
 }
 
@@ -731,6 +746,7 @@ export const useGameStore = create<GameStore>()(
           lastDailyResetDate: resetDaily ? today : lastDailyResetDate,
           lastWeeklyResetWeek: resetWeekly ? week : lastWeeklyResetWeek,
         })
+        get().syncHeroIdentity()
       },
 
       evaluateTimedQuests: () => {
@@ -839,6 +855,30 @@ export const useGameStore = create<GameStore>()(
           achievements: states,
           hero,
           events: appendEvents(state.events, newEvents),
+        })
+        get().syncHeroIdentity()
+        return
+      },
+
+      syncHeroIdentity: () => {
+        const state = get()
+        const now = getCurrentGameTime()
+        const result = syncHeroIdentityState({
+          heroIdentity: state.heroIdentity,
+          hero: state.hero,
+          currentStreak: state.currentStreak,
+          history: state.history,
+          workoutActivities: state.workout.activities,
+          performance: state.performance,
+          events: state.events,
+          now,
+        })
+
+        if (!result.changed) return
+
+        set({
+          heroIdentity: result.heroIdentity,
+          events: result.events,
         })
       },
 
@@ -1197,6 +1237,7 @@ export const useGameStore = create<GameStore>()(
           ...summaryPatch,
         })
 
+        get().syncHeroIdentity()
         return true
       },
 
@@ -1526,6 +1567,7 @@ export const useGameStore = create<GameStore>()(
           coaching: coachingUpdate.coaching,
         })
 
+        get().syncHeroIdentity()
         return true
       },
 
@@ -1639,6 +1681,7 @@ export const useGameStore = create<GameStore>()(
           coaching: coachingUpdate.coaching,
           events: appendEvents(state.events, [...events, ...coachingUpdate.coachingEvents]),
         })
+        get().syncHeroIdentity()
         return true
       },
 
@@ -1988,6 +2031,7 @@ export const useGameStore = create<GameStore>()(
           achievements,
           events: appendEvents(state.events, newEvents),
         })
+        get().syncHeroIdentity()
       },
 
       resetProgress: () => {
@@ -2271,6 +2315,7 @@ export const useGameStore = create<GameStore>()(
                 ? fitnessSettingsFromNutritionTargets(saved.nutrition.targets)
                 : undefined),
           ),
+          heroIdentity: mergeHeroIdentityState(saved.heroIdentity),
         }
       },
       onRehydrateStorage: () => (state) => {
@@ -2280,6 +2325,7 @@ export const useGameStore = create<GameStore>()(
         state?.evaluateUnlocks()
         state?.syncDailySummary()
         state?.syncAchievements()
+        state?.syncHeroIdentity()
         if (
           state &&
           state.workout.activities.length > 0 &&

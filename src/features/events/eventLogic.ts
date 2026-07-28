@@ -131,6 +131,31 @@ export function recordAchievementUnlocked(
   }
 }
 
+export function recordHeroTitleEarned(
+  title: { id: string; name: string },
+  now: Date = getCurrentGameTime(),
+): GameEvent {
+  return {
+    ...makeEventBase(now),
+    type: 'HERO_TITLE_EARNED',
+    titleId: title.id,
+    titleName: title.name,
+  }
+}
+
+export function recordLifetimeAccomplishmentEarned(
+  accomplishment: { id: string; name: string; timelineLabel: string },
+  now: Date = getCurrentGameTime(),
+): GameEvent {
+  return {
+    ...makeEventBase(now),
+    type: 'LIFETIME_ACCOMPLISHMENT_EARNED',
+    accomplishmentId: accomplishment.id,
+    accomplishmentName: accomplishment.name,
+    timelineLabel: accomplishment.timelineLabel,
+  }
+}
+
 export interface WorkoutCompletedEventInput {
   activity: WorkoutActivity
   now?: Date
@@ -423,6 +448,10 @@ export function getEventIcon(event: GameEvent): string {
       return '🍽️'
     case 'NUTRITION_TARGET_ACHIEVED':
       return '💪'
+    case 'HERO_TITLE_EARNED':
+      return '🎖️'
+    case 'LIFETIME_ACCOMPLISHMENT_EARNED':
+      return '🏅'
   }
 }
 
@@ -464,6 +493,10 @@ export function formatEventLabel(event: GameEvent): string {
       const label = event.target === 'protein' ? 'Protein' : 'Calorie'
       return `${label} target achieved · ${Math.round(event.consumed)} / ${Math.round(event.targetValue)}`
     }
+    case 'HERO_TITLE_EARNED':
+      return `Hero earned title: ${event.titleName}`
+    case 'LIFETIME_ACCOMPLISHMENT_EARNED':
+      return event.timelineLabel
   }
 }
 

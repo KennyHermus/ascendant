@@ -38,6 +38,7 @@ import type { CoachingState } from '@/types/progression'
 import type { PerformanceState } from '@/types/performance'
 import type { WorkoutActivity } from '@/types/workout'
 import type { NutritionState } from '@/types/nutrition'
+import type { HeroIdentityState } from '@/types/heroIdentity'
 
 /** Keeps period bounds aligned with simulated / real application time. */
 function useAnalyticsClock(): Date {
@@ -67,6 +68,7 @@ export function selectAnalyticsInput(
     performance: PerformanceState
     coaching: CoachingState
     nutrition: NutritionState
+    heroIdentity: HeroIdentityState
   },
   now: Date = getCurrentGameTime(),
 ): AnalyticsInput {
@@ -85,6 +87,7 @@ export function selectAnalyticsInput(
     performance: state.performance,
     coaching: state.coaching,
     nutrition: state.nutrition,
+    heroIdentity: state.heroIdentity,
     now,
   }
 }
@@ -120,6 +123,7 @@ export function useFullAnalytics() {
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -136,6 +140,7 @@ export function useFullAnalytics() {
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       now,
     )
@@ -154,6 +159,7 @@ export function useFullAnalytics() {
     performance,
     coaching,
     nutrition,
+    heroIdentity,
   ])
 }
 
@@ -171,6 +177,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -187,6 +194,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       now,
     )
@@ -206,6 +214,7 @@ export function usePeriodAnalytics(period: AnalyticsPeriod): PeriodAnalytics {
     performance,
     coaching,
     nutrition,
+    heroIdentity,
   ])
 }
 
@@ -244,6 +253,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -260,6 +270,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       now,
     )
@@ -279,6 +290,7 @@ export function usePeriodChartBundle(period: AnalyticsPeriod): PeriodChartBundle
     performance,
     coaching,
     nutrition,
+    heroIdentity,
   ])
 }
 

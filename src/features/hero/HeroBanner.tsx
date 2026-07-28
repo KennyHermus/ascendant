@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Panel } from '@/components/Panel'
 import { XpBar } from '@/components/XpBar'
 import type { NextObjective } from '@/features/dashboard/nextObjectiveLogic'
+import { formatHeroTitleDisplay } from '@/features/heroIdentity/heroIdentityPresentation'
 import { getHeroInitials } from '@/features/hero/heroPresentation'
 import { getHeroTitle } from '@/features/hero/heroTitle'
 import { getXpProgress } from '@/features/progression/progressionLogic'
@@ -13,6 +14,8 @@ interface HeroBannerProps {
   currentStreak: number
   status: string
   nextObjective: NextObjective | null
+  /** Accomplishment-based display title, when unlocked. */
+  heroTitle?: string | null
 }
 
 function StatTile({
@@ -46,11 +49,12 @@ function StatTile({
  * Lifetime (the persistent record below — kept visually separate so it's
  * never confused with today's Current Streak).
  */
-export function HeroBanner({ hero, currentStreak, status, nextObjective }: HeroBannerProps) {
+export function HeroBanner({ hero, currentStreak, status, nextObjective, heroTitle = null }: HeroBannerProps) {
   const xp = getXpProgress(hero)
-  const title = getHeroTitle(hero.level)
+  const rank = getHeroTitle(hero.level)
   const initials = getHeroInitials(hero.name)
   const { lifetimeStats } = hero
+  const displayTitle = heroTitle ?? formatHeroTitleDisplay(null)
 
   return (
     <Panel className="border-amber-900/30 bg-stone-900/80 shadow-lg shadow-black/20">
@@ -63,9 +67,12 @@ export function HeroBanner({ hero, currentStreak, status, nextObjective }: HeroB
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-widest text-amber-500/80">{title}</p>
+          <p className="text-xs uppercase tracking-widest text-amber-500/80">{displayTitle}</p>
           <h1 className="truncate text-2xl font-semibold text-amber-50">{hero.name}</h1>
-          <p className="mt-0.5 text-sm text-stone-400">{status}</p>
+          <p className="mt-0.5 text-sm text-stone-400">
+            {rank} · Level {hero.level}
+          </p>
+          <p className="mt-0.5 text-xs text-stone-500">{status}</p>
         </div>
       </div>
 
@@ -114,17 +121,10 @@ export function HeroBanner({ hero, currentStreak, status, nextObjective }: HeroB
             value={lifetimeStats.totalXpEarned}
             valueClassName="text-sky-300"
           />
-          <StatTile
-            label="Total Gold Earned"
-            value={lifetimeStats.totalGoldEarned}
-            valueClassName="text-amber-300"
-          />
-          <StatTile
-            label="Longest Streak"
-            value={`${lifetimeStats.longestStreak} ${lifetimeStats.longestStreak === 1 ? 'day' : 'days'}`}
-            valueClassName="text-emerald-300"
-          />
         </div>
+        <p className="mt-2 text-[11px] text-stone-500">
+          Open Hero Profile below for gold, streaks, and journey details.
+        </p>
       </div>
     </Panel>
   )

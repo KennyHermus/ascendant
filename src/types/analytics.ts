@@ -57,6 +57,15 @@ export interface HeroAnalytics {
   longestStreak: number
 }
 
+/** Identity rollups — sourced from Hero Identity, not recomputed analytics. */
+export interface HeroIdentityAnalytics {
+  daysActive: number
+  accomplishmentsUnlocked: number
+  titlesUnlocked: number
+  activeTitle: string | null
+  currentRank: string
+}
+
 export interface QuestAnalytics {
   totalCompleted: number
   totalMissed: number
@@ -166,6 +175,7 @@ export interface PeriodAnalytics {
   period: AnalyticsPeriod
   range: AnalyticsDateRange
   hero: HeroAnalytics
+  heroIdentity: HeroIdentityAnalytics
   quests: QuestAnalytics
   timedQuests: TimedQuestAnalytics
   punctuality: PunctualityAnalytics

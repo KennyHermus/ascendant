@@ -35,9 +35,11 @@ import type { WorkoutActivity } from '@/types/workout'
 import type { PerformanceState } from '@/types/performance'
 import type { CoachingState } from '@/types/progression'
 import type { NutritionState } from '@/types/nutrition'
+import type { HeroIdentityState } from '@/types/heroIdentity'
 import { getPerformanceAnalytics } from '@/features/performance/performanceAnalyticsLogic'
 import { getProgressionAnalytics } from '@/features/progression/progressionAnalyticsLogic'
 import { getWorkoutAnalytics } from '@/features/workout/workoutAnalyticsLogic'
+import { getHeroIdentityAnalytics } from '@/features/heroIdentity/heroIdentityAnalyticsLogic'
 import { getNutritionAnalytics } from '@/features/nutrition/nutritionAnalyticsLogic'
 import type { GameEvent } from '@/types/event'
 
@@ -60,6 +62,7 @@ export interface AnalyticsInput {
   performance: PerformanceState
   coaching: CoachingState
   nutrition: NutritionState
+  heroIdentity: HeroIdentityState
   /** Application / simulated clock. */
   now: Date
 }
@@ -441,6 +444,7 @@ export function getAnalyticsForPeriod(
     period,
     range: resolvePeriodRange(period, input.questDefinitions, input.now),
     hero: getHeroAnalytics(input, period),
+    heroIdentity: getHeroIdentityAnalytics(input),
     quests: getQuestAnalytics(input, period),
     timedQuests: getTimedQuestAnalytics(input, period),
     punctuality: getPunctualityAnalytics(input, period),

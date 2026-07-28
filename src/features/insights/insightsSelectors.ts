@@ -49,6 +49,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -65,6 +66,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       now,
     )
@@ -84,6 +86,7 @@ export function usePeriodInsights(period: AnalyticsPeriod): PeriodInsights {
     performance,
     coaching,
     nutrition,
+    heroIdentity,
   ])
 }
 
@@ -101,6 +104,7 @@ export function useFullInsights() {
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
 
   return useMemo(() => {
     const input = selectAnalyticsInput(
@@ -117,6 +121,7 @@ export function useFullInsights() {
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       now,
     )
@@ -135,6 +140,7 @@ export function useFullInsights() {
     performance,
     coaching,
     nutrition,
+    heroIdentity,
   ])
 }
 
@@ -160,6 +166,7 @@ export function selectInsightsBundle(
     performance: AnalyticsInput['performance']
     coaching: AnalyticsInput['coaching']
     nutrition: AnalyticsInput['nutrition']
+    heroIdentity: AnalyticsInput['heroIdentity']
   },
   period: AnalyticsPeriod,
   now: Date = getCurrentGameTime(),

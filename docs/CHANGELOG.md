@@ -4,6 +4,22 @@ Release notes for shipped application versions. Design docs for unreleased syste
 
 ---
 
+## v0.0.5 (complete)
+
+### Hero Identity
+
+- **Hero Profile** — accordion panel with portrait placeholder, title, rank, journey stats, and rolling consistency rates
+- **Hero Biography** — auto-generated narrative from lifetime metrics and earned milestones
+- **Hero Titles** — unlockable accomplishment titles; one active (auto-selected by priority; manual selection ready via `activeTitleId`)
+- **Lifetime Accomplishments** — legacy milestones distinct from Achievements; level milestones skip duplicate timeline events
+- **Timeline integration** — `HERO_TITLE_EARNED` and `LIFETIME_ACCOMPLISHMENT_EARNED` on live unlocks only
+- **Migration backfill** — existing saves seed earned milestones without flooding the timeline
+- **Analytics** — Hero Identity stats in Analytics Dashboard hero section (reuses existing rollups)
+- Save version `0.0.10` + migration from `0.0.9`
+- Docs: [HERO_IDENTITY.md](HERO_IDENTITY.md)
+
+---
+
 ## v0.0.3 (complete)
 
 ### History Foundation

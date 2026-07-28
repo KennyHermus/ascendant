@@ -1,6 +1,6 @@
 # Persistence & Save Schema
 
-Version: aligned with application **v0.0.4** / save schema **0.0.9**
+Version: aligned with application **v0.0.5** / save schema **0.0.10**
 
 Ascendant persists all game state to browser **localStorage** through a single Zustand store with automatic migrations on load.
 
@@ -14,8 +14,8 @@ Ascendant persists all game state to browser **localStorage** through a single Z
 | **Store** | `src/store/gameStore.ts` |
 | **Migration runner** | `src/lib/migrations/migrateSaveData()` |
 | **Storage adapter** | `src/lib/migrations/migratingStorage.ts` — runs migrations before hydrate |
-| **Current save version** | `0.0.9` (`CURRENT_SAVE_VERSION` in `migrations.ts`) |
-| **Application version** | `0.0.4` (`package.json`) |
+| **Current save version** | `0.0.10` (`CURRENT_SAVE_VERSION` in `migrations.ts`) |
+| **Application version** | `0.0.5` (`package.json`) |
 
 Save version and application version are related but independent:
 
@@ -55,6 +55,7 @@ Some v0.0.2 fields were added with safe defaults in `merge()` without a migratio
 | **0.0.6 → 0.0.7** | v0.0.4 | `GameState.coaching` (CoachingState) |
 | **0.0.7 → 0.0.8** | v0.0.4 | `GameState.nutrition` (NutritionState) |
 | **0.0.8 → 0.0.9** | v0.0.4 | `GameState.fitnessSettings`; syncs nutrition targets |
+| **0.0.9 → 0.0.10** | v0.0.5 | `GameState.heroIdentity` (accomplishment titles, lifetime milestones) |
 
 ---
 
@@ -99,6 +100,7 @@ Some v0.0.2 fields were added with safe defaults in `merge()` without a migratio
 | `coaching` | `CoachingState` | Active recommendations + history |
 | `nutrition` | `NutritionState` | Meal activities + targets (mirrored from settings) |
 | `fitnessSettings` | `FitnessSettings` | Player targets and unit preferences |
+| `heroIdentity` | `HeroIdentityState` | Accomplishment titles and lifetime milestone unlocks |
 
 ## Meta
 

@@ -2,9 +2,9 @@
 
 You are contributing to Ascendant.
 
-**Current version:** v0.0.4 (complete)  
-**Next milestone:** v0.0.5 — Polish and refinement  
-**Save schema:** 0.0.9
+**Current version:** v0.0.5 (complete)  
+**Next milestone:** v0.0.6 — TBD  
+**Save schema:** 0.0.10
 
 Before making changes:
 

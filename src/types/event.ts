@@ -11,6 +11,8 @@ export const GAME_EVENT_TYPES = [
   'ACHIEVEMENT_UNLOCKED',
   'NUTRITION_MEAL_LOGGED',
   'NUTRITION_TARGET_ACHIEVED',
+  'HERO_TITLE_EARNED',
+  'LIFETIME_ACCOMPLISHMENT_EARNED',
 ] as const
 
 export type GameEventType = (typeof GAME_EVENT_TYPES)[number]
@@ -127,4 +129,15 @@ export type GameEvent =
       exerciseId?: string
       exerciseFamilyId?: string
       targetExerciseId?: string
+    })
+  | (BaseGameEvent & {
+      type: 'HERO_TITLE_EARNED'
+      titleId: string
+      titleName: string
+    })
+  | (BaseGameEvent & {
+      type: 'LIFETIME_ACCOMPLISHMENT_EARNED'
+      accomplishmentId: string
+      accomplishmentName: string
+      timelineLabel: string
     })

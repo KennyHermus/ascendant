@@ -129,6 +129,38 @@ export const ANALYTICS_METRIC_REGISTRY: MetricDefinition[] = [
       'Peak streak within the selected period (from snapshots + live today when in range). Hidden for Today.',
     resolve: (a) => ({ value: formatInteger(a.hero.longestStreak) }),
   },
+  {
+    id: 'heroTitle',
+    title: 'Hero Title',
+    section: 'hero',
+    supportedPeriods: ALL_PERIODS,
+    rationale: 'Accomplishment-based identity title from Hero Identity system.',
+    resolve: (a) => ({ value: a.heroIdentity.activeTitle ?? '—' }),
+  },
+  {
+    id: 'currentRank',
+    title: 'Current Rank',
+    section: 'hero',
+    supportedPeriods: ALL_PERIODS,
+    rationale: 'Level-based rank ladder — distinct from accomplishment titles.',
+    resolve: (a) => ({ value: a.heroIdentity.currentRank }),
+  },
+  {
+    id: 'daysActive',
+    title: 'Days Active',
+    section: 'hero',
+    supportedPeriods: ALL_PERIODS,
+    rationale: 'Distinct Hero Days with history snapshots (identity metric).',
+    resolve: (a) => ({ value: formatInteger(a.heroIdentity.daysActive) }),
+  },
+  {
+    id: 'accomplishmentsUnlocked',
+    title: 'Accomplishments',
+    section: 'hero',
+    supportedPeriods: ALL_PERIODS,
+    rationale: 'Lifetime milestones earned — distinct from Achievements catalog.',
+    resolve: (a) => ({ value: formatInteger(a.heroIdentity.accomplishmentsUnlocked) }),
+  },
 
   // ── Quest Performance ──────────────────────────────────────────────
   {

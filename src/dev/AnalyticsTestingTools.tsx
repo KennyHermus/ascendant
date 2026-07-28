@@ -29,6 +29,7 @@ export function AnalyticsTestingTools() {
   const performance = useGameStore((s) => s.performance)
   const coaching = useGameStore((s) => s.coaching)
   const nutrition = useGameStore((s) => s.nutrition)
+  const heroIdentity = useGameStore((s) => s.heroIdentity)
 
   const { snapshotCount, eventCount } = useAnalyticsDiagnostics()
   const [seriesPeriod, setSeriesPeriod] = useState<AnalyticsPeriod>('last7')
@@ -58,6 +59,7 @@ export function AnalyticsTestingTools() {
         performance,
         coaching,
         nutrition,
+        heroIdentity,
       },
       getCurrentGameTime(),
     )
