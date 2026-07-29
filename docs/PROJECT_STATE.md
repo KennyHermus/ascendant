@@ -25,7 +25,7 @@ The long-term aim is a **persistent RPG world** driven by real-world action, sup
 
 **Hero-first design** (from v0.0.5 onward): every new feature should answer *"How does this make the Hero feel more alive?"*
 
-Enduring product philosophy: [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md). Development process: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
+Enduring product philosophy: [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md). Decision history: [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md). AI workflow: [AI_WORKFLOW.md](AI_WORKFLOW.md). Development process: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
 
 Additional principles in practice:
 
@@ -650,6 +650,27 @@ Any set() on gameStore
 
 ---
 
+# AI-Assisted Development
+
+Ascendant uses a **structured AI-assisted development process** — dedicated phases and conversation types, one responsibility per thread. This keeps product design, engineering plans, code, review, and documentation from mixing in a single chat.
+
+| Phase | Focus | Typical tool |
+|-------|-------|--------------|
+| **Product Planning** | What and why | ChatGPT (long-lived) |
+| **Technical Planning** | How to implement | Cursor — Plan Mode (medium/large features) |
+| **Implementation** | Writing the code | Cursor — Composer |
+| **Code Review** | Quality and understanding | Cursor (mandatory) |
+| **Documentation** | Recording project state | Cursor (within Implementation or dedicated conversation) |
+| **Implementation Reporting** | What shipped | Cursor (end of Implementation) |
+
+Optional **Learning Review** helps the developer understand the implementation in depth. Separate conversations also cover **Debugging** and **Research**.
+
+**Full process:** [AI_WORKFLOW.md](AI_WORKFLOW.md) · **Completion criteria:** [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) · **General lifecycle:** [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)
+
+Resume feature development by starting Product Planning for v0.0.6 scope, then opening a new Implementation conversation per feature with the Feature Kickoff Packet defined in AI_WORKFLOW.
+
+---
+
 # Current Roadmap Status
 
 ## Completed
@@ -720,6 +741,20 @@ Current architecture anticipates future systems without implementing them.
 
 # Documentation Status
 
+## Documentation ownership
+
+| Document | Responsibility |
+|----------|----------------|
+| [PROJECT_STATE.md](PROJECT_STATE.md) | **This file** — current implementation state and major systems |
+| [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Long-term product philosophy and design principles |
+| [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) | Important decisions and reasoning behind them |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | How AI agents/conversations are used during development |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | General software development lifecycle and project practices |
+| [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Completion criteria for features and versions |
+| [README.md](../README.md) | Project overview, setup, and documentation entry point |
+
+Do not duplicate content across these documents — cross-link instead.
+
 ## Canonical entry points
 
 | Document | Role |
@@ -732,9 +767,11 @@ Current architecture anticipates future systems without implementing them.
 | [CHANGELOG.md](CHANGELOG.md) | Release notes (historical) |
 | [PERSISTENCE.md](PERSISTENCE.md) | Save schema |
 | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Contributor conventions |
-| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | Official development process |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | General development lifecycle |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | **Canonical AI workflow** — phases, conversation types, feature lifecycle |
 | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Feature / version completion checklist |
 | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Enduring product philosophy |
+| [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) | **Product decision log** — why major choices were made |
 
 ## Feature documentation (implemented)
 
@@ -748,9 +785,13 @@ Hero Identity, History, Analytics, Insights, Quest Explorer, Quests, Activities,
 
 [COMBAT.md](COMBAT.md), [STORY.md](STORY.md), [FUTURE_IDEAS.md](FUTURE_IDEAS.md)
 
-## Recently updated (v0.0.5 pass)
+## Recently updated (workflow documentation pass)
 
-HERO_IDENTITY.md, ARCHITECTURE.md, PERSISTENCE.md, CHANGELOG.md, AGENTS.md, CLAUDE.md, README.md, IMPLEMENTATION_PLAN.md, PROJECT_STATE.md, DEVELOPMENT_WORKFLOW.md, DEFINITION_OF_DONE.md, MILESTONES.md, PRODUCT_PRINCIPLES.md.
+AI_WORKFLOW.md, DEVELOPMENT_WORKFLOW.md, DEFINITION_OF_DONE.md, PRODUCT_DECISIONS.md, PROJECT_STATE.md, README.md, AGENTS.md, AI_CONTEXT.md — formalized AI-assisted development workflow (v0.0.5 foundation).
+
+## Previously updated (v0.0.5 milestone)
+
+HERO_IDENTITY.md, ARCHITECTURE.md, PERSISTENCE.md, CHANGELOG.md, CLAUDE.md, IMPLEMENTATION_PLAN.md, MILESTONES.md, PRODUCT_PRINCIPLES.md.
 
 ## Gaps & recommendations
 
@@ -813,10 +854,12 @@ Hero Identity: expanded profile, living biography, accomplishment-based titles, 
 
 ## Recommended next focus
 
-1. **Define v0.0.6 milestone** in IMPLEMENTATION_PLAN.md (polish, water logging, title picker UI, or world-prep — team choice).
+1. **Define v0.0.6 milestone** in IMPLEMENTATION_PLAN.md — use Product Planning (ChatGPT), then Implementation conversations per [AI_WORKFLOW.md](AI_WORKFLOW.md).
 2. **Keep Hero-first lens** — any new feature should integrate with Profile, Timeline, Journey, or History.
 3. **Optional housekeeping** — bundle code-splitting, align per-doc version headers, dedicated Unlocks doc if unlock rules grow.
 4. **Defer v0.1.x** until foundation milestones are explicitly prioritized — combat/world docs exist but should not leak into v0.0.x scope.
+
+Development workflow documentation is **complete** — resume feature work under the formalized AI-assisted process.
 
 ---
 

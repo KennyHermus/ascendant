@@ -73,4 +73,4 @@ Ascendant should feel like an RPG and a personal challenge — not a spreadsheet
 
 See [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md), [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md), and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-Development process: [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md).
+Development process: [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) · [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md).

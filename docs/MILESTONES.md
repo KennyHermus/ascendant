@@ -141,7 +141,7 @@ See [FUTURE_IDEAS.md](FUTURE_IDEAS.md) for aspirational ideas not yet scheduled.
 
 A single milestone may span multiple versions (Foundation = v0.0.1–v0.0.4). A version may complete part of a milestone (v0.0.5 = Hero phase).
 
-When a **milestone** completes, update [PROJECT_STATE.md](PROJECT_STATE.md) and this file. When a **version** completes, update [CHANGELOG.md](CHANGELOG.md) and follow [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
+When a **milestone** completes, update [PROJECT_STATE.md](PROJECT_STATE.md) and this file. When a **version** completes, update [CHANGELOG.md](CHANGELOG.md) and follow [AI_WORKFLOW.md](AI_WORKFLOW.md) and [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
 
 ---
 

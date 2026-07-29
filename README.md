@@ -251,15 +251,26 @@ Details: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
 
 # Development Workflow
 
-Official process: **[docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)** — planning, implementation, verification, version completion, and AI conversation types.
+Ascendant uses a structured **AI-assisted development process**. Phase detail: **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**. General lifecycle: **[docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)**. Completion checklist: **[docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md)**.
 
-Before coding: read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md), [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md), and [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md).
+Before coding: read [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) and satisfy Definition of Done before archiving Implementation conversations.
 
 AI contributors: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md).
 
 ---
 
 # Documentation
+
+## Process & product (start here for development)
+
+| Document | Responsibility |
+|----------|----------------|
+| [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md) | Current implementation state and major systems |
+| [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) | Long-term product philosophy |
+| [docs/PRODUCT_DECISIONS.md](docs/PRODUCT_DECISIONS.md) | Important decisions and reasoning |
+| [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) | **Canonical AI workflow** — phases, conversations, feature lifecycle |
+| [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) | General development lifecycle |
+| [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) | Completion criteria for features |
 
 ## Game Design
 
@@ -279,10 +290,10 @@ AI contributors: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/AI_CONTEX
 
 ## Process & product
 
-- [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) — **official development process**
-- [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) — completion checklist
+See [Documentation — Process & product](#documentation) table above for ownership. Additional references:
+
 - [docs/MILESTONES.md](docs/MILESTONES.md) — major product phases
-- [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) — enduring product philosophy
+- [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — code conventions
 
 ## v0.0.5 Systems
 

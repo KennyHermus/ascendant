@@ -15,7 +15,7 @@ Version alignment:
 
 See [PERSISTENCE.md](PERSISTENCE.md) for the migration table.
 
-**Process:** [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) · **Phases:** [MILESTONES.md](MILESTONES.md) · **Baseline:** [PROJECT_STATE.md](PROJECT_STATE.md)
+**Process:** [AI_WORKFLOW.md](AI_WORKFLOW.md) · [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) · **Phases:** [MILESTONES.md](MILESTONES.md) · **Baseline:** [PROJECT_STATE.md](PROJECT_STATE.md)
 
 ---
 

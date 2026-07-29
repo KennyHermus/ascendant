@@ -2,7 +2,7 @@
 
 **Enduring product philosophy** — describes *why* Ascendant is designed the way it is, not *how* it is built.
 
-For current implementation, see [PROJECT_STATE.md](PROJECT_STATE.md). For development process, see [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
+For current implementation, see [PROJECT_STATE.md](PROJECT_STATE.md). For development process, see [AI_WORKFLOW.md](AI_WORKFLOW.md) and [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md). For the reasoning behind major product choices, see [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md).
 
 ---
 
@@ -108,6 +108,8 @@ The foundation phase (v0.0.x) establishes history, analytics, fitness, identity,
 | **Stability** | Changes rarely | Updates each milestone |
 | **Scope** | Philosophy & vision | Implementation detail |
 
+[PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) records the **reasoning behind specific major decisions** — use it when evaluating whether to change established behavior. Principles here are the enduring filter; the decision log is the historical record.
+
 Do not use this document for save schema, API shapes, or file layout — use [ARCHITECTURE.md](ARCHITECTURE.md) and [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md).
 
 ---
@@ -124,12 +126,14 @@ When mechanics and principles conflict, **principles win** unless the team expli
 
 | Conversation type | Use Product Principles when… |
 |-------------------|------------------------------|
-| **Planning / Architecture** | Scoping features, evaluating tradeoffs, writing prompts |
-| **Implementation** | Choosing between integration vs. isolation |
-| **Documentation** | Explaining why a decision was made |
-| **Brainstorming** | Filtering ideas that fit Ascendant's identity |
+| **Product Planning** (ChatGPT) | Scoping features, evaluating tradeoffs, writing implementation prompts |
+| **Implementation** (Cursor) | Choosing between integration vs. isolation |
+| **Documentation** (Cursor) | Explaining why a decision was made |
+| **Research** | Filtering findings through Ascendant's identity |
 
-Planning conversations should treat this document as a primary source of truth alongside [PROJECT_STATE.md](PROJECT_STATE.md).
+When proposing changes to established behavior, check [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) for prior reasoning before overriding a decision.
+
+Product Planning conversations should treat this document as a primary source of truth alongside [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ---
 

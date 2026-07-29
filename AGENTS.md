@@ -10,15 +10,16 @@ Before making changes:
 
 1. Read [README.md](README.md)
 2. Read [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)
-3. Read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) — match your conversation type (planning, implementation, debugging, documentation)
-4. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-5. Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
-6. Read [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)
-7. Read [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md)
+3. Read [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) — match your conversation type (Product Planning, Implementation, Debugging, Documentation, Research)
+4. Read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
+5. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+6. Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
+7. Read [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)
+8. Read [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md)
 
-Planning conversations: also read [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) and [docs/MILESTONES.md](docs/MILESTONES.md).
+Product Planning conversations (ChatGPT): also read [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) and [docs/MILESTONES.md](docs/MILESTONES.md).
 
-Implementation conversations: satisfy [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) before archiving.
+Implementation conversations (Cursor): satisfy [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) before archiving.
 
 The documentation is the source of truth.
 
@@ -97,4 +98,4 @@ Do **not** implement unless the milestone asks for it: Combat, Inventory, Equipm
 
 When unsure: ask questions. Do not invent major systems.
 
-Follow [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md): one feature per implementation conversation; generate an implementation report; update documentation per [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md).
+Follow [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md): one feature per implementation conversation; generate an implementation report; update documentation per [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md).

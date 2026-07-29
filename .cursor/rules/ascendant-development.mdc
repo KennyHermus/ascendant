@@ -20,6 +20,7 @@ Read:
 
 - README.md
 - docs/PROJECT_STATE.md
+- docs/AI_WORKFLOW.md
 - docs/DEVELOPMENT_WORKFLOW.md
 - docs/DEFINITION_OF_DONE.md
 - AGENTS.md
@@ -77,4 +78,4 @@ Ask:
 
 # When Adding Features
 
-Follow docs/DEVELOPMENT_WORKFLOW.md and satisfy docs/DEFINITION_OF_DONE.md before archiving implementation conversations. Update relevant documentation per the workflow maintenance table.
+Follow docs/AI_WORKFLOW.md and docs/DEVELOPMENT_WORKFLOW.md; satisfy docs/DEFINITION_OF_DONE.md before archiving Implementation conversations.

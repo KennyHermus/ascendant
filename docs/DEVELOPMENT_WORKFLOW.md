@@ -1,8 +1,8 @@
 # Ascendant Development Workflow
 
-**Official development process** for Ascendant from v0.0.5 onward.
+**General software development lifecycle** and project practices for Ascendant.
 
-This document describes *how work flows* from idea to completion. Code conventions live in [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md). Product values live in [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md). Current implementation baseline: [PROJECT_STATE.md](PROJECT_STATE.md).
+**How AI agents and conversations are used during development:** [AI_WORKFLOW.md](AI_WORKFLOW.md) — the canonical reference for Product Planning, Technical Planning, Implementation, Code Review, Learning Review, and related phases. Code conventions: [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md). Product values: [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md). Current baseline: [PROJECT_STATE.md](PROJECT_STATE.md). Completion criteria: [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md).
 
 ---
 
@@ -10,125 +10,55 @@ This document describes *how work flows* from idea to completion. Code conventio
 
 Ascendant has reached a **mature architectural foundation** — feature modules, a single persisted store, event-driven pipelines, history, analytics, and Hero Identity. New work should **extend and integrate**, not reinvent.
 
-Development follows a deliberate lifecycle:
+Development follows a deliberate lifecycle. **Phase detail, conversation types, and Cursor tooling** live in [AI_WORKFLOW.md](AI_WORKFLOW.md) — not duplicated here.
 
 ```
 Idea / need
     ↓
-Product & feature planning  (long-lived conversations)
+Product Planning (ChatGPT — what and why)
     ↓
-Implementation              (short-lived — one feature per conversation)
+Technical Planning → Implementation → Code Review (Cursor — see AI_WORKFLOW)
     ↓
-Verification & Definition of Done
+Documentation sync + Implementation Report
     ↓
-Documentation sync
+Definition of Done (+ optional Learning Review)
     ↓
-Version / milestone close   (when applicable)
+Version / milestone close (when applicable)
 ```
 
 ---
 
-# Conversation Types
+# Documentation Ownership
 
-Not every task uses every stage. Match the conversation type to the work.
+Each process document has a single responsibility. Link between them — do not copy content.
 
-| Type | Lifespan | Primary outputs |
-|------|----------|-----------------|
-| **Planning / Architecture** | Long-lived | Roadmap, design, prompts |
-| **Implementation** | Short-lived | Code, implementation report |
-| **Debugging** | Short-lived | Fix, minimal report |
-| **Documentation** | Long-lived or short | Synced docs |
-| **Brainstorming** | Long-lived | Ideas for future milestones |
+| Document | Owns |
+|----------|------|
+| [PROJECT_STATE.md](PROJECT_STATE.md) | **Current implementation state** and major systems |
+| [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | **Long-term product philosophy** and design principles |
+| [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) | **Important decisions** and reasoning behind them |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | **How AI agents/conversations** are used during development |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | **General development lifecycle** and project practices (this file) |
+| [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | **Completion criteria** for features and versions |
+| [README.md](../README.md) | **Project overview**, setup, and documentation entry point |
 
-**Rule:** Implementation conversations are intentionally **short-lived** — one feature (or cohesive slice), then archive. Planning and documentation conversations remain **long-lived** references.
-
----
-
-# AI Development Workflow
-
-When using AI assistants (Cursor, Claude, etc.), assign **one primary responsibility per conversation**.
-
-## Planning / Architecture
-
-**Purpose:** Product vision, roadmap, system design, prompt creation.
-
-**Read first:** [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md), [PROJECT_STATE.md](PROJECT_STATE.md), [MILESTONES.md](MILESTONES.md), [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), [ARCHITECTURE.md](ARCHITECTURE.md).
-
-**Produces:**
-
-- Milestone scope and version boundaries
-- Feature specs and acceptance criteria
-- Implementation prompts for separate implementation conversations
-- Architecture decisions (document significant ones; consider ADR — see [Documentation Maintenance](#documentation-maintenance))
-
-**Does not:** Ship production code (except tiny spikes explicitly requested).
+Feature behavior, save schema, and architecture detail live in subsystem docs — not in the process documents above.
 
 ---
 
-## Implementation
+# AI-Assisted Development
 
-**Purpose:** Build one feature completely in a focused session.
+Conversation types, phase terminology, the Feature Kickoff Packet, Technical Planning, Code Review, and Learning Review are defined in **[AI_WORKFLOW.md](AI_WORKFLOW.md)**.
 
-**Read first:** [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md), [PERSISTENCE.md](PERSISTENCE.md), relevant feature doc, planning prompt from prior conversation.
+| Conversation | Tool | Lifespan |
+|--------------|------|----------|
+| Product Planning | ChatGPT | Long-lived |
+| Implementation (includes Technical Planning, Code Review, reporting) | Cursor | Short-lived — one feature per conversation |
+| Debugging | Cursor | Short-lived |
+| Documentation | Cursor | Long-lived or short |
+| Research | Either | Short-lived |
 
-**Produces:**
-
-- Working code integrated with existing systems
-- **Implementation report** (see below)
-- Updates to feature-level documentation
-
-**Rules:**
-
-- **One feature per conversation** (or one cohesive vertical slice)
-- Do not start v0.1.x systems unless milestone explicitly allows
-- Satisfy [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) before archiving
-
----
-
-## Debugging
-
-**Purpose:** Fix bugs only — no scope creep.
-
-**Read first:** Relevant feature code paths, [PROJECT_STATE.md](PROJECT_STATE.md) for expected behavior.
-
-**Produces:**
-
-- Minimal fix aligned with existing architecture
-- Brief note in implementation report if behavior changed materially
-- Doc update only if user-visible behavior or persistence changed
-
-**Does not:** Refactor unrelated code, add features, or redesign systems.
-
----
-
-## Documentation
-
-**Purpose:** Synchronize documentation with the codebase; maintain canonical references.
-
-**Read first:** [PROJECT_STATE.md](PROJECT_STATE.md), [CHANGELOG.md](CHANGELOG.md), docs index in [README.md](../README.md).
-
-**Produces:**
-
-- Updated docs; new docs when warranted (e.g. PROJECT_STATE, workflow docs)
-- Cross-reference fixes; removed stale version strings
-- No application behavior changes unless a doc error requires a one-line comment fix
-
-**Typical triggers:** Version complete, milestone complete, documentation audit, post-implementation sync.
-
----
-
-## Brainstorming
-
-**Purpose:** Explore future ideas — story, RPG systems, world, combat, AI concepts.
-
-**Read first:** [GAME_BIBLE.md](GAME_BIBLE.md), [FUTURE_IDEAS.md](FUTURE_IDEAS.md), [COMBAT.md](COMBAT.md), [STORY.md](STORY.md), [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md).
-
-**Produces:**
-
-- Notes, outlines, design sketches
-- Candidates for [FUTURE_IDEAS.md](FUTURE_IDEAS.md) or future milestone promotion
-
-**Does not:** Implement or commit code unless explicitly escalated to a planning + implementation cycle.
+**Rule:** Product Planning never implements or debugs. Implementation conversations archive after [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) is satisfied.
 
 ---
 
@@ -136,21 +66,23 @@ When using AI assistants (Cursor, Claude, etc.), assign **one primary responsibi
 
 **When:** Starting a new version, milestone, or major initiative.
 
+**Where:** ChatGPT — see [AI_WORKFLOW.md](AI_WORKFLOW.md#product-planning-conversation-chatgpt).
+
 **Steps:**
 
 1. Confirm alignment with [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) and [MILESTONES.md](MILESTONES.md).
 2. Review [PROJECT_STATE.md](PROJECT_STATE.md) — what exists today.
 3. Update [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) with scope, boundaries, and explicit **out-of-scope** items.
 4. Identify integration points (Hero, Timeline, History, Analytics, Persistence).
-5. Break work into **implementable features** — each gets its own implementation conversation and prompt.
+5. Break work into **implementable features** — each gets its own Implementation conversation and prompt.
 
-**Output:** Milestone plan + feature prompts — not code.
+**Output:** Milestone plan + feature implementation prompts — not code.
 
 ---
 
 # Feature Planning
 
-**When:** Before each implementation conversation.
+**When:** Before each Implementation conversation (within Product Planning).
 
 **Steps:**
 
@@ -159,30 +91,36 @@ When using AI assistants (Cursor, Claude, etc.), assign **one primary responsibi
 3. State what **not** to build.
 4. Confirm Hero-first impact: does this make the Hero feel more alive?
 
-**Output:** Implementation prompt (can live in chat, issue, or planning doc — not necessarily committed).
+**Output:** Feature implementation prompt — part of the [Feature Kickoff Packet](AI_WORKFLOW.md#feature-kickoff-packet) for a new Cursor conversation.
 
 ---
 
 # Implementation
 
-**When:** Executing a planned feature.
+**When:** Executing a planned feature in Cursor.
+
+Follow [AI_WORKFLOW.md](AI_WORKFLOW.md) for Technical Planning (Plan Mode), Composer execution, Code Review, Learning Review, and phase order.
 
 **Steps:**
 
 1. Read required docs (see [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#before-you-code)).
-2. Implement following feature-based layout and event-driven pipelines.
-3. Add migration if persistence changes ([PERSISTENCE.md](PERSISTENCE.md)).
-4. Wire integration hooks (events, `syncHeroIdentity`, analytics selectors, etc.).
-5. Update DevTools if needed for verification.
-6. Run `npm run lint` and `npm run build`.
+2. **Technical Planning** — Plan Mode for medium/large features; get plan approved ([AI_WORKFLOW.md](AI_WORKFLOW.md#technical-planning-phase)).
+3. Implement following feature-based layout and event-driven pipelines.
+4. Add migration if persistence changes ([PERSISTENCE.md](PERSISTENCE.md)).
+5. Wire integration hooks (events, `syncHeroIdentity`, analytics selectors, etc.).
+6. Update DevTools if needed for verification.
+7. Run `npm run lint` and `npm run build`.
+8. **Code Review** — mandatory before Implementation Report ([AI_WORKFLOW.md](AI_WORKFLOW.md#code-review-phase)).
 
-**Output:** Code + implementation report.
+**Output:** Code + Code Review + Implementation Report.
 
 ---
 
 # Bug Fixing
 
 **When:** Defect found in shipped or in-progress work.
+
+Use a dedicated **Debugging conversation** in Cursor — see [AI_WORKFLOW.md](AI_WORKFLOW.md#debugging-conversation-cursor).
 
 **Steps:**
 
@@ -213,11 +151,14 @@ Document what was verified in the implementation report. Add automated tests whe
 
 # Implementation Reports
 
-End every **implementation** and **significant bugfix** conversation with a report:
+End every **implementation** and **significant bugfix** conversation with a report — **after Code Review** ([AI_WORKFLOW.md](AI_WORKFLOW.md#code-review-phase)):
 
 ```markdown
 ## Summary
 [1–3 sentences: what and why]
+
+## Code Review
+[Architectural decisions, integration points, tradeoffs, future improvements]
 
 ## Integration
 [Systems touched: quests, events, heroIdentity, analytics, …]
@@ -254,6 +195,8 @@ See [Documentation Maintenance](#documentation-maintenance) for which files to u
 
 **Do not duplicate** — link to canonical docs ([PROJECT_STATE.md](PROJECT_STATE.md), feature docs) instead of copying tables.
 
+Dedicated **Documentation conversations** may handle milestone-wide doc passes — see [AI_WORKFLOW.md](AI_WORKFLOW.md#documentation-conversation-cursor).
+
 ---
 
 # Version Completion Process
@@ -277,7 +220,7 @@ IMPLEMENTATION_PLAN.md — version marked complete; next version scoped
         ↓
 package.json version bumped
         ↓
-Version closed → next version planning begins
+Version closed → next Product Planning begins
 ```
 
 See [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md#definition-of-done--version--milestone).
@@ -307,11 +250,13 @@ When a **phase** in [MILESTONES.md](MILESTONES.md) completes (may span multiple 
 | [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) | Roadmap: shipped vs next | Milestone planning; version close |
 | [MILESTONES.md](MILESTONES.md) | Major product phases | Phase boundaries change |
 | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Enduring *why* | Rare — deliberate product decisions only |
+| [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) | Major product decision log | Significant durable product choices |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | **AI conversation types and feature lifecycle** | AI workflow changes |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Subsystem index | New subsystem or major integration change |
 | [ARCHITECTURE_NOTES.md](ARCHITECTURE_NOTES.md) | Detailed implementation notes | Significant technical depth added |
 | [PERSISTENCE.md](PERSISTENCE.md) | Save schema | Any migration or persisted field change |
 | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Code conventions | Convention changes |
-| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | This file — process | Process changes |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | This file — general lifecycle | Process changes |
 | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Completion checklist | Process changes |
 | Feature docs (`docs/*.md`) | Domain behavior | Feature changes in that domain |
 | [GAME_BIBLE.md](GAME_BIBLE.md) | Game design | Mechanics design changes |
@@ -354,22 +299,26 @@ Do not use CHANGELOG as a substitute for PROJECT_STATE or vice versa.
 |------------|------------|
 | Understand what exists today | [PROJECT_STATE.md](PROJECT_STATE.md) |
 | Understand why we build this way | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) |
+| Understand why a major choice was made | [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) |
 | See major product phases | [MILESTONES.md](MILESTONES.md) |
-| Implement a feature | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) + [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) |
+| Use AI during development | [AI_WORKFLOW.md](AI_WORKFLOW.md) |
+| Implement a feature | [AI_WORKFLOW.md](AI_WORKFLOW.md) + [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) + [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) |
 | Change save format | [PERSISTENCE.md](PERSISTENCE.md) |
 | Close a version | [Version Completion Process](#version-completion-process) |
-| Plan v0.1.x / combat / world | Planning conversation + [MILESTONES.md](MILESTONES.md) — **do not implement without milestone promotion** |
+| Plan v0.1.x / combat / world | Product Planning ([AI_WORKFLOW.md](AI_WORKFLOW.md)) + [MILESTONES.md](MILESTONES.md) — **do not implement without milestone promotion** |
 
 ---
 
 # Related Documents
 
+- [AI_WORKFLOW.md](AI_WORKFLOW.md)
 - [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md)
 - [MILESTONES.md](MILESTONES.md)
 - [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md)
+- [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md)
 - [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
 - [AGENTS.md](../AGENTS.md) · [CLAUDE.md](../CLAUDE.md) · [AI_CONTEXT.md](AI_CONTEXT.md)
 
 ---
 
-*Established at v0.0.5. This is the official development process for Ascendant going forward.*
+*Established at v0.0.5. General development lifecycle for Ascendant — AI-specific process in [AI_WORKFLOW.md](AI_WORKFLOW.md).*

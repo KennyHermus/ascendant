@@ -355,7 +355,7 @@ Full principles and v0.0.x implementation history: [ARCHITECTURE_NOTES.md](ARCHI
 | Topic | Document |
 |-------|----------|
 | **Project baseline** | [PROJECT_STATE.md](PROJECT_STATE.md) |
-| Development process | [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) |
+| Development process | [AI_WORKFLOW.md](AI_WORKFLOW.md) · [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) |
 | Completion checklist | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) |
 | Product phases | [MILESTONES.md](MILESTONES.md) |
 | Product philosophy | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) |

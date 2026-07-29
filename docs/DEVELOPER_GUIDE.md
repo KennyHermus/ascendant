@@ -2,7 +2,7 @@
 
 Version: aligned with application **v0.0.5**
 
-Conventions for contributing to Ascendant. Read [PROJECT_STATE.md](PROJECT_STATE.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. Process and completion criteria: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md), [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md).
+Conventions for contributing to Ascendant. Read [PROJECT_STATE.md](PROJECT_STATE.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. AI workflow: [AI_WORKFLOW.md](AI_WORKFLOW.md). Process and completion criteria: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md), [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md).
 
 ---
 
@@ -176,7 +176,8 @@ See [CODING_STANDARDS.md](CODING_STANDARDS.md) for naming, TypeScript, and compo
 
 # AI Assistants
 
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) — official process and conversation types
+- [AI_WORKFLOW.md](AI_WORKFLOW.md) — **canonical AI workflow** and conversation types
+- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) — verification, version closure, doc maintenance
 - [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) — completion checklist
 - [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) — product philosophy for planning
 - [AGENTS.md](../AGENTS.md) — agent instructions

@@ -121,12 +121,28 @@ Do not invent major systems (**combat, inventory, equipment, story, world, skill
 
 # Documentation Map
 
+## Process document ownership
+
+| Document | Responsibility |
+|----------|----------------|
+| [PROJECT_STATE.md](PROJECT_STATE.md) | Current implementation state and major systems |
+| [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Long-term product philosophy |
+| [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) | Important decisions and reasoning |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | How AI agents/conversations are used during development |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | General development lifecycle |
+| [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Completion criteria for features |
+| [README.md](../README.md) | Project overview, setup, entry point |
+
+## Quick links
+
 | Start here | Purpose |
 |------------|---------|
 | [PROJECT_STATE.md](PROJECT_STATE.md) | Canonical baseline — what exists today |
-| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | Official development process and AI conversation types |
-| [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Feature / version completion checklist |
-| [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Enduring product philosophy (planning) |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | Phases: Product Planning, Technical Planning, Implementation, Code Review, Documentation, Reporting |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | Verification, version closure, doc maintenance |
+| [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Master completion checklist |
+| [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Enduring product philosophy |
+| [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) | Why major product choices were made |
 | [MILESTONES.md](MILESTONES.md) | Major product phases |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Subsystem index and integration map |
 | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Conventions for contributors |
