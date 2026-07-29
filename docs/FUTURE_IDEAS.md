@@ -6,7 +6,7 @@ Version: 0.1
 
 This document contains possible expansions.
 
-Nothing here is required for the current version (v0.0.4) or for v0.0.5 polish unless promoted into `IMPLEMENTATION_PLAN.md`.
+Nothing here is required for the current version (**v0.0.5**) unless promoted into `IMPLEMENTATION_PLAN.md`.
 
 ---
 

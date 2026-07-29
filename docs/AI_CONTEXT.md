@@ -57,8 +57,10 @@ The game exists to encourage:
 
 # Current Version
 
-**Application version:** v0.0.4 complete  
-**Next milestone:** v0.0.5 — Polish and refinement
+**Application version:** v0.0.5 complete  
+**Next milestone:** v0.0.6 — TBD
+
+**Baseline snapshot:** [PROJECT_STATE.md](PROJECT_STATE.md)
 
 ## Implemented
 
@@ -86,10 +88,11 @@ The game exists to encourage:
 - **Nutrition System** — meal logging, quest integration, analytics, insights; see [NUTRITION.md](NUTRITION.md)
 - **Fitness Settings** — configurable targets and units; see [FITNESS_SETTINGS.md](FITNESS_SETTINGS.md)
 - **Hero Dashboard coaching** — top recommendations in Today's Journey; see [COACHING.md](COACHING.md)
+- **Hero Identity** — profile, biography, titles, lifetime accomplishments; see [HERO_IDENTITY.md](HERO_IDENTITY.md)
 
 ## Current Priority
 
-v0.0.5 — quality-of-life, visual polish, balance pass.
+v0.0.6 — next milestone TBD. See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ---
 
@@ -97,7 +100,7 @@ v0.0.5 — quality-of-life, visual polish, balance pass.
 
 Future systems (not implemented):
 
-- Polish (**v0.0.5**)
+- v0.0.6+ — next milestone TBD
 - Combat, bosses, abilities, transformations, equipment, inventory, story/world, skills (**v0.1.x only**)
 - AI-generated challenges
 - Mobile support
@@ -120,8 +123,13 @@ Do not invent major systems (**combat, inventory, equipment, story, world, skill
 
 | Start here | Purpose |
 |------------|---------|
+| [PROJECT_STATE.md](PROJECT_STATE.md) | Canonical baseline — what exists today |
+| [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | Official development process and AI conversation types |
+| [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Feature / version completion checklist |
+| [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Enduring product philosophy (planning) |
+| [MILESTONES.md](MILESTONES.md) | Major product phases |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Subsystem index and integration map |
 | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Conventions for contributors |
 | [PERSISTENCE.md](PERSISTENCE.md) | Save schema and migrations |
 | [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) | Roadmap |
-| [CHANGELOG.md](CHANGELOG.md) | Release notes |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes (historical) |

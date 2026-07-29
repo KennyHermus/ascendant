@@ -32,7 +32,7 @@ Some v0.0.2 fields were added with safe defaults in `merge()` without a migratio
 2. `migrateSaveData()` walks the ordered `MIGRATIONS` table from the save's version to `CURRENT_SAVE_VERSION`.
 3. `normalizeShape()` runs idempotently afterward (handles legacy v0.0.2 shape edge cases).
 4. Zustand `merge()` fills safe defaults for any missing fields.
-5. `onRehydrateStorage` reconciles streak, timed quests, unlocks, achievements, coaching.
+5. `onRehydrateStorage` reconciles streak, timed quests, unlocks, achievements, coaching, Hero Identity.
 
 **Adding a migration:**
 
@@ -122,7 +122,8 @@ Some v0.0.2 fields were added with safe defaults in `merge()` without a migratio
 | `deleteMealActivity()` | nutrition, quests (revert), unlocks, streak reconcile |
 | Assessment complete | performance, events (PR achieved) |
 | Coaching refresh | coaching, events (recommendation) |
-| Day advance (`applyPeriodResets`) | quests reset, history snapshot, dailySummary finalize, dayStartHeroSnapshot |
+| Day advance (`applyPeriodResets`) | quests reset, history snapshot, dailySummary finalize, dayStartHeroSnapshot, syncHeroIdentity |
+| Hero Identity sync | heroIdentity, events (on live accomplishment/title unlock) |
 
 ---
 
@@ -139,6 +140,7 @@ Some blocks carry their own `schemaVersion` for forward-compatible evolution:
 | `CoachingState` | 1 |
 | `NutritionState` | 1 |
 | `FitnessSettings` | 1 |
+| `HeroIdentityState` | 1 |
 
 ---
 

@@ -22,9 +22,11 @@ The game should motivate growth without encouraging unhealthy grinding. See [doc
 
 # Current Version
 
-**Application:** v0.0.4 (complete)  
-**Save schema:** 0.0.9  
-**Next milestone:** v0.0.5 — Polish and refinement
+**Application:** v0.0.5 (complete)  
+**Save schema:** 0.0.10  
+**Next milestone:** v0.0.6 — TBD
+
+**Canonical project snapshot:** [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)
 
 ---
 
@@ -32,7 +34,8 @@ The game should motivate growth without encouraging unhealthy grinding. See [doc
 
 ## Core (v0.0.2+)
 
-- **Hero** — level, XP, gold, eight stats, titles, lifetime statistics, dynamic status
+- **Hero** — level, XP, gold, eight stats, rank ladder, lifetime statistics, dynamic status
+- **Hero Identity** — profile, biography, accomplishment titles, lifetime milestones, timeline integration
 - **Quests** — Non-Negotiables (Morning / Nutrition / Evening), Daily Bonus, Weekly, timed quests, optional quests, streaks
 - **Unlocks** — earn daily access to Messages, YouTube, Gaming, Social Media, Netflix
 - **Daily Summary** — end-of-day recap when the day is complete
@@ -162,26 +165,27 @@ docs/              # Design and technical documentation
 
 ---
 
-# Dashboard Layout (v0.0.4)
+# Dashboard Layout (v0.0.5)
 
 1. Daily Summary banner (when available)
 2. Hero Banner
-3. Today's Journey (quests + workouts + coaching)
-4. Unlocks
-5. Active Objectives
-6. Quests
-7. Workout
-8. Performance Assessments
-9. Workout Analytics
-10. Nutrition
-11. Fitness Settings
-12. Recent Progress
-13. Achievements
-14. Analytics
-15. Quest Explorer
-16. Insights
-17. Hero History
-18. Attributes
+3. Hero Profile (identity, biography, titles, accomplishments)
+4. Today's Journey (quests + workouts + coaching)
+5. Unlocks
+6. Active Objectives
+7. Quests
+8. Workout
+9. Performance Assessments
+10. Workout Analytics
+11. Nutrition
+12. Fitness Settings
+13. Recent Progress
+14. Achievements
+15. Analytics
+16. Quest Explorer
+17. Insights
+18. Hero History
+19. Attributes
 
 ---
 
@@ -222,6 +226,13 @@ First playable loop: hero profile, quest completion with XP/gold rewards, localS
 - **Integration pass** — unified rolling analytics windows, Fitness Settings, dashboard coaching
 - Save migrations **0.0.5 → 0.0.9**
 
+## v0.0.5 — Hero Identity (complete)
+
+- **Hero Profile** — accordion panel with journey stats and consistency rates
+- **Hero Biography**, **Titles**, **Lifetime Accomplishments** — distinct from Achievements
+- Timeline integration; migration backfill; save **0.0.10**
+- Docs: [docs/HERO_IDENTITY.md](docs/HERO_IDENTITY.md)
+
 Full release notes: [docs/CHANGELOG.md](docs/CHANGELOG.md)
 
 ---
@@ -230,7 +241,8 @@ Full release notes: [docs/CHANGELOG.md](docs/CHANGELOG.md)
 
 | Version | Scope | Status |
 |---------|-------|--------|
-| v0.0.5 | Polish, QoL, visual refinement, balance | **Next** |
+| v0.0.5 | Hero Identity | **Complete** |
+| v0.0.6+ | TBD | Planned |
 | v0.1.x | Combat, inventory, equipment, story, skills | Future |
 
 Details: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
@@ -239,14 +251,11 @@ Details: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
 
 # Development Workflow
 
-1. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and relevant feature docs before coding.
-2. Follow feature-based layout — logic separate from UI.
-3. Use existing foundations (`events`, `history`, `questHistory`, `completeQuest()`) instead of reinventing.
-4. Bump save version + add migration when persisted shape changes — see [docs/PERSISTENCE.md](docs/PERSISTENCE.md).
-5. Update documentation when adding major features.
-6. Run `npm run lint` and `npm run build` before committing significant changes.
+Official process: **[docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)** — planning, implementation, verification, version completion, and AI conversation types.
 
-AI contributors: also read [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md).
+Before coding: read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md), [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md), and [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md).
+
+AI contributors: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md).
 
 ---
 
@@ -261,11 +270,23 @@ AI contributors: also read [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs
 
 ## Technical
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — **start here**
+- [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md) — **canonical baseline snapshot (start here)**
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — subsystem index
 - [docs/PERSISTENCE.md](docs/PERSISTENCE.md) — save schema and migrations
 - [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — conventions for contributors
 - [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) — roadmap
 - [docs/CHANGELOG.md](docs/CHANGELOG.md) — release notes
+
+## Process & product
+
+- [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) — **official development process**
+- [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) — completion checklist
+- [docs/MILESTONES.md](docs/MILESTONES.md) — major product phases
+- [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) — enduring product philosophy
+
+## v0.0.5 Systems
+
+- [docs/HERO_IDENTITY.md](docs/HERO_IDENTITY.md) — Hero Identity
 
 ## v0.0.4 Systems
 

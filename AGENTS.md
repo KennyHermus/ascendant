@@ -9,10 +9,16 @@ You are contributing to Ascendant.
 Before making changes:
 
 1. Read [README.md](README.md)
-2. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-3. Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
-4. Read [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)
-5. Read [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md)
+2. Read [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)
+3. Read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) — match your conversation type (planning, implementation, debugging, documentation)
+4. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+5. Read [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
+6. Read [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)
+7. Read [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md)
+
+Planning conversations: also read [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) and [docs/MILESTONES.md](docs/MILESTONES.md).
+
+Implementation conversations: satisfy [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) before archiving.
 
 The documentation is the source of truth.
 
@@ -81,7 +87,7 @@ The game should motivate growth, not create meaningless grinding.
 
 # Current Scope Reminder
 
-**Implemented through v0.0.4:** Hero Dashboard, quests, timed quests, unlocks, streaks, events, Daily Summary, achievements, History, Analytics, Insights, Quest Explorer, workouts, performance assessments, coaching, workout analytics, nutrition (with quest integration), fitness settings.
+**Implemented through v0.0.5:** Hero Dashboard, Hero Identity, quests, timed quests, unlocks, streaks, events, Daily Summary, achievements, History, Analytics, Insights, Quest Explorer, workouts, performance assessments, coaching, workout analytics, nutrition (with quest integration), fitness settings.
 
 Do **not** implement unless the milestone asks for it: Combat, Inventory, Equipment, Story, World, Skills (**v0.1.x only**).
 
@@ -89,4 +95,6 @@ Do **not** implement unless the milestone asks for it: Combat, Inventory, Equipm
 
 # AI Behavior
 
-When unsure: ask questions. Do not invent major systems. Update documentation when adding major features.
+When unsure: ask questions. Do not invent major systems.
+
+Follow [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md): one feature per implementation conversation; generate an implementation report; update documentation per [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md).

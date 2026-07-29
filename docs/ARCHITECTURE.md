@@ -301,7 +301,7 @@ Docs: [PROGRESSION.md](PROGRESSION.md) (achievement section)
 | | |
 |---|---|
 | **Store** | `src/store/gameStore.ts` |
-| **Migrations** | `src/lib/migrations/migrations.ts` — `CURRENT_SAVE_VERSION = '0.0.9'` |
+| **Migrations** | `src/lib/migrations/migrations.ts` — `CURRENT_SAVE_VERSION = '0.0.10'` |
 | **Adapter** | `src/lib/migrations/migratingStorage.ts` |
 
 Docs: [PERSISTENCE.md](PERSISTENCE.md)
@@ -354,6 +354,11 @@ Full principles and v0.0.x implementation history: [ARCHITECTURE_NOTES.md](ARCHI
 
 | Topic | Document |
 |-------|----------|
+| **Project baseline** | [PROJECT_STATE.md](PROJECT_STATE.md) |
+| Development process | [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) |
+| Completion checklist | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) |
+| Product phases | [MILESTONES.md](MILESTONES.md) |
+| Product philosophy | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) |
 | Roadmap | [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) |
 | Release notes | [CHANGELOG.md](CHANGELOG.md) |
 | Developer conventions | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |

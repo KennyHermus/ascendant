@@ -41,6 +41,10 @@ Daily recomputed permissions (Messages, YouTube, Gaming, Social Media, Netflix).
 
 Daily snapshots, Analytics Engine, Charts, Insights, Hero History UI, Quest Explorer, Hero Day (5:00 AM).
 
+## Hero Identity (v0.0.5)
+
+Profile, biography, accomplishment titles, lifetime milestones, timeline events. See [HERO_IDENTITY.md](docs/HERO_IDENTITY.md).
+
 ## Fitness (v0.0.4)
 
 - **Workouts** — sessions, timers, duration activities, quest-driven completion
@@ -67,4 +71,6 @@ Skills, Equipment, Combat, Story, Inventory — designed in docs but **not imple
 
 Ascendant should feel like an RPG and a personal challenge — not a spreadsheet or punishment system.
 
-See [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+See [docs/GAME_BIBLE.md](docs/GAME_BIBLE.md), [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md), and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+Development process: [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md).

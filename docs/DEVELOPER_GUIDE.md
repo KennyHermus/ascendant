@@ -1,14 +1,14 @@
 # Developer Guide
 
-Version: aligned with application **v0.0.4**
+Version: aligned with application **v0.0.5**
 
-Conventions for contributing to Ascendant. Read [ARCHITECTURE.md](ARCHITECTURE.md) first for the subsystem map.
+Conventions for contributing to Ascendant. Read [PROJECT_STATE.md](PROJECT_STATE.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. Process and completion criteria: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md), [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md).
 
 ---
 
 # Before You Code
 
-1. Read [README.md](../README.md), [ARCHITECTURE.md](ARCHITECTURE.md), and the feature doc for your area.
+1. Read [README.md](../README.md), [PROJECT_STATE.md](PROJECT_STATE.md), [ARCHITECTURE.md](ARCHITECTURE.md), and the feature doc for your area.
 2. Confirm scope matches the current milestone ([IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)).
 3. Do not implement v0.1.x systems (combat, inventory, story, skills) unless explicitly requested.
 
@@ -40,7 +40,7 @@ Side effects flow through established pipelines:
 | Log meal | `logMeal()` → `resolveNutritionQuests()` → `completeQuest()` |
 | Timed quest expires | `evaluateTimedQuests()` |
 
-`completeQuest()` handles: rewards, streak, unlocks, achievements, events, questHistory, dailySummary sync, lifetimeStats.
+`completeQuest()` handles: rewards, streak, unlocks, achievements, events, questHistory, dailySummary sync, lifetimeStats. Call `syncHeroIdentity()` after paths that change identity-relevant state (also invoked from store pipelines).
 
 **Do not duplicate** reward or event logic outside these paths.
 
@@ -124,13 +124,16 @@ Bump save version when existing saves need transformation. Bump application vers
 
 # Documentation Expectations
 
-When adding a **major feature**:
+When adding a **major feature**, follow [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) and [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#documentation-maintenance).
+
+Minimum:
 
 - Update [ARCHITECTURE.md](ARCHITECTURE.md) subsystem entry (brief).
 - Add or update a feature doc in `docs/` (e.g. `NUTRITION.md`).
-- Update [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [CHANGELOG.md](CHANGELOG.md).
+- Update [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [CHANGELOG.md](CHANGELOG.md) when shipping in a version.
 - Update [PERSISTENCE.md](PERSISTENCE.md) if persistence changes.
 - Update [README.md](../README.md) if user-facing scope changes.
+- Update [PROJECT_STATE.md](PROJECT_STATE.md) at major milestones only — not every feature.
 
 Keep [ARCHITECTURE_NOTES.md](ARCHITECTURE_NOTES.md) for detailed implementation archaeology — do not bloat the index.
 
@@ -173,6 +176,9 @@ See [CODING_STANDARDS.md](CODING_STANDARDS.md) for naming, TypeScript, and compo
 
 # AI Assistants
 
+- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) — official process and conversation types
+- [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) — completion checklist
+- [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) — product philosophy for planning
 - [AGENTS.md](../AGENTS.md) — agent instructions
 - [CLAUDE.md](../CLAUDE.md) — concise context
 - [AI_CONTEXT.md](AI_CONTEXT.md) — full AI background

@@ -1,6 +1,6 @@
 # Ascendant Implementation Plan & Roadmap
 
-Version: aligned with application **v0.0.4** (save schema **0.0.9**)
+Version: aligned with application **v0.0.5** (save schema **0.0.10**)
 
 ---
 
@@ -10,10 +10,12 @@ This document tracks milestones: what shipped, what is next, and what remains fu
 
 Version alignment:
 
-- **Application version:** `package.json` → **0.0.4**
-- **Save schema version:** `CURRENT_SAVE_VERSION` → **0.0.9**
+- **Application version:** `package.json` → **0.0.5**
+- **Save schema version:** `CURRENT_SAVE_VERSION` → **0.0.10**
 
 See [PERSISTENCE.md](PERSISTENCE.md) for the migration table.
+
+**Process:** [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) · **Phases:** [MILESTONES.md](MILESTONES.md) · **Baseline:** [PROJECT_STATE.md](PROJECT_STATE.md)
 
 ---
 
@@ -29,6 +31,8 @@ Prioritize:
 4. Enjoyable user experience
 
 Avoid implementing complex systems before the foundation exists.
+
+Enduring product values: [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md).
 
 ---
 
@@ -166,18 +170,38 @@ Historical detail superseded by v0.0.2.
 
 ---
 
-# v0.0.5 — Polish and refinement (next)
+# Completed: v0.0.5 — Hero Identity
 
-Quality-of-life, visual polish, balance pass, bug fixes — no major new domains.
+✓ Hero Profile accordion — portrait placeholder, journey stats, consistency rates  
+✓ Hero Biography — derived narrative from lifetime metrics  
+✓ Hero Titles — accomplishment-gated; auto-selected active title  
+✓ Lifetime Accomplishments — distinct from Achievements; timeline integration  
+✓ Migration backfill without timeline event flood  
+✓ Analytics Hero Identity metrics  
+✓ Save **0.0.10**  
+✓ Docs: [HERO_IDENTITY.md](HERO_IDENTITY.md), [PROJECT_STATE.md](PROJECT_STATE.md)
 
-Candidate scope (not committed):
-
-- Workout timeline drill-down UI polish
-- Unit preference wiring in workout display
-- Water logging (when designed)
-- Performance and accessibility pass
+**v0.0.5 complete.**
 
 ---
+
+# v0.0.6+ — Next milestone (TBD)
+
+Not yet defined. Candidate themes:
+
+- Quality-of-life and visual polish
+- Manual Hero title selection UI
+- Water logging (when designed)
+- Workout display unit preference wiring
+- Performance and accessibility pass
+
+Promote items into this section when the next milestone is scoped.
+
+---
+
+# v0.0.5 — Polish and refinement (superseded)
+
+This milestone shipped as **Hero Identity** (v0.0.5). See completed section above.
 
 # v0.1.x — Combat / World systems
 

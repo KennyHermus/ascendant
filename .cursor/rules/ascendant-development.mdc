@@ -19,6 +19,9 @@ Before making changes:
 Read:
 
 - README.md
+- docs/PROJECT_STATE.md
+- docs/DEVELOPMENT_WORKFLOW.md
+- docs/DEFINITION_OF_DONE.md
 - AGENTS.md
 - CLAUDE.md
 - docs/ARCHITECTURE.md
@@ -74,4 +77,4 @@ Ask:
 
 # When Adding Features
 
-Update relevant documentation.
+Follow docs/DEVELOPMENT_WORKFLOW.md and satisfy docs/DEFINITION_OF_DONE.md before archiving implementation conversations. Update relevant documentation per the workflow maintenance table.
