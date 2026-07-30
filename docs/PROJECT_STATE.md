@@ -665,9 +665,11 @@ Ascendant uses a **structured AI-assisted development process** — dedicated ph
 
 Optional **Learning Review** helps the developer understand the implementation in depth. Separate conversations also cover **Debugging** and **Research**.
 
+Implementation agents read **required documentation** from the indexed repo and **explore the codebase** via search — not manually attached document packets. See [AI_WORKFLOW.md](AI_WORKFLOW.md#cursor-implementation-context).
+
 **Full process:** [AI_WORKFLOW.md](AI_WORKFLOW.md) · **Completion criteria:** [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) · **General lifecycle:** [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)
 
-Resume feature development by starting Product Planning for v0.0.6 scope, then opening a new Implementation conversation per feature with the Feature Kickoff Packet defined in AI_WORKFLOW.
+Resume feature development: Product Planning for v0.0.6 scope → one Implementation conversation per feature.
 
 ---
 

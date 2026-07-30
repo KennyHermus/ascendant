@@ -17,9 +17,7 @@ Idea / need
     ↓
 Product Planning (ChatGPT — what and why)
     ↓
-Technical Planning → Implementation → Code Review (Cursor — see AI_WORKFLOW)
-    ↓
-Documentation sync + Implementation Report
+Implementation Conversation (Cursor — context, build, review, report)
     ↓
 Definition of Done (+ optional Learning Review)
     ↓
@@ -48,7 +46,7 @@ Feature behavior, save schema, and architecture detail live in subsystem docs �
 
 # AI-Assisted Development
 
-Conversation types, phase terminology, the Feature Kickoff Packet, Technical Planning, Code Review, and Learning Review are defined in **[AI_WORKFLOW.md](AI_WORKFLOW.md)**.
+Conversation types, Cursor implementation context, Technical Planning, Code Review, and Learning Review are defined in **[AI_WORKFLOW.md](AI_WORKFLOW.md)**.
 
 | Conversation | Tool | Lifespan |
 |--------------|------|----------|
@@ -91,7 +89,7 @@ Conversation types, phase terminology, the Feature Kickoff Packet, Technical Pla
 3. State what **not** to build.
 4. Confirm Hero-first impact: does this make the Hero feel more alive?
 
-**Output:** Feature implementation prompt — part of the [Feature Kickoff Packet](AI_WORKFLOW.md#feature-kickoff-packet) for a new Cursor conversation.
+**Output:** Feature implementation prompt for the Cursor Implementation conversation — goal, acceptance criteria, integration, out-of-scope. The agent reads required docs from the repo and explores code; no manual document packet required. See [AI_WORKFLOW.md](AI_WORKFLOW.md#cursor-implementation-context).
 
 ---
 
@@ -99,18 +97,19 @@ Conversation types, phase terminology, the Feature Kickoff Packet, Technical Pla
 
 **When:** Executing a planned feature in Cursor.
 
-Follow [AI_WORKFLOW.md](AI_WORKFLOW.md) for Technical Planning (Plan Mode), Composer execution, Code Review, Learning Review, and phase order.
+Follow [AI_WORKFLOW.md](AI_WORKFLOW.md) for implementation context, Technical Planning (Plan Mode), Composer execution, Code Review, and phase order.
 
 **Steps:**
 
-1. Read required docs (see [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#before-you-code)).
-2. **Technical Planning** — Plan Mode for medium/large features; get plan approved ([AI_WORKFLOW.md](AI_WORKFLOW.md#technical-planning-phase)).
-3. Implement following feature-based layout and event-driven pipelines.
-4. Add migration if persistence changes ([PERSISTENCE.md](PERSISTENCE.md)).
-5. Wire integration hooks (events, `syncHeroIdentity`, analytics selectors, etc.).
-6. Update DevTools if needed for verification.
-7. Run `npm run lint` and `npm run build`.
-8. **Code Review** — mandatory before Implementation Report ([AI_WORKFLOW.md](AI_WORKFLOW.md#code-review-phase)).
+1. Establish [Cursor Implementation Context](AI_WORKFLOW.md#cursor-implementation-context) — required docs + codebase exploration.
+2. Read [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md#before-you-code) conventions.
+3. **Technical Planning** — Plan Mode for medium/large features; get plan approved ([AI_WORKFLOW.md](AI_WORKFLOW.md#technical-planning-phase)).
+4. Implement following feature-based layout and event-driven pipelines.
+5. Add migration if persistence changes ([PERSISTENCE.md](PERSISTENCE.md)).
+6. Wire integration hooks (events, `syncHeroIdentity`, analytics selectors, etc.).
+7. Update DevTools if needed for verification.
+8. **Code Review** — mandatory ([AI_WORKFLOW.md](AI_WORKFLOW.md#code-review-phase)).
+9. Run `npm run lint` and `npm run build`; manual smoke test.
 
 **Output:** Code + Code Review + Implementation Report.
 

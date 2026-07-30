@@ -11,7 +11,7 @@ This document defines AI conversation types, development phases, and the feature
 | Phase | Question | Where |
 |-------|----------|-------|
 | **Product Planning** | What and why? | ChatGPT — long-lived Product Planning conversation |
-| **Technical Planning** | How should it be implemented? | Cursor — Plan Mode at start of Implementation (medium/large features) |
+| **Technical Planning** | How should it be implemented? | Cursor — Plan Mode inside Implementation conversation (medium/large features) |
 | **Implementation** | Write the code | Cursor — Composer after plan approval |
 | **Code Review** | Validate quality and understanding | Cursor — mandatory before Implementation Report |
 | **Learning Review** | Help the developer understand the implementation | Cursor — optional, after Implementation Report |
@@ -34,6 +34,7 @@ Ascendant uses AI as a **structured development partner** — not a single gener
 - **Short-lived implementation threads** — one feature per Cursor conversation, then archive.
 - **Long-lived planning and documentation threads** — product vision and doc maintenance persist across milestones.
 - **Integrate, don't isolate** — every feature should connect to existing pipelines (`completeQuest()`, events, history, analytics, Hero Identity) unless explicitly scoped as infrastructure.
+- **Docs plus codebase** — canonical documentation aligns decisions with product principles and architecture; **repository indexing, search, and code exploration** provide current implementation truth. Do not duplicate full context manually when Cursor can read the repo.
 
 ## Conversation types at a glance
 
@@ -93,7 +94,7 @@ Ascendant uses AI as a **structured development partner** — not a single gener
 - Perform documentation synchronization passes (escalate to a Documentation conversation)
 - Ship spikes unless explicitly requested as a separate, scoped task
 
-When planning is complete for a feature, hand off a **Feature Kickoff Packet** (see below) to a new Implementation conversation in Cursor.
+When planning is complete for a feature, hand off a **feature implementation prompt** to a new Implementation conversation in Cursor. The agent establishes context via [Cursor Implementation Context](#cursor-implementation-context) — not a manually assembled document packet.
 
 ---
 
@@ -105,12 +106,11 @@ When planning is complete for a feature, hand off a **Feature Kickoff Packet** (
 
 ## Cursor setup
 
-After product planning is complete:
+At the start of the Implementation conversation (after [Cursor Implementation Context](#cursor-implementation-context)):
 
-1. Open a **new Implementation conversation** in Cursor with the [Feature Kickoff Packet](#feature-kickoff-packet).
-2. Use **Sonnet in Plan Mode** for this phase.
-3. Produce an engineering implementation plan — **no production code** during this phase.
-4. Once the plan is **approved**, disable Plan Mode, switch to **Composer**, and execute implementation.
+1. Use **Sonnet in Plan Mode** for medium/large features.
+2. Produce an engineering implementation plan — **no production code** during this phase.
+3. Once the plan is **approved**, disable Plan Mode, switch to **Composer**, and execute implementation.
 
 ## Purpose
 
@@ -132,7 +132,7 @@ Create an engineering implementation plan before writing code. Product scope com
 ## Does not
 
 - Write or commit production application code
-- Redefine product scope — escalate to Planning if the design reveals scope questions
+- Redefine product scope — escalate to Product Planning if the design reveals scope questions
 - Skip approval before switching to Composer
 
 ---
@@ -194,42 +194,40 @@ Checklist: [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md#learning-review).
 
 # Implementation Conversation (Cursor)
 
-**Purpose:** Build one feature completely — Technical Planning (when required) → implementation → verification → Code Review → documentation sync → Implementation Report.
+**Purpose:** Build one feature in one conversation — establish context, Technical Planning (when required), implementation, Code Review, testing, documentation sync, Implementation Report.
 
-**Lifespan:** Short-lived. **Every feature receives its own implementation conversation.** Archive when [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) is satisfied.
+**Lifespan:** Short-lived. **Every feature receives its own Implementation conversation.** Archive when [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) is satisfied.
 
 ## Responsibilities
 
-- Reading project documentation
+- [Cursor Implementation Context](#cursor-implementation-context) — documentation review and codebase exploration
 - [Technical Planning](#technical-planning-phase) (medium and large features)
-- Implementation (Composer, after plan approval)
-- Testing / verification
+- Implementation (Composer, after plan approval when applicable)
 - [Code Review](#code-review-phase)
+- Testing / verification
 - Documentation synchronization
 - Implementation report
 
-## Read first (Feature Kickoff Packet)
+## Context before coding
 
-See [Feature Kickoff Packet](#feature-kickoff-packet) below.
+See [Cursor Implementation Context](#cursor-implementation-context) and [Feature Context Guidelines](#feature-context-guidelines).
 
 ## Workflow within the conversation
 
-### Medium and large features
-
-1. Confirm scope against the feature implementation prompt — ask if ambiguous.
-2. **[Technical Planning](#technical-planning-phase)** — Sonnet in Plan Mode; produce engineering plan; get approval; **no production code**.
-3. **Implement** — disable Plan Mode; switch to Composer; follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) and the approved plan.
-4. **Test / verify** — `npm run build`, `npm run lint`, manual smoke test (see [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#testing--verification)).
-5. **[Code Review](#code-review-phase)** — mandatory review of the diff before closing.
+1. **Establish context** — review required documentation; explore relevant code via repository indexing and search; confirm scope against the feature implementation prompt from Product Planning.
+2. **[Technical Planning](#technical-planning-phase)** (medium/large only) — Sonnet in Plan Mode; produce engineering plan; get approval; **no production code**.
+3. **Implement** — Composer; follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) and approved plan (if any).
+4. **[Code Review](#code-review-phase)** — mandatory review of the diff.
+5. **Test / verify** — `npm run build`, `npm run lint`, manual smoke test (see [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#testing--verification)).
 6. **Documentation sync** — update feature docs, [ARCHITECTURE.md](ARCHITECTURE.md), [PERSISTENCE.md](PERSISTENCE.md) as applicable.
-7. **Implementation report** — deliver using the template in [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#implementation-reports); include Code Review summary.
-8. **Learning Review** (optional, if requested) — onboarding-style explanation per [Learning Review](#learning-review).
-9. **Definition of Done** — satisfy [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md).
+7. **Implementation report** — template in [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#implementation-reports); include Code Review summary.
+8. **Learning Review** (optional, if requested) — per [Learning Review](#learning-review).
+9. **Definition of Done** — [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md).
 10. **Archive** the conversation.
 
 ### Small features, documentation updates, bug fixes
 
-Skip Technical Planning. Begin with implementation (or doc edit / fix), then follow steps 4–10 above as applicable.
+Follow [Feature Context Guidelines](#feature-context-guidelines) — skip Technical Planning when unnecessary; begin at implementation when scope is clear.
 
 ## Rules
 
@@ -238,6 +236,7 @@ Skip Technical Planning. Begin with implementation (or doc edit / fix), then fol
 - Do not expand scope — escalate product questions to the Product Planning conversation.
 - Do not skip Code Review or the Implementation Report.
 - Do not evaluate Definition of Done before Code Review is complete.
+- **Do not rely on documentation alone** — use the indexed codebase to verify current behavior before changing it.
 
 ## Does not
 
@@ -353,31 +352,69 @@ Skip Technical Planning. Begin with implementation (or doc edit / fix), then fol
 
 ---
 
-# Feature Kickoff Packet
+# Cursor Implementation Context
 
-Standard inputs for **every Implementation conversation**. Assemble these before starting a new Cursor thread.
+Before implementation begins, the Implementation Agent reviews documentation and explores the **indexed repository** — Cursor's codebase awareness supplements docs; it does not replace reading canonical references.
 
-| Input | Purpose |
-|-------|---------|
+## Required review
+
+| Document | Purpose |
+|----------|---------|
 | [PROJECT_STATE.md](PROJECT_STATE.md) | What exists today — baseline for integration |
 | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Product constraints and Hero-first lens |
-| Relevant architecture documentation | [ARCHITECTURE.md](ARCHITECTURE.md), feature doc, [PERSISTENCE.md](PERSISTENCE.md) if save shape may change |
-| Latest implementation report | Context from the most recent shipped feature — patterns, migrations, known gaps |
-| **Feature implementation prompt** | From Planning — goal, acceptance criteria, files likely touched, integration requirements, explicit out-of-scope |
+| Relevant architecture documentation | [ARCHITECTURE.md](ARCHITECTURE.md), feature docs, [PERSISTENCE.md](PERSISTENCE.md) when save shape may change |
+| Latest implementation report | When modifying existing systems — patterns, migrations, known gaps (chat, issue, or milestone notes) |
 
-### Feature implementation prompt (minimum contents)
+## Optional review
 
-Planning should produce a prompt containing:
+Additional documentation when **directly relevant** to the feature — e.g. [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) when changing established behavior, [GAME_BIBLE.md](GAME_BIBLE.md) for RPG mechanics, subsystem docs for the affected domain.
+
+## Codebase exploration
+
+Use repository indexing, search, and code exploration to understand **current implementation**:
+
+- Existing feature modules, selectors, and store actions
+- How similar features integrate with quests, events, history, analytics
+- Actual file structure and naming conventions — may differ from planning assumptions
+
+**Do not** manually re-attach full project documentation to every conversation when the repo is indexed. **Do** read required docs and inspect relevant code paths before writing production code.
+
+## Feature implementation prompt (from Product Planning)
+
+Product Planning (ChatGPT) produces a prompt for each feature. Include in the Implementation conversation message — it need not be a committed file:
 
 1. **Goal** — one sentence
 2. **Acceptance criteria** — testable outcomes
 3. **Integration** — Hero, Timeline, History, Analytics, quests, persistence as applicable
-4. **Files / areas likely touched**
-5. **Persistence impact** — migration needed? new fields?
-6. **Out of scope** — what not to build
-7. **Hero-first check** — how does this make the Hero feel more alive?
+4. **Out of scope** — what not to build
+5. **Hero-first check** — how does this make the Hero feel more alive?
 
-The prompt may live in chat history, an issue, or a planning doc — it need not be committed.
+The agent validates and refines file targets during Technical Planning and codebase exploration — not solely from the prompt.
+
+---
+
+# Purpose of Documentation Review
+
+Documentation review at the start of Implementation exists to:
+
+- **Align** implementation decisions with [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md)
+- **Understand** existing architecture ([ARCHITECTURE.md](ARCHITECTURE.md), feature docs)
+- **Avoid duplicate systems** — extend pipelines instead of parallel implementations
+- **Preserve previous design decisions** — see [PRODUCT_DECISIONS.md](PRODUCT_DECISIONS.md) when relevant
+- **Identify systems to extend** — `completeQuest()`, events, history, analytics, Hero Identity
+
+Documentation review is **not** a substitute for understanding the codebase. Always verify assumptions against indexed source code.
+
+---
+
+# Feature Context Guidelines
+
+| Change size | Documentation | Codebase | Technical Planning |
+|-------------|---------------|----------|-------------------|
+| **Small** (localized fix, minor UI, doc edit) | Review only directly relevant docs | Use existing repository context | Skip when unnecessary |
+| **Medium / large** (new subsystem, persistence, cross-feature integration) | Deeper review — PROJECT_STATE, ARCHITECTURE, PERSISTENCE, feature docs | Explore affected modules, store actions, selectors | **Sonnet Plan Mode** before Composer |
+
+When in doubt, perform Technical Planning — it is cheaper than rework from wrong assumptions.
 
 ---
 
@@ -386,43 +423,45 @@ The prompt may live in chat history, an issue, or a planning doc — it need not
 Complete development workflow from idea to archived implementation conversation.
 
 ```
-Planning (ChatGPT) — Product Planning
+Product Planning (ChatGPT)
         ↓
-Technical Planning — Sonnet, Plan Mode (medium/large features only; no production code)
+Implementation Conversation (Cursor — one feature)
         ↓
-Plan approved → Composer
+Establish context (docs + codebase exploration)
         ↓
-Implementation (Cursor — one feature per conversation)
+Technical Planning — Sonnet, Plan Mode (medium/large only; no production code)
+        ↓
+Implementation — Composer
+        ↓
+Code Review (mandatory)
         ↓
 Testing / Verification
         ↓
-Code Review (mandatory — before Implementation Report and DoD)
-        ↓
-Documentation
+Documentation Updates
         ↓
 Implementation Report
         ↓
-Learning Review (optional, if requested)
+Definition of Done (+ optional Learning Review)
         ↓
-Definition of Done
-        ↓
-Archive implementation conversation
+Archive
 ```
 
 ## Stage summary
 
 | Stage | Where | Owner |
 |-------|-------|-------|
-| **Product Planning** | ChatGPT | Product scope, UX, RPG design, implementation prompt |
-| **Technical Planning** | Cursor — Sonnet, Plan Mode | Engineering plan per [Technical Planning Phase](#technical-planning-phase); skip for small features, docs, bugs |
-| **Implementation** | Cursor — Composer | Code aligned with approved plan and [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |
+| **Product Planning** | ChatGPT | Product scope, UX, RPG design, feature implementation prompt |
+| **Implementation conversation** | Cursor | Opens per feature — context, phases below, then archive |
+| **Context** | Cursor | Required docs + repository exploration — [Cursor Implementation Context](#cursor-implementation-context) |
+| **Technical Planning** | Cursor — Sonnet, Plan Mode | Engineering plan; skip for small changes per [Feature Context Guidelines](#feature-context-guidelines) |
+| **Implementation** | Cursor — Composer | Code aligned with [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |
+| **Code Review** | Cursor | Mandatory — [Code Review Phase](#code-review-phase) |
 | **Testing** | Cursor | `npm run build`, `npm run lint`, manual smoke test, migration check |
-| **Code Review** | Cursor | Mandatory review per [Code Review Phase](#code-review-phase) — before report and DoD |
 | **Documentation** | Cursor | Feature doc, ARCHITECTURE, PERSISTENCE, CHANGELOG when version-bound |
-| **Implementation Report** | Cursor | Template: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#implementation-reports) |
-| **Learning Review** | Cursor (optional) | Onboarding-style explanation — [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md#learning-review) |
-| **Definition of Done** | Cursor | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) — evaluated **after** Code Review |
-| **Archive** | — | Close Implementation conversation; Product Planning thread continues |
+| **Implementation Report** | Cursor | [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#implementation-reports) |
+| **Learning Review** | Cursor (optional) | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md#learning-review) |
+| **Definition of Done** | Cursor | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) |
+| **Archive** | — | Close conversation; Product Planning thread continues |
 
 Version and milestone closure (PROJECT_STATE refresh, package.json bump, IMPLEMENTATION_PLAN update) follow [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md#version-completion-process) after all features in the version are archived.
 
@@ -436,17 +475,15 @@ You are the dedicated implementation engineer for Ascendant.
 
 Your responsibility is to implement exactly one planned feature at a time.
 
-Before making changes, read the project's documentation in the following order:
+Before making changes:
 
-1. PROJECT_STATE.md
-2. PRODUCT_PRINCIPLES.md
-3. README.md
-4. IMPLEMENTATION_PLAN.md
-5. Architecture documentation
-6. DEVELOPMENT_WORKFLOW.md
-7. DEFINITION_OF_DONE.md
+1. Review [Cursor Implementation Context](#cursor-implementation-context) — required documentation for the feature.
+2. Explore the indexed codebase — search and read relevant modules; do not rely on docs alone.
+3. Confirm scope against the feature implementation prompt from Product Planning.
 
-Treat the documentation as the source of truth.
+Also read when directly relevant: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md), [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md), [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md).
+
+Treat documentation as source of truth for **principles and architecture**; treat **source code** as source of truth for **current behavior**.
 
 If implementation differs from documentation, update the documentation as part of the feature if appropriate rather than allowing them to drift apart.
 
@@ -488,15 +525,14 @@ Avoid:
 
 For every feature:
 
-1. Read documentation.
-2. Read the feature prompt.
-3. Inspect the existing implementation.
-4. Produce an implementation plan.
-5. Implement the feature.
-6. Verify behavior.
-7. Update documentation.
-8. Ensure the Definition of Done is satisfied.
-9. Produce an Implementation Report.
+1. Establish context — required docs + codebase exploration.
+2. Technical Planning (medium/large) — Plan Mode; get approval before Composer.
+3. Implement the feature.
+4. Code Review.
+5. Verify behavior (build, lint, smoke test).
+6. Update documentation.
+7. Ensure Definition of Done is satisfied.
+8. Produce an Implementation Report.
 
 The Implementation Report should include:
 
@@ -629,7 +665,7 @@ When making recommendations:
 | I want to… | Conversation type | Start here |
 |------------|-------------------|------------|
 | Define what to build next | Product Planning (ChatGPT) | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md), [PROJECT_STATE.md](PROJECT_STATE.md) |
-| Build a planned feature | Implementation (Cursor) | [Feature Kickoff Packet](#feature-kickoff-packet) |
+| Build a planned feature | Implementation (Cursor) | [Cursor Implementation Context](#cursor-implementation-context) + feature prompt from Product Planning |
 | Fix a bug | Debugging (Cursor) | Feature code + [PROJECT_STATE.md](PROJECT_STATE.md) |
 | Sync docs with codebase | Documentation (Cursor) | [PROJECT_STATE.md](PROJECT_STATE.md), [CHANGELOG.md](CHANGELOG.md) |
 | Investigate APIs or feasibility | Research | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) |

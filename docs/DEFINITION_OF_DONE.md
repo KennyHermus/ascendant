@@ -23,8 +23,8 @@ Use this before archiving an implementation conversation or closing a version.
 **Phase order (Implementation conversations):**
 
 ```
-Technical Planning (if required) → Implementation → Testing → Code Review
-    → Documentation → Implementation Report → Definition of Done
+Establish context (docs + codebase) → Technical Planning (if required) → Implementation
+    → Code Review → Testing → Documentation → Implementation Report → Definition of Done
     → Learning Review (optional, if requested) → Archive
 ```
 
@@ -73,6 +73,7 @@ Deliver in chat. It need not be committed unless the team chooses to archive onb
 
 Master checklist for implementation conversations. Detailed guidance follows in [Checklist detail](#checklist-detail).
 
+- [ ] **Implementation context established** — required docs reviewed; relevant codebase explored ([AI_WORKFLOW.md](AI_WORKFLOW.md#cursor-implementation-context))
 - [ ] **Technical Planning completed** (when applicable — medium/large features; Plan Mode, approved before Composer)
 - [ ] **Feature implemented** — scope matches approved plan; acceptance criteria satisfied; `npm run build` and `npm run lint` pass
 - [ ] **Existing systems integrated appropriately** — uses `completeQuest()`, store actions, established pipelines; no parallel reward/event logic
@@ -80,8 +81,8 @@ Master checklist for implementation conversations. Detailed guidance follows in 
 - [ ] **Analytics / history / timeline integration reviewed** — events, snapshots, selectors as applicable; no duplicate timeline entries
 - [ ] **Hero integration reviewed** — answers "How does this make the Hero feel more alive?" or correctly scoped as infrastructure; `syncHeroIdentity()` where needed
 - [ ] **DevTools updated if needed** — testing helpers guarded with `import.meta.env.DEV`; N/A if no dev surface
+- [ ] **Mandatory Code Review completed** — before Implementation Report ([Code Review detail](#code-review-detail))
 - [ ] **Testing and verification completed** — manual smoke test; edge cases (empty data, first-time user, upgraded save)
-- [ ] **Mandatory Code Review completed** — before Implementation Report and before evaluating remaining items ([Code Review detail](#code-review-detail))
 - [ ] **Documentation synchronized** — feature doc, [ARCHITECTURE.md](ARCHITECTURE.md), cross-references; no stale version strings
 - [ ] **PROJECT_STATE updated** (major milestones) — N/A for routine features within a version
 - [ ] **CHANGELOG updated** (when applicable) — version-bound work only
@@ -100,7 +101,7 @@ Expanded criteria for checklist items above.
 
 *Required for medium and large features. Skip for small features, documentation updates, and bug fixes.*
 
-- [ ] Implementation conversation started with [Feature Kickoff Packet](AI_WORKFLOW.md#feature-kickoff-packet)
+- [ ] [Cursor Implementation Context](AI_WORKFLOW.md#cursor-implementation-context) satisfied — required docs reviewed; relevant code explored via repository indexing/search
 - [ ] Technical Planning produced in **Plan Mode** (Sonnet) — **no production code** during this phase
 - [ ] Plan includes: implementation strategy, systems to extend, files likely to change, new models/services/selectors, data flow, persistence, analytics/history integration, edge cases, risks, verification strategy
 - [ ] Plan **approved** before switching to Composer for implementation
@@ -194,12 +195,13 @@ When closing an application version (e.g. v0.0.5):
 
 An implementation conversation may be archived when:
 
-1. Technical Planning completed and approved (if required) — or marked N/A
-2. **Code Review** completed
-3. Master [Definition of Done](#definition-of-done) checklist satisfied (or N/A items explained)
-4. **Implementation Report** delivered
-5. **Learning Review** completed (if requested) — or marked N/A
-6. No blocking bugs remain for the scoped work
+1. [Cursor Implementation Context](AI_WORKFLOW.md#cursor-implementation-context) satisfied — or marked N/A for trivial doc-only changes
+2. Technical Planning completed and approved (if required) — or marked N/A
+3. **Code Review** completed
+4. Master [Definition of Done](#definition-of-done) checklist satisfied (or N/A items explained)
+5. **Implementation Report** delivered
+6. **Learning Review** completed (if requested) — or marked N/A
+7. No blocking bugs remain for the scoped work
 
 Planning and documentation conversations remain **long-lived**; implementation conversations are **short-lived** by design.
 

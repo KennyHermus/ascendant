@@ -19,7 +19,7 @@ Before making changes:
 
 Product Planning conversations (ChatGPT): also read [docs/PRODUCT_PRINCIPLES.md](docs/PRODUCT_PRINCIPLES.md) and [docs/MILESTONES.md](docs/MILESTONES.md).
 
-Implementation conversations (Cursor): satisfy [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) before archiving.
+Implementation conversations (Cursor): establish [Cursor Implementation Context](docs/AI_WORKFLOW.md#cursor-implementation-context); satisfy [docs/DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) before archiving.
 
 The documentation is the source of truth.
 

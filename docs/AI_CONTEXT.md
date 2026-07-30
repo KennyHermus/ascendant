@@ -138,7 +138,7 @@ Do not invent major systems (**combat, inventory, equipment, story, world, skill
 | Start here | Purpose |
 |------------|---------|
 | [PROJECT_STATE.md](PROJECT_STATE.md) | Canonical baseline — what exists today |
-| [AI_WORKFLOW.md](AI_WORKFLOW.md) | Phases: Product Planning, Technical Planning, Implementation, Code Review, Documentation, Reporting |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md) | Phases: Product Planning, Technical Planning, Implementation; Cursor implementation context |
 | [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) | Verification, version closure, doc maintenance |
 | [DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) | Master completion checklist |
 | [PRODUCT_PRINCIPLES.md](PRODUCT_PRINCIPLES.md) | Enduring product philosophy |
